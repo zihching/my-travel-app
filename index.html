@@ -3,17 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Travel Buddy V27</title>
+    <title>Travel Buddy V28</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
+    <!-- 讓 Tailwind 讀懂自定義設定 -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: { 
-                        milk: '#FFFBE6', coffee: '#4A3B32', latte: '#D4A373', mocha: '#9C6644', cream: '#FFF9DB', khaki: '#E6DDC3' 
+                        milk: '#FFFBE6', 
+                        coffee: '#4A3B32', 
+                        latte: '#D4A373', 
+                        mocha: '#9C6644', 
+                        cream: '#FFF9DB', 
+                        khaki: '#E6DDC3' 
                     }
                 }
             }
@@ -29,6 +35,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
 
     <style type="text/tailwindcss">
+        /* iOS Safe Area & Full Height Fix */
         html, body { height: 100%; overscroll-behavior: none; }
         body { 
             background-color: #FFFBE6; 
@@ -44,14 +51,25 @@
         #map-container { height: 100%; width: 100%; position: absolute; top: 0; left: 0; z-index: 0; }
         #modal-map { height: 200px; width: 100%; z-index: 1; }
         
+        /* Calculator Style */
         .calc-btn { @apply bg-[#E6DDC3] rounded-2xl p-4 text-xl font-bold text-[#5C4B43] active:scale-95 transition-transform shadow-[0_2px_0_#D1C7B7] border border-[#D1C7B7]; }
         .calc-btn-op { @apply bg-[#D4A373] text-white border-[#B08968] shadow-[0_2px_0_#B08968]; }
         .calc-btn-action { @apply bg-[#A98467] text-white border-[#8B6B52] shadow-[0_2px_0_#8B6B52]; }
+        
+        /* Inputs */
         .custom-input { @apply w-full bg-white border-2 border-[#E6DDC3] rounded-xl p-3 text-coffee font-bold outline-none focus:border-[#D4A373] transition-colors; }
+        
+        /* Transport Icon Selection */
         .transport-opt { @apply w-10 h-10 rounded-full flex items-center justify-center border-2 border-transparent text-gray-400 transition-all; }
         .transport-opt.active { @apply bg-[#D4A373] text-white border-[#B08968] shadow-sm; }
-        .nav-btn { @apply flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-bold text-gray-400 transition-colors h-full pt-2 pb-1; }
-        .nav-btn.active { @apply text-coffee; }
+
+        /* Bottom Nav Button Alignment */
+        .nav-btn {
+            @apply flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-bold text-gray-400 transition-colors h-full pt-2 pb-1;
+        }
+        .nav-btn.active {
+            @apply text-coffee;
+        }
     </style>
 
     <!-- Firebase SDKs -->
@@ -60,6 +78,9 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
         import { getDatabase, ref as dbRef, set, onValue, update, push } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
 
+        // -----------------------------------------------------------
+        // ✅ Key 已經填好
+        // -----------------------------------------------------------
         const firebaseConfig = {
             apiKey: "AIzaSyDFUGYOobmVxYfQMBYz1iq4z1HlrdbTi8Q",
             authDomain: "travel-55c4b.firebaseapp.com",
@@ -85,10 +106,19 @@
         };
 
         const DEFAULT_CHECKLIST = [{ id: 1, text: '護照', checked: false }, { id: 2, text: '網卡/Wi-Fi', checked: false }];
-        const TRANSPORT_TYPES = [{id:'walk',icon:'fa-person-walking',label:'步行',speed:5},{id:'train',icon:'fa-train-subway',label:'地鐵',speed:40},{id:'bus',icon:'fa-bus',label:'公車',speed:20},{id:'car',icon:'fa-car',label:'開車',speed:40},{id:'ship',icon:'fa-ship',label:'船',speed:30},{id:'plane',icon:'fa-plane',label:'飛機',speed:800}];
+
+        const TRANSPORT_TYPES = [
+            { id: 'walk', icon: 'fa-person-walking', label: '步行', speed: 5 },
+            { id: 'train', icon: 'fa-train-subway', label: '地鐵', speed: 40 },
+            { id: 'bus', icon: 'fa-bus', label: '公車', speed: 20 },
+            { id: 'car', icon: 'fa-car', label: '開車', speed: 40 },
+            { id: 'ship', icon: 'fa-ship', label: '船', speed: 30 },
+            { id: 'plane', icon: 'fa-plane', label: '飛機', speed: 800 }
+        ];
 
         createApp({
             setup() {
+                // State
                 const pageState = ref('landing'); 
                 const savedTrips = ref([]);
                 const activeTab = ref('itinerary');
@@ -101,6 +131,7 @@
                 const wizardStep = ref(1);
                 const wizardData = ref({ destination: '', currency: 'TWD', rate: 1, lang: 'en', flag: '✈️' });
 
+                // Data
                 const days = ref([{ activities: [] }, { activities: [] }]); 
                 const currentDayIndex = ref(0);
                 const people = ref(['我']);
@@ -114,6 +145,7 @@
                 const chatMessages = ref([]);
                 const flightInfo = ref({ code: '', time: '' });
                 
+                // Forms
                 const newPersonName = ref('');
                 const useForeignCurrency = ref(false);
                 const showActivityModal = ref(false);
@@ -126,7 +158,11 @@
                 const locationMode = ref('auto'); 
                 const searchResultAddress = ref('');
                 const searchResults = ref([]);
-                const spotSearchResults = ref([]); // Collection Search
+                
+                // Collection Forms
+                const collectionNameInput = ref('');
+                const collectionSearchInput = ref('');
+                const spotSearchResults = ref([]);
 
                 const formExpense = ref({ title: '', inputAmount: '', payer: '' }); 
                 const formChat = ref('');
@@ -138,11 +174,6 @@
                 const calcMode = ref('foreign'); 
                 const calculatorTarget = ref(null);
                 const newItemText = ref('');
-                
-                // Collection Inputs
-                const collectionNameInput = ref('');
-                const collectionSearchInput = ref('');
-                
                 const joinIdInput = ref('');
                 let map = null;
                 let modalMap = null;
@@ -252,7 +283,40 @@
                 };
                 watch(viewMode, (v) => { if (v === 'map') nextTick(() => { setTimeout(() => { initMap(); updateMapMarkers(); }, 100); }); });
 
-                // Core Logic
+                // Collection
+                const searchSpotCollection = async () => {
+                    if (!collectionSearchInput.value) return;
+                    try {
+                        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(collectionSearchInput.value)}&limit=5`);
+                        const data = await res.json();
+                        if (data && data.length > 0) spotSearchResults.value = data;
+                        else alert("找不到地點");
+                    } catch (e) { console.error(e); }
+                };
+                const addSpotFromSearchResult = (item) => {
+                    const name = collectionNameInput.value || item.display_name.split(',')[0];
+                    savedSpots.value.push({ 
+                        id: Date.now(), 
+                        name: name,
+                        address: item.display_name,
+                        lat: item.lat,
+                        lon: item.lon
+                    });
+                    collectionNameInput.value = '';
+                    collectionSearchInput.value = '';
+                    spotSearchResults.value = [];
+                    saveToCloud();
+                };
+                const addSpotDirectly = () => {
+                    if (!collectionNameInput.value) return;
+                    savedSpots.value.push({ id: Date.now(), name: collectionNameInput.value, text: collectionNameInput.value }); // Fallback for display
+                    collectionNameInput.value = '';
+                    spotSearchResults.value = [];
+                    saveToCloud();
+                };
+                const deleteSpot = (id) => { savedSpots.value = savedSpots.value.filter(s => s.id !== id); saveToCloud(); };
+
+                // Core
                 const createTrip = async () => {
                     const newId = Math.random().toString(36).substring(2, 8).toUpperCase(); const rate = parseFloat(wizardData.value.rate) || 1;
                     const initialData = { days: [{activities:[]},{activities:[]}], people: ['我'], expenses: [], savedSpots: [], exchangeRate: rate, targetCurrency: wizardData.value.currency.toUpperCase(), targetLang: wizardData.value.lang, title: tripTitle.value, checklist: [...DEFAULT_CHECKLIST], createdAt: Date.now() };
@@ -269,16 +333,9 @@
                 const saveCurrentLocation = () => { isLoading.value = true; navigator.geolocation.getCurrentPosition(async (p) => { formActivity.value.lat = p.coords.latitude; formActivity.value.lng = p.coords.longitude; locationMode.value = 'manual'; searchResultAddress.value = "已定位"; estimateTime(p.coords.latitude, p.coords.longitude); try { const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${p.coords.latitude}&lon=${p.coords.longitude}`); const data = await res.json(); if(data && data.display_name) formActivity.value.location = data.display_name.split(',')[0]; } catch(e){} isLoading.value = false; }, () => { alert("無法定位"); isLoading.value=false; }); };
                 const startWizard = () => { pageState.value = 'wizard'; wizardStep.value = 1; };
                 const detectDestination = async () => { if(!wizardData.value.destination) return; let key = wizardData.value.destination.toLowerCase(); if(key.includes('紐西蘭')) key='nz'; if(key.includes('東京')) key='tokyo'; const info = CITY_DB[key] || { c:'USD', l:'en', f:'✈️' }; wizardData.value.currency=info.c; wizardData.value.lang=info.l; wizardData.value.flag=info.f; tripTitle.value = `${wizardData.value.destination}之旅`; wizardStep.value=2; };
-                const openAddModal = () => { if(activeTab.value==='itinerary') { isEditing.value=false; formActivity.value={id:Date.now(),time:'10:00',title:'',location:'',image:null}; locationMode.value='auto'; searchResults.value=[]; showActivityModal.value=true; } else if(activeTab.value==='expenses') { formExpense.value={title:'',inputAmount:'',payer:people.value[0]}; useForeignCurrency.value=false; showExpenseModal.value=true; } };
+                const openAddModal = () => { if(activeTab.value==='itinerary') { isEditing.value=false; formActivity.value={id:Date.now(),time:'10:00',title:'',location:'',image:null, transport:'walk', travelTime:'', notes:'', lat:null, lng:null}; locationMode.value='auto'; searchResults.value=[]; showActivityModal.value=true; } else if(activeTab.value==='expenses') { formExpense.value={title:'',inputAmount:'',payer:people.value[0]}; useForeignCurrency.value=false; showExpenseModal.value=true; } };
                 const saveActivity = () => { const targetDay = days.value[currentDayIndex.value]; if(isEditing.value) { const idx = targetDay.activities.findIndex(a=>a.id===formActivity.value.id); if(idx!==-1) targetDay.activities[idx]={...formActivity.value}; } else targetDay.activities.push({...formActivity.value}); showActivityModal.value=false; saveToCloud(); if(viewMode.value==='map') setTimeout(()=>updateMapMarkers(),500); };
-                const deleteActivity = (id) => { 
-                    if(confirm('確定刪除此行程？')) {
-                        days.value[currentDayIndex.value].activities = days.value[currentDayIndex.value].activities.filter(a=>a.id!==id); 
-                        saveToCloud(); 
-                        if(viewMode.value==='map') setTimeout(()=>updateMapMarkers(),500); 
-                        showActivityModal.value=false; 
-                    }
-                };
+                const deleteActivity = (id) => { if(confirm('確定刪除此行程？')) { days.value[currentDayIndex.value].activities = days.value[currentDayIndex.value].activities.filter(a=>a.id!==id); saveToCloud(); if(viewMode.value==='map') setTimeout(()=>updateMapMarkers(),500); showActivityModal.value=false; } };
                 const saveExpense = () => { let amt = Number(formExpense.value.inputAmount); let orig = null; if(useForeignCurrency.value){ orig=`${amt} ${targetCurrency.value}`; amt=Math.round(amt*exchangeRate.value); } expenses.value.unshift({id:Date.now(), title:formExpense.value.title, amount:amt, originalAmount:orig, payer:formExpense.value.payer, date:new Date().toLocaleDateString()}); showExpenseModal.value=false; saveToCloud(); };
                 const deleteExpense = (id) => { expenses.value = expenses.value.filter(e=>e.id!==id); saveToCloud(); };
                 const sendMessage = () => { if(!formChat.value.trim() && !chatImage.value) return; push(dbRef(db, 'trips/'+tripId.value+'/chatMessages'), {user:people.value[0], text:formChat.value, image:chatImage.value, time:new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}); formChat.value=''; chatImage.value=null; };
@@ -309,32 +366,6 @@
                 const estimateTime = (toLat, toLng) => { const dayActs=days.value[currentDayIndex.value].activities; if(!dayActs||dayActs.length===0)return; let prev=null; if(isEditing.value){const idx=dayActs.findIndex(a=>a.id===formActivity.value.id);if(idx>0)prev=dayActs[idx-1];}else{prev=dayActs[dayActs.length-1];} if(prev&&prev.lat&&prev.lng){const dist=getDistanceFromLatLonInKm(prev.lat,prev.lng,toLat,toLng); const mode=formActivity.value.transport||'walk'; const speed=TRANSPORT_TYPES.find(t=>t.id===mode)?.speed||5; const mins=Math.round((dist/speed)*60); if(mins<60)formActivity.value.travelTime=`${mins} 分鐘`;else{const h=Math.floor(mins/60);const m=mins%60;formActivity.value.travelTime=`${h}小時${m}分`;}} };
                 
                 watch(() => formActivity.value.transport, () => { if(formActivity.value.lat && formActivity.value.lng) estimateTime(formActivity.value.lat, formActivity.value.lng); });
-                
-                // Collection Logic
-                const searchSpotCollection = async () => {
-                    if (!collectionSearchInput.value) return;
-                    try {
-                        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(collectionSearchInput.value)}&limit=5`);
-                        const data = await res.json();
-                        if (data && data.length > 0) spotSearchResults.value = data;
-                        else alert("找不到地點");
-                    } catch (e) { console.error(e); }
-                };
-                const addSpotFromSearchResult = (item) => {
-                    const name = collectionNameInput.value || item.display_name.split(',')[0];
-                    savedSpots.value.push({ 
-                        id: Date.now(), 
-                        name: name,
-                        address: item.display_name,
-                        lat: item.lat,
-                        lon: item.lon
-                    });
-                    collectionNameInput.value = '';
-                    collectionSearchInput.value = '';
-                    spotSearchResults.value = [];
-                    saveToCloud();
-                };
-                const deleteSpot = (id) => { savedSpots.value = savedSpots.value.filter(s => s.id !== id); saveToCloud(); };
 
                 return {
                     pageState, wizardStep, wizardData, tripTitle, savedTrips,
@@ -359,7 +390,7 @@
                     searchLocation, selectLocation, saveCurrentLocation, performTranslation,
                     appendCalc, clearCalc, backspaceCalc, updateExchangeRate,
                     openCalculatorForExpense, openCalculatorNormal, applyCalculatorResult,
-                    searchSpotCollection, addSpotFromSearchResult, deleteSpot
+                    searchSpotCollection, addSpotFromSearchResult, addSpotDirectly, deleteSpot
                 };
             }
         }).mount('#app');
@@ -370,7 +401,7 @@
         
         <!-- 1. Landing -->
         <div v-if="pageState === 'landing'" class="h-full flex flex-col p-6 overflow-y-auto bg-milk">
-            <div class="mt-8 mb-6 text-center"><h1 class="text-4xl font-bold text-coffee mb-1">Travel Buddy</h1><p class="text-latte font-bold text-sm tracking-widest">MOBILE V27</p></div>
+            <div class="mt-8 mb-6 text-center"><h1 class="text-4xl font-bold text-coffee mb-1">Travel Buddy</h1><p class="text-latte font-bold text-sm tracking-widest">MOBILE V28</p></div>
             <button @click="startWizard" class="bg-coffee text-white p-5 rounded-2xl shadow-xl flex items-center justify-between mb-6 group active:scale-95 transition flex-shrink-0"><div class="flex items-center gap-4"><div class="bg-white/10 w-12 h-12 rounded-full flex items-center justify-center text-2xl">✈️</div><div class="text-left"><h3 class="font-bold text-lg">建立新行程</h3></div></div><i class="fa-solid fa-arrow-right"></i></button>
             <div class="bg-white p-2 rounded-2xl border border-stone-100 flex gap-2 mb-8 shadow-sm flex-shrink-0"><input v-model="joinIdInput" placeholder="輸入行程 ID..." class="flex-1 bg-transparent p-3 outline-none font-bold text-coffee"><button @click="joinTrip" class="bg-latte text-white px-4 rounded-xl font-bold">加入</button></div>
             <h3 class="font-bold text-gray-400 text-sm mb-3 px-2">我的行程</h3>
@@ -428,15 +459,15 @@
                 <!-- Traffic -->
                 <div v-if="activeTab === 'traffic'" class="px-4 pb-24 flex flex-col items-center justify-center h-full opacity-50"><i class="fa-solid fa-train text-6xl mb-4 text-latte"></i><p class="text-coffee font-bold">交通資訊 (開發中)</p></div>
 
-                <!-- Collection (New Input UI) -->
+                <!-- Collection (New Search) -->
                 <div v-if="activeTab === 'collection'" class="px-6 pb-24">
                     <h2 class="font-bold text-coffee mb-4 mt-2">我的收藏</h2>
                     
                     <!-- Add Area -->
                     <div class="bg-white border border-[#EBE5D9] rounded-xl p-4 shadow-sm mb-4 space-y-3">
-                         <input v-model="collectionNameInput" placeholder="名稱 (選填，如: 秘密基地)" class="w-full bg-gray-50 rounded-lg p-2 text-sm text-coffee font-bold border border-transparent focus:bg-white focus:border-[#D4A373]">
+                         <input v-model="collectionNameInput" placeholder="名稱 (選填，如: 秘密基地)" class="custom-input text-sm">
                          <div class="flex gap-2">
-                             <input v-model="collectionSearchInput" @keyup.enter="searchSpotCollection" placeholder="搜尋地點 (如: 台北101)" class="flex-1 bg-gray-50 rounded-lg p-2 text-sm text-coffee font-bold border border-transparent focus:bg-white focus:border-[#D4A373]">
+                             <input v-model="collectionSearchInput" @keyup.enter="searchSpotCollection" placeholder="搜尋地點 (如: 台北101)" class="flex-1 bg-white border-2 border-[#E6DDC3] rounded-xl p-3 text-sm text-coffee font-bold outline-none focus:border-[#D4A373]">
                              <button @click="searchSpotCollection" class="bg-latte text-white px-4 rounded-lg text-sm font-bold">搜</button>
                          </div>
                          <!-- Search Results -->
@@ -445,6 +476,7 @@
                                  <i class="fa-solid fa-location-dot text-latte mr-2"></i>{{ res.display_name }}
                              </div>
                          </div>
+                         <button v-if="!spotSearchResults.length && collectionNameInput" @click="addSpotDirectly" class="w-full py-2 bg-gray-100 text-gray-500 rounded-lg text-xs font-bold hover:bg-coffee hover:text-white transition">直接新增純文字收藏</button>
                     </div>
 
                     <div class="space-y-2 mb-4">
