@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Travel Buddy V26</title>
+    <title>Travel Buddy V27</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -126,7 +126,7 @@
                 const locationMode = ref('auto'); 
                 const searchResultAddress = ref('');
                 const searchResults = ref([]);
-                const spotSearchResults = ref([]); // New for collection search
+                const spotSearchResults = ref([]); // Collection Search
 
                 const formExpense = ref({ title: '', inputAmount: '', payer: '' }); 
                 const formChat = ref('');
@@ -138,7 +138,11 @@
                 const calcMode = ref('foreign'); 
                 const calculatorTarget = ref(null);
                 const newItemText = ref('');
-                const newSpotText = ref('');
+                
+                // Collection Inputs
+                const collectionNameInput = ref('');
+                const collectionSearchInput = ref('');
+                
                 const joinIdInput = ref('');
                 let map = null;
                 let modalMap = null;
@@ -248,7 +252,7 @@
                 };
                 watch(viewMode, (v) => { if (v === 'map') nextTick(() => { setTimeout(() => { initMap(); updateMapMarkers(); }, 100); }); });
 
-                // Core
+                // Core Logic
                 const createTrip = async () => {
                     const newId = Math.random().toString(36).substring(2, 8).toUpperCase(); const rate = parseFloat(wizardData.value.rate) || 1;
                     const initialData = { days: [{activities:[]},{activities:[]}], people: ['我'], expenses: [], savedSpots: [], exchangeRate: rate, targetCurrency: wizardData.value.currency.toUpperCase(), targetLang: wizardData.value.lang, title: tripTitle.value, checklist: [...DEFAULT_CHECKLIST], createdAt: Date.now() };
@@ -307,23 +311,28 @@
                 watch(() => formActivity.value.transport, () => { if(formActivity.value.lat && formActivity.value.lng) estimateTime(formActivity.value.lat, formActivity.value.lng); });
                 
                 // Collection Logic
-                const searchSpot = async () => {
-                    if (!newSpotText.value) return;
+                const searchSpotCollection = async () => {
+                    if (!collectionSearchInput.value) return;
                     try {
-                        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(newSpotText.value)}&limit=5`);
+                        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(collectionSearchInput.value)}&limit=5`);
                         const data = await res.json();
                         if (data && data.length > 0) spotSearchResults.value = data;
                         else alert("找不到地點");
                     } catch (e) { console.error(e); }
                 };
-                const addSpotFromResult = (item) => {
-                    savedSpots.value.push({ id: Date.now(), text: item.display_name.split(',')[0] });
-                    newSpotText.value = ''; spotSearchResults.value = []; saveToCloud();
-                };
-                const addSpotDirectly = () => {
-                    if (!newSpotText.value) return;
-                    savedSpots.value.push({ id: Date.now(), text: newSpotText.value });
-                    newSpotText.value = ''; spotSearchResults.value = []; saveToCloud();
+                const addSpotFromSearchResult = (item) => {
+                    const name = collectionNameInput.value || item.display_name.split(',')[0];
+                    savedSpots.value.push({ 
+                        id: Date.now(), 
+                        name: name,
+                        address: item.display_name,
+                        lat: item.lat,
+                        lon: item.lon
+                    });
+                    collectionNameInput.value = '';
+                    collectionSearchInput.value = '';
+                    spotSearchResults.value = [];
+                    saveToCloud();
                 };
                 const deleteSpot = (id) => { savedSpots.value = savedSpots.value.filter(s => s.id !== id); saveToCloud(); };
 
@@ -335,7 +344,8 @@
                     showActivityModal, showExpenseModal, showTranslateModal, showCalculatorModal, showImagePreview,
                     isEditing, formActivity, formExpense, formChat, chatImage, translateText, translatedResult, isTranslating,
                     calcExpression, calcResultValue, calcMode, convertedValue, savedSpots, evaluateExpenseAmount,
-                    newItemText, newSpotText, spotSearchResults, totalExpense, perPersonShare, debts, useForeignCurrency, checklist, chatMessages, flightInfo,
+                    newItemText, collectionNameInput, collectionSearchInput, spotSearchResults, 
+                    totalExpense, perPersonShare, debts, useForeignCurrency, checklist, chatMessages, flightInfo,
                     locationMode, searchResultAddress, isLoading, TRANSPORT_TYPES, searchResults,
                     startWizard, detectDestination, createTrip, loadTrip, deleteLocalTrip, backToLanding, joinTrip,
                     changeDay, addDay, 
@@ -349,7 +359,7 @@
                     searchLocation, selectLocation, saveCurrentLocation, performTranslation,
                     appendCalc, clearCalc, backspaceCalc, updateExchangeRate,
                     openCalculatorForExpense, openCalculatorNormal, applyCalculatorResult,
-                    searchSpot, addSpotFromResult, addSpotDirectly, deleteSpot
+                    searchSpotCollection, addSpotFromSearchResult, deleteSpot
                 };
             }
         }).mount('#app');
@@ -360,7 +370,7 @@
         
         <!-- 1. Landing -->
         <div v-if="pageState === 'landing'" class="h-full flex flex-col p-6 overflow-y-auto bg-milk">
-            <div class="mt-8 mb-6 text-center"><h1 class="text-4xl font-bold text-coffee mb-1">Travel Buddy</h1><p class="text-latte font-bold text-sm tracking-widest">MOBILE V26</p></div>
+            <div class="mt-8 mb-6 text-center"><h1 class="text-4xl font-bold text-coffee mb-1">Travel Buddy</h1><p class="text-latte font-bold text-sm tracking-widest">MOBILE V27</p></div>
             <button @click="startWizard" class="bg-coffee text-white p-5 rounded-2xl shadow-xl flex items-center justify-between mb-6 group active:scale-95 transition flex-shrink-0"><div class="flex items-center gap-4"><div class="bg-white/10 w-12 h-12 rounded-full flex items-center justify-center text-2xl">✈️</div><div class="text-left"><h3 class="font-bold text-lg">建立新行程</h3></div></div><i class="fa-solid fa-arrow-right"></i></button>
             <div class="bg-white p-2 rounded-2xl border border-stone-100 flex gap-2 mb-8 shadow-sm flex-shrink-0"><input v-model="joinIdInput" placeholder="輸入行程 ID..." class="flex-1 bg-transparent p-3 outline-none font-bold text-coffee"><button @click="joinTrip" class="bg-latte text-white px-4 rounded-xl font-bold">加入</button></div>
             <h3 class="font-bold text-gray-400 text-sm mb-3 px-2">我的行程</h3>
@@ -418,38 +428,45 @@
                 <!-- Traffic -->
                 <div v-if="activeTab === 'traffic'" class="px-4 pb-24 flex flex-col items-center justify-center h-full opacity-50"><i class="fa-solid fa-train text-6xl mb-4 text-latte"></i><p class="text-coffee font-bold">交通資訊 (開發中)</p></div>
 
-                <!-- Collection (New Search) -->
+                <!-- Collection (New Input UI) -->
                 <div v-if="activeTab === 'collection'" class="px-6 pb-24">
                     <h2 class="font-bold text-coffee mb-4 mt-2">我的收藏</h2>
+                    
+                    <!-- Add Area -->
+                    <div class="bg-white border border-[#EBE5D9] rounded-xl p-4 shadow-sm mb-4 space-y-3">
+                         <input v-model="collectionNameInput" placeholder="名稱 (選填，如: 秘密基地)" class="w-full bg-gray-50 rounded-lg p-2 text-sm text-coffee font-bold border border-transparent focus:bg-white focus:border-[#D4A373]">
+                         <div class="flex gap-2">
+                             <input v-model="collectionSearchInput" @keyup.enter="searchSpotCollection" placeholder="搜尋地點 (如: 台北101)" class="flex-1 bg-gray-50 rounded-lg p-2 text-sm text-coffee font-bold border border-transparent focus:bg-white focus:border-[#D4A373]">
+                             <button @click="searchSpotCollection" class="bg-latte text-white px-4 rounded-lg text-sm font-bold">搜</button>
+                         </div>
+                         <!-- Search Results -->
+                         <div v-if="spotSearchResults.length > 0" class="border-t border-gray-100 pt-2 max-h-40 overflow-y-auto">
+                             <div v-for="(res, idx) in spotSearchResults" :key="idx" @click="addSpotFromSearchResult(res)" class="p-2 text-xs hover:bg-gray-50 cursor-pointer text-coffee font-bold truncate">
+                                 <i class="fa-solid fa-location-dot text-latte mr-2"></i>{{ res.display_name }}
+                             </div>
+                         </div>
+                    </div>
+
                     <div class="space-y-2 mb-4">
                         <div v-if="savedSpots.length === 0" class="text-center opacity-50 py-10">
                             <i class="fa-solid fa-bookmark text-4xl mb-2 text-latte"></i><p class="text-xs">尚無收藏地點</p>
                         </div>
-                        <div v-for="spot in savedSpots" :key="spot.id" class="bg-white p-4 rounded-xl border border-[#EBE5D9] flex items-center gap-3 shadow-sm">
-                            <div class="w-8 h-8 rounded-full bg-[#E6DDC3] flex items-center justify-center text-coffee"><i class="fa-solid fa-map-pin"></i></div>
-                            <span class="flex-1 font-bold text-sm text-coffee">{{ spot.text }}</span>
-                            <button @click="deleteSpot(spot.id)" class="text-red-200 hover:text-red-400"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                    </div>
-                    <div class="flex flex-col gap-2">
-                        <div class="flex gap-2">
-                            <input v-model="newSpotText" @keyup.enter="searchSpot" placeholder="搜尋或輸入地點..." class="flex-1 bg-white border border-[#EBE5D9] rounded-xl p-3 shadow-sm text-coffee font-bold">
-                            <button @click="searchSpot" class="bg-latte text-white px-3 rounded-xl"><i class="fa-solid fa-magnifying-glass"></i></button>
-                            <button @click="addSpotDirectly" class="bg-coffee text-white px-3 rounded-xl"><i class="fa-solid fa-plus"></i></button>
-                        </div>
-                        <div v-if="spotSearchResults.length > 0" class="bg-white border border-[#EBE5D9] rounded-xl max-h-40 overflow-y-auto shadow-sm">
-                            <div v-for="(res, idx) in spotSearchResults" :key="idx" @click="addSpotFromResult(res)" class="p-3 text-xs border-b last:border-0 hover:bg-gray-50 cursor-pointer text-coffee border-[#EBE5D9] font-bold">
-                                {{ res.display_name.split(',')[0] }} <span class="text-gray-400 font-normal ml-1">{{ res.display_name }}</span>
+                        <div v-for="spot in savedSpots" :key="spot.id" class="bg-white p-4 rounded-xl border border-[#EBE5D9] flex items-start gap-3 shadow-sm">
+                            <div class="w-8 h-8 rounded-full bg-[#E6DDC3] flex-shrink-0 flex items-center justify-center text-coffee mt-1"><i class="fa-solid fa-map-pin"></i></div>
+                            <div class="flex-1 overflow-hidden">
+                                <p class="font-bold text-sm text-coffee truncate">{{ spot.name || spot.text }}</p>
+                                <p v-if="spot.address" class="text-[10px] text-gray-400 truncate">{{ spot.address }}</p>
                             </div>
+                            <button @click="deleteSpot(spot.id)" class="text-red-200 hover:text-red-400 flex-shrink-0"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     </div>
                 </div>
 
                 <!-- Checklist -->
-                <div v-if="activeTab === 'checklist'" class="px-6 pb-24"><h2 class="font-bold text-coffee mb-4 mt-2">清單</h2><div class="space-y-2 mb-4"><div v-for="item in checklist" :key="item.id" @click="toggleCheck(item.id)" class="bg-white p-4 rounded-xl border border-[#EBE5D9] flex items-center gap-3 shadow-sm" :class="item.checked?'opacity-50':''"><div class="w-5 h-5 rounded-full border flex items-center justify-center" :class="item.checked?'bg-green-500 border-green-500 text-white':'border-gray-200'"><i class="fa-solid fa-check text-xs"></i></div><span class="flex-1 font-bold text-sm text-coffee">{{ item.text }}</span><button @click.stop="deleteCheckItem(item.id)" class="text-red-200"><i class="fa-solid fa-times"></i></button></div></div><div class="flex gap-2"><input v-model="newItemText" placeholder="新增..." class="flex-1 bg-white border border-[#EBE5D9] rounded-xl p-3 shadow-sm text-coffee font-bold"><button @click="addCheckItem" class="bg-coffee text-white px-4 rounded-xl"><i class="fa-solid fa-plus"></i></button></div></div>
+                <div v-if="activeTab === 'checklist'" class="px-4 pb-24"><h2 class="font-bold text-coffee mb-4 mt-2">清單</h2><div class="space-y-2 mb-4"><div v-for="item in checklist" :key="item.id" @click="toggleCheck(item.id)" class="bg-white p-3 rounded-xl border border-[#EBE5D9] flex items-center gap-3 shadow-sm" :class="item.checked?'opacity-50':''"><div class="w-5 h-5 rounded-full border flex items-center justify-center" :class="item.checked?'bg-green-500 border-green-500 text-white':'border-gray-200'"><i class="fa-solid fa-check text-xs"></i></div><span class="flex-1 font-bold text-sm text-coffee">{{ item.text }}</span><button @click.stop="deleteCheckItem(item.id)" class="text-red-200"><i class="fa-solid fa-times"></i></button></div></div><div class="flex gap-2"><input v-model="newItemText" placeholder="新增..." class="flex-1 bg-white border border-[#EBE5D9] rounded-xl p-3 shadow-sm text-coffee font-bold"><button @click="addCheckItem" class="bg-coffee text-white px-4 rounded-xl"><i class="fa-solid fa-plus"></i></button></div></div>
                 
                 <!-- Expenses -->
-                <div v-if="activeTab === 'expenses'" class="px-6 pb-24"><div class="bg-coffee rounded-3xl p-6 text-white shadow-xl mb-6 mt-2"><p class="text-xs opacity-60">TOTAL</p><h2 class="text-3xl font-bold mb-2">{{ formatNumber(totalExpense) }}</h2><div class="flex justify-between text-xs opacity-80 pt-4 border-t border-white/10"><span>每人 ${{ formatNumber(perPersonShare) }}</span><span>{{ people.length }} 人</span></div></div><div class="space-y-2 mb-20"><div v-for="exp in expenses" :key="exp.id" class="bg-white p-3 rounded-xl flex justify-between items-center shadow-sm border border-[#EBE5D9]"><div class="flex gap-3"><div class="w-8 h-8 rounded-full bg-khaki flex items-center justify-center text-xs font-bold text-coffee">{{ exp.payer[0] }}</div><div><p class="font-bold text-sm text-coffee">{{ exp.title }}</p><p class="text-[10px] text-gray-400">{{ exp.date }} <span v-if="exp.originalAmount" class="text-latte">({{ exp.originalAmount }})</span></p></div></div><div class="text-right"><p class="font-bold text-sm text-coffee">${{ formatNumber(exp.amount) }}</p><button @click="deleteExpense(exp.id)" class="text-red-200 text-xs">刪除</button></div></div></div></div>
+                <div v-if="activeTab === 'expenses'" class="px-4 pb-24"><div class="bg-coffee rounded-3xl p-6 text-white shadow-xl mb-6 mt-2"><p class="text-xs opacity-60">TOTAL</p><h2 class="text-3xl font-bold mb-2">{{ formatNumber(totalExpense) }}</h2><div class="flex justify-between text-xs opacity-80 pt-4 border-t border-white/10"><span>每人 ${{ formatNumber(perPersonShare) }}</span><span>{{ people.length }} 人</span></div></div><div class="space-y-2 mb-20"><div v-for="exp in expenses" :key="exp.id" class="bg-white p-3 rounded-xl flex justify-between items-center shadow-sm border border-[#EBE5D9]"><div class="flex gap-3"><div class="w-8 h-8 rounded-full bg-khaki flex items-center justify-center text-xs font-bold text-coffee">{{ exp.payer[0] }}</div><div><p class="font-bold text-sm text-coffee">{{ exp.title }}</p><p class="text-[10px] text-gray-400">{{ exp.date }} <span v-if="exp.originalAmount" class="text-latte">({{ exp.originalAmount }})</span></p></div></div><div class="text-right"><p class="font-bold text-sm text-coffee">${{ formatNumber(exp.amount) }}</p><button @click="deleteExpense(exp.id)" class="text-red-200 text-xs">刪除</button></div></div></div></div>
             </main>
 
             <!-- Bottom Navigation (5 Items) -->
