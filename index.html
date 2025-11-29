@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Travel Buddy V9 Fixed</title>
+    <title>Travel Buddy V10</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -71,7 +71,7 @@
             theme: {
                 extend: {
                     colors: { 
-                        milk: '#FEF9E7', // 淡奶黃
+                        milk: '#FEF9E7',
                         coffee: '#4A3B32', 
                         latte: '#D4A373', 
                         mocha: '#8B5E3C',
@@ -128,6 +128,7 @@
                 const showExpenseModal = ref(false);
                 const showTranslateModal = ref(false);
                 const showCalculatorModal = ref(false);
+                const calculatorSource = ref('general'); // 'general' or 'expense'
                 const showImagePreview = ref(null);
                 
                 const isEditing = ref(false);
@@ -148,9 +149,9 @@
 
                 let map = null;
                 let modalMap = null;
+                let modalMarker = null;
                 let markers = [];
                 let userMarker = null;
-                let modalMarker = null;
 
                 onMounted(() => {
                     try {
@@ -174,8 +175,7 @@
 
                 const loadTrip = (id) => {
                     tripId.value = id;
-                    const newUrl = `${window.location.pathname}?id=${id}`;
-                    window.history.pushState({ path: newUrl }, '', newUrl);
+                    window.history.pushState({ path: `${window.location.pathname}?id=${id}` }, '', `${window.location.pathname}?id=${id}`);
                     pageState.value = 'app'; 
                     initSync(id);
                 };
@@ -222,6 +222,16 @@
                 };
 
                 // Calculator
+                const openCalculatorForExpense = () => {
+                    calculatorSource.value = 'expense';
+                    calcExpression.value = formExpense.value.inputAmount ? String(formExpense.value.inputAmount) : '';
+                    showCalculatorModal.value = true;
+                };
+                const openCalculatorGeneral = () => {
+                    calculatorSource.value = 'general';
+                    calcExpression.value = '';
+                    showCalculatorModal.value = true;
+                };
                 const appendCalc = (val) => {
                     const lastChar = calcExpression.value.slice(-1);
                     if (['+','-','*','/','.'].includes(val) && ['+','-','*','/','.'].includes(lastChar)) { calcExpression.value = calcExpression.value.slice(0, -1) + val; return; }
@@ -232,6 +242,14 @@
                 const calcResultValue = computed(() => {
                     try { if (!calcExpression.value || /[^0-9+\-*/.]/.test(calcExpression.value)) return 0; return eval(calcExpression.value) || 0; } catch (e) { return 0; }
                 });
+                const confirmCalculator = () => {
+                    if (calculatorSource.value === 'expense') {
+                        // 如果是整數，不要小數點；如果不是，保留兩位
+                        const result = calcResultValue.value;
+                        formExpense.value.inputAmount = Number.isInteger(result) ? result : parseFloat(result.toFixed(2));
+                    }
+                    showCalculatorModal.value = false;
+                };
                 const updateExchangeRate = () => saveToCloud();
 
                 // Map
@@ -346,7 +364,8 @@
                     searchLocation, saveCurrentLocation, performTranslation, appendCalc, clearCalc, backspaceCalc, updateExchangeRate,
                     locateUser, getWeatherIcon: (c)=>{if(c===undefined)return'🌤️';if(c<=3)return'☁️';if(c<=60)return'🌧️';return'⛈️';},
                     formatNumber: (n)=>n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,","),
-                    collections, formCollection, addCollection, deleteCollection
+                    collections, formCollection, addCollection, deleteCollection,
+                    openCalculatorForExpense, openCalculatorGeneral, confirmCalculator
                 };
             }
         }).mount('#app');
@@ -357,7 +376,7 @@
         
         <!-- 1. Landing -->
         <div v-if="pageState === 'landing'" class="h-full flex flex-col p-6 overflow-y-auto bg-milk">
-            <div class="mt-8 mb-6 text-center"><h1 class="text-4xl font-bold text-coffee mb-1">Travel Buddy</h1><p class="text-latte font-bold text-sm tracking-widest">MOBILE V9</p></div>
+            <div class="mt-8 mb-6 text-center"><h1 class="text-4xl font-bold text-coffee mb-1">Travel Buddy</h1><p class="text-latte font-bold text-sm tracking-widest">MOBILE V10</p></div>
             <button @click="startWizard" class="btn-primary w-full p-5 mb-6 flex items-center justify-between"><div class="flex items-center gap-4"><div class="bg-white/20 w-12 h-12 rounded-full flex items-center justify-center text-2xl">✈️</div><div class="text-left"><h3 class="font-bold text-lg">建立新行程</h3></div></div><i class="fa-solid fa-arrow-right"></i></button>
             <div class="card flex gap-2 mb-8 items-center"><input v-model="joinIdInput" placeholder="輸入行程 ID..." class="flex-1 bg-transparent outline-none font-bold text-coffee"><button @click="joinTrip" class="btn-secondary px-4 py-2 text-sm">加入</button></div>
             <h3 class="font-bold text-gray-400 text-sm mb-3 px-2">我的行程</h3>
@@ -381,7 +400,7 @@
                 <div class="text-center"><h1 class="text-lg font-bold text-coffee truncate max-w-[150px]">{{ tripTitle }}</h1><div class="flex items-center justify-center gap-1"><span class="w-1.5 h-1.5 rounded-full" :class="isSyncing ? 'bg-orange-400 animate-pulse' : 'bg-green-500'"></span><span class="text-[10px] text-gray-400 font-bold tracking-wider">ONLINE</span></div></div>
                 <button @click="showMenu = !showMenu" class="w-10 h-10 flex items-center justify-center text-coffee"><i class="fa-solid fa-bars text-xl"></i></button>
                 <div v-if="showMenu" class="absolute top-14 right-4 w-48 bg-white rounded-2xl shadow-xl border border-[#E6DDC3] overflow-hidden py-1 z-50">
-                    <button @click="showCalculatorModal=true;showMenu=false" class="w-full text-left px-4 py-3 hover:bg-khaki flex items-center gap-3 text-sm font-bold text-coffee"><i class="fa-solid fa-calculator w-5"></i>匯率計算</button>
+                    <button @click="openCalculatorGeneral();showMenu=false" class="w-full text-left px-4 py-3 hover:bg-khaki flex items-center gap-3 text-sm font-bold text-coffee"><i class="fa-solid fa-calculator w-5"></i>匯率計算</button>
                     <button @click="showTranslateModal=true;showMenu=false" class="w-full text-left px-4 py-3 hover:bg-khaki flex items-center gap-3 text-sm font-bold text-coffee"><i class="fa-solid fa-language w-5"></i>翻譯助手</button>
                     <div class="h-px bg-[#E6DDC3] my-1"></div>
                     <button @click="showSettings=true;showMenu=false" class="w-full text-left px-4 py-3 hover:bg-khaki flex items-center gap-3 text-sm font-bold text-coffee"><i class="fa-solid fa-gear w-5"></i>設定</button>
@@ -451,16 +470,16 @@
 
             <!-- Modals (Calculator, Translate, Activity, Expense, Settings...) -->
             <!-- Calculator -->
-            <div v-if="showCalculatorModal" class="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-6">
+            <div v-if="showCalculatorModal" class="fixed inset-0 z-[70] flex items-center justify-center p-6 bg-black/50 backdrop-blur-sm">
                 <div class="bg-milk w-full rounded-2xl p-6 shadow-2xl border border-[#E6DDC3]">
                     <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-coffee">計算機</h3><button @click="showCalculatorModal=false"><i class="fa-solid fa-times text-gray-400"></i></button></div>
-                    <div class="card p-2 mb-2 flex justify-between items-center"><span class="text-xs font-bold text-gray-400 pl-2">匯率</span><input v-model="exchangeRate" @change="updateExchangeRate" type="number" class="text-right font-bold text-green-600 w-20 outline-none bg-transparent" placeholder="匯率"></div>
+                    <div class="card p-2 mb-2 flex justify-between items-center"><span class="text-xs font-bold text-gray-400 pl-2">匯率</span><input v-model="exchangeRate" @change="updateExchangeRate" type="number" step="0.01" class="text-right font-bold text-green-600 w-24 outline-none bg-transparent" placeholder="匯率"></div>
                     <div class="card p-4 mb-4 text-right shadow-inner"><div class="text-sm text-gray-400 h-5 mb-1">{{ calcExpression || '' }}</div><div class="text-3xl font-bold text-coffee break-all mb-2">{{ calcExpression || '0' }}</div><div class="text-sm text-gray-400 font-bold text-right border-t border-gray-100 pt-1">= TWD {{ formatNumber(Math.round(calcResultValue * exchangeRate)) }}</div></div>
                     <div class="grid grid-cols-4 gap-2">
                         <button @click="clearCalc" class="calc-btn text-red-400">C</button><button @click="appendCalc('/')" class="calc-btn calc-btn-op">÷</button><button @click="appendCalc('*')" class="calc-btn calc-btn-op">×</button><button @click="backspaceCalc" class="calc-btn"><i class="fa-solid fa-delete-left"></i></button>
                         <button @click="appendCalc('7')" class="calc-btn">7</button><button @click="appendCalc('8')" class="calc-btn">8</button><button @click="appendCalc('9')" class="calc-btn">9</button><button @click="appendCalc('-')" class="calc-btn calc-btn-op">-</button>
                         <button @click="appendCalc('4')" class="calc-btn">4</button><button @click="appendCalc('5')" class="calc-btn">5</button><button @click="appendCalc('6')" class="calc-btn">6</button><button @click="appendCalc('+')" class="calc-btn calc-btn-op">+</button>
-                        <button @click="appendCalc('1')" class="calc-btn">1</button><button @click="appendCalc('2')" class="calc-btn">2</button><button @click="appendCalc('3')" class="calc-btn">3</button><button class="calc-btn row-span-2 calc-btn-action flex items-center justify-center" @click="showCalculatorModal=false"><i class="fa-solid fa-check"></i></button>
+                        <button @click="appendCalc('1')" class="calc-btn">1</button><button @click="appendCalc('2')" class="calc-btn">2</button><button @click="appendCalc('3')" class="calc-btn">3</button><button class="calc-btn row-span-2 calc-btn-action flex items-center justify-center" @click="confirmCalculator"><i class="fa-solid fa-check"></i></button>
                         <button @click="appendCalc('0')" class="calc-btn col-span-2">0</button><button @click="appendCalc('.')" class="calc-btn">.</button>
                     </div>
                 </div>
@@ -472,8 +491,8 @@
             <!-- Activity Modal -->
             <div v-if="showActivityModal" class="fixed inset-0 bg-black/50 z-[60] flex items-end justify-center"><div class="bg-milk w-full rounded-t-[2rem] p-6 shadow-2xl max-h-[85vh] overflow-y-auto pb-safe"><h3 class="text-lg font-bold mb-4 text-coffee">{{ isEditing ? '編輯' : '新增' }}行程</h3><div class="space-y-4"><div class="flex gap-3"><input v-model="formActivity.time" type="time" class="w-1/3 input-field"><input v-model="formActivity.title" placeholder="標題" class="flex-1 input-field"></div><div class="bg-white border-2 border-[#E6DDC3] rounded-xl p-2"><div class="flex gap-1 mb-2"><button @click="locationMode='auto'" class="flex-1 py-1.5 rounded-lg text-xs font-bold transition-colors" :class="locationMode==='auto'?'bg-khaki text-coffee':'text-gray-400'">搜尋</button><button @click="locationMode='manual'" class="flex-1 py-1.5 rounded-lg text-xs font-bold transition-colors" :class="locationMode==='manual'?'bg-khaki text-coffee':'text-gray-400'">地圖</button></div><button @click="saveCurrentLocation" class="w-full bg-blue-50 text-blue-600 py-2 rounded-lg text-xs font-bold mb-2 flex items-center justify-center gap-2"><i class="fa-solid fa-location-crosshairs"></i> {{ isLoading ? '定位中...' : '📍 定位目前位置 (儲存)' }}</button><div v-show="locationMode==='auto'" class="flex gap-2"><input v-model="formActivity.location" placeholder="輸入地點..." class="flex-1 bg-gray-50 rounded-lg p-2 text-sm text-coffee font-bold"><button @click="searchLocation" class="bg-coffee text-white px-3 rounded-lg text-xs font-bold">搜</button></div><div v-show="locationMode==='manual'"><div id="modal-map"></div><p class="text-[10px] text-center text-gray-400 mt-1">拖曳地圖以定位</p></div></div><textarea v-model="formActivity.notes" rows="2" placeholder="備註" class="input-field text-sm"></textarea><label class="block w-full border-2 border-dashed border-[#D1C7B7] rounded-xl p-3 text-center text-gray-400 text-xs"><span v-if="!formActivity.image"><i class="fa-solid fa-camera mr-1"></i>上傳照片</span><span v-else class="text-coffee">已選擇照片 (點擊更換)</span><input type="file" @change="handleActivityImageUpload" class="hidden" accept="image/*"></label></div><div class="flex gap-3 mt-6"><button @click="showActivityModal=false" class="flex-1 py-3 bg-khaki rounded-xl font-bold text-coffee">取消</button><button @click="saveActivity" class="flex-1 py-3 bg-coffee text-white rounded-xl font-bold">儲存</button></div></div></div>
             
-            <!-- Expense Modal -->
-            <div v-if="showExpenseModal" class="fixed inset-0 bg-black/50 z-[60] flex items-end justify-center"><div class="bg-milk w-full rounded-t-3xl p-6 pb-safe"><h3 class="font-bold mb-4 text-coffee">記帳</h3><div class="flex bg-khaki p-1 rounded-xl mb-4"><button @click="useForeignCurrency=false" class="flex-1 py-2 rounded-lg text-xs font-bold" :class="!useForeignCurrency?'bg-white shadow text-coffee':'text-gray-400'">TWD</button><button @click="useForeignCurrency=true" class="flex-1 py-2 rounded-lg text-xs font-bold" :class="useForeignCurrency?'bg-white shadow text-coffee':'text-gray-400'">{{ targetCurrency }}</button></div><input v-model="formExpense.title" placeholder="項目" class="input-field mb-2"><div class="flex gap-2 mb-4"><input v-model.number="formExpense.inputAmount" type="number" placeholder="金額" class="flex-1 input-field"><select v-model="formExpense.payer" class="w-1/3 input-field"><option v-for="p in people" :value="p">{{p}}</option></select></div><button @click="saveExpense" class="btn-primary w-full py-3 text-lg">儲存</button><button @click="showExpenseModal=false" class="w-full mt-2 text-gray-400 py-2 font-bold">取消</button></div></div>
+            <!-- Expense Modal (Updated with Calc Button) -->
+            <div v-if="showExpenseModal" class="fixed inset-0 bg-black/50 z-[60] flex items-end justify-center"><div class="bg-milk w-full rounded-t-3xl p-6 pb-safe"><h3 class="font-bold mb-4 text-coffee">記帳</h3><div class="flex bg-khaki p-1 rounded-xl mb-4"><button @click="useForeignCurrency=false" class="flex-1 py-2 rounded-lg text-xs font-bold" :class="!useForeignCurrency?'bg-white shadow text-coffee':'text-gray-400'">TWD</button><button @click="useForeignCurrency=true" class="flex-1 py-2 rounded-lg text-xs font-bold" :class="useForeignCurrency?'bg-white shadow text-coffee':'text-gray-400'">{{ targetCurrency }}</button></div><input v-model="formExpense.title" placeholder="項目" class="input-field mb-2"><div class="flex gap-2 mb-4 items-center"><button @click="openCalculatorForExpense" class="bg-khaki text-coffee w-12 h-12 rounded-xl flex items-center justify-center shadow-sm border border-[#E6DDC3]"><i class="fa-solid fa-calculator"></i></button><input v-model.number="formExpense.inputAmount" type="number" placeholder="金額" class="flex-1 input-field"><select v-model="formExpense.payer" class="w-1/3 input-field"><option v-for="p in people" :value="p">{{p}}</option></select></div><button @click="saveExpense" class="btn-primary w-full py-3 text-lg">儲存</button><button @click="showExpenseModal=false" class="w-full mt-2 text-gray-400 py-2 font-bold">取消</button></div></div>
             
             <!-- Settings Modal -->
             <div v-if="showSettings" class="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-6"><div class="bg-milk w-full max-w-sm rounded-2xl p-6 border border-[#E6DDC3]"><h3 class="font-bold mb-4 text-coffee">設定</h3><div class="space-y-3 mb-4"><input v-model="tripTitle" class="input-field" placeholder="行程名稱"><input v-model="exchangeRate" type="number" class="input-field text-green-600" placeholder="匯率"></div><div class="space-y-2"><div v-for="(p,i) in people" :key="i" class="flex justify-between bg-white border-2 border-[#E6DDC3] p-2 rounded-xl"><span>{{p}}</span><button @click="removePerson(i)" class="text-red-300">×</button></div><div class="flex gap-2"><input v-model="newPersonName" placeholder="新成員" class="flex-1 input-field py-2 text-sm"><button @click="addPerson" class="bg-coffee text-white px-3 rounded-xl">+</button></div></div><div class="flex gap-2 mt-6"><button @click="updateTripSettings" class="flex-1 bg-coffee text-white py-2 rounded-xl font-bold">儲存</button><button @click="showSettings=false" class="flex-1 bg-khaki text-coffee py-2 rounded-xl font-bold">取消</button></div></div></div>
