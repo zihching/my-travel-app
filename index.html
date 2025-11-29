@@ -19,30 +19,23 @@
         /* iOS Safe Area & Full Height Fix */
         html, body { height: 100%; overscroll-behavior: none; }
         body { 
-            background-color: #FEF9E7; /* 淡奶黃色背景 */
+            background-color: #FFFBE6; /* 淡奶黃 */
             height: 100dvh; 
             display: flex;
             flex-direction: column;
             padding-top: env(safe-area-inset-top);
             padding-bottom: env(safe-area-inset-bottom);
             font-family: 'Zen Maru Gothic', 'Noto Sans TC', sans-serif;
-            color: #4A3B32;
         }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         #map-container { height: 100%; width: 100%; position: absolute; top: 0; left: 0; z-index: 0; }
         #modal-map { height: 200px; width: 100%; z-index: 1; }
         
-        /* Components */
-        .card { @apply bg-white rounded-2xl p-4 shadow-sm border border-[#E6DDC3]; }
-        .btn-primary { @apply bg-[#8B5E3C] text-white rounded-xl font-bold shadow-md active:scale-95 transition-transform; }
-        .btn-secondary { @apply bg-[#E6DDC3] text-[#5C4B43] rounded-xl font-bold; }
-        .input-field { @apply w-full bg-white border-2 border-[#E6DDC3] rounded-xl p-3 text-[#4A3B32] font-bold outline-none focus:border-[#D4A373] transition-colors; }
-        
-        /* Calculator */
-        .calc-btn { @apply bg-[#FDF6E3] rounded-2xl p-3 text-xl font-bold text-[#5C4B43] active:bg-[#EDE0C3] shadow-[0_2px_0_#DCCEB5] border border-[#DCCEB5]; }
-        .calc-btn-op { @apply bg-[#D4A373] text-white border-[#B08968] shadow-[0_2px_0_#B08968] active:bg-[#C08A5E]; }
-        .calc-btn-action { @apply bg-[#8B5E3C] text-white border-[#6F4B30] shadow-[0_2px_0_#6F4B30] active:bg-[#6F4B30]; }
+        .calc-btn { @apply bg-[#E6DDC3] rounded-2xl p-4 text-xl font-bold text-[#5C4B43] active:scale-95 transition-transform shadow-[0_2px_0_#D1C7B7] border border-[#D1C7B7]; }
+        .calc-btn-op { @apply bg-[#D4A373] text-white border-[#B08968] shadow-[0_2px_0_#B08968]; }
+        .calc-btn-action { @apply bg-[#A98467] text-white border-[#8B6B52] shadow-[0_2px_0_#8B6B52]; }
+        .custom-input { @apply w-full bg-white border-2 border-[#E6DDC3] rounded-xl p-3 text-coffee font-bold outline-none focus:border-[#D4A373] transition-colors; }
     </style>
 
     <!-- Firebase SDKs -->
@@ -52,7 +45,7 @@
         import { getDatabase, ref as dbRef, set, onValue, update, push } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
 
         // -----------------------------------------------------------
-        // ✅ 鑰匙已填好
+        // ✅ 你的專屬鑰匙 (已經幫你填好了！)
         // -----------------------------------------------------------
         const firebaseConfig = {
             apiKey: "AIzaSyDFUGYOobmVxYfQMBYz1iq4z1HlrdbTi8Q",
@@ -72,14 +65,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { 
-                        milk: '#FEF9E7',
-                        coffee: '#4A3B32', 
-                        latte: '#D4A373', 
-                        mocha: '#8B5E3C',
-                        cream: '#FFFDF0',
-                        khaki: '#E6DDC3'
-                    }
+                    colors: { milk: '#FFFBE6', coffee: '#4A3B32', latte: '#D4A373', mocha: '#9C6644', cream: '#FFF9DB', khaki: '#E6DDC3' }
                 }
             }
         }
@@ -88,6 +74,8 @@
             'tokyo': { c: 'JPY', l: 'ja', f: '🇯🇵' }, 'japan': { c: 'JPY', l: 'ja', f: '🇯🇵' },
             'seoul': { c: 'KRW', l: 'ko', f: '🇰🇷' }, 'korea': { c: 'KRW', l: 'ko', f: '🇰🇷' },
             'london': { c: 'GBP', l: 'en', f: '🇬🇧' }, 'uk': { c: 'GBP', l: 'en', f: '🇬🇧' },
+            'bangkok': { c: 'THB', l: 'th', f: '🇹🇭' }, 'thailand': { c: 'THB', l: 'th', f: '🇹🇭' },
+            'vietnam': { c: 'VND', l: 'vi', f: '🇻🇳' }, 'hanoi': { c: 'VND', l: 'vi', f: '🇻🇳' },
             'new zealand': { c: 'NZD', l: 'en', f: '🇳🇿' }, 'nz': { c: 'NZD', l: 'en', f: '🇳🇿' },
             'usa': { c: 'USD', l: 'en', f: '🇺🇸' }, 'taiwan': { c: 'TWD', l: 'zh-TW', f: '🇹🇼' }
         };
@@ -114,6 +102,7 @@
                 const currentDayIndex = ref(0);
                 const people = ref(['我']);
                 const expenses = ref([]);
+                const savedSpots = ref([]);
                 const exchangeRate = ref(1);
                 const targetLang = ref('en');
                 const targetCurrency = ref('USD');
@@ -121,7 +110,6 @@
                 const checklist = ref([]);
                 const chatMessages = ref([]);
                 const flightInfo = ref({ code: '', time: '' });
-                const collections = ref([]); 
                 
                 // Forms
                 const newPersonName = ref('');
@@ -130,7 +118,6 @@
                 const showExpenseModal = ref(false);
                 const showTranslateModal = ref(false);
                 const showCalculatorModal = ref(false);
-                const calculatorSource = ref('general');
                 const showImagePreview = ref(null);
                 
                 const isEditing = ref(false);
@@ -145,10 +132,8 @@
                 const translatedResult = ref('');
                 const isTranslating = ref(false);
                 const calcExpression = ref(''); 
-                const calcMode = ref('foreign_to_twd'); // 'foreign_to_twd' or 'twd_to_foreign'
                 const newItemText = ref('');
                 const joinIdInput = ref('');
-                const formCollection = ref('');
 
                 let map = null;
                 let modalMap = null;
@@ -159,8 +144,12 @@
                 onMounted(() => {
                     try {
                         const localTrips = localStorage.getItem('mySavedTrips');
-                        if (localTrips) savedTrips.value = JSON.parse(localTrips).filter(t => t.id && t.title);
+                        if (localTrips) {
+                            savedTrips.value = JSON.parse(localTrips);
+                            savedTrips.value = savedTrips.value.filter(t => t.id && t.title);
+                        }
                     } catch(e) { savedTrips.value = []; }
+
                     const urlParams = new URLSearchParams(window.location.search);
                     const id = urlParams.get('id');
                     if (id) loadTrip(id);
@@ -171,14 +160,15 @@
                 const saveTripToLocal = (id, title) => {
                     if(!id) return;
                     const existing = savedTrips.value.findIndex(t => t.id === id);
-                    if (existing !== -1) savedTrips.value[existing].title = title || '未命名行程';
-                    else savedTrips.value.unshift({ id, title: title || '未命名行程' });
+                    if (existing !== -1) savedTrips.value[existing].title = title || '未命名';
+                    else savedTrips.value.unshift({ id, title: title || '未命名' });
                     localStorage.setItem('mySavedTrips', JSON.stringify(savedTrips.value));
                 };
 
                 const loadTrip = (id) => {
                     tripId.value = id;
-                    window.history.pushState({ path: `${window.location.pathname}?id=${id}` }, '', `${window.location.pathname}?id=${id}`);
+                    const newUrl = `${window.location.pathname}?id=${id}`;
+                    window.history.pushState({ path: newUrl }, '', newUrl);
                     pageState.value = 'app'; 
                     initSync(id);
                 };
@@ -193,51 +183,32 @@
                             days.value = data.days || [{ activities: [] }];
                             people.value = data.people || ['我'];
                             expenses.value = data.expenses || [];
-                            exchangeRate.value = parseFloat(data.exchangeRate) || 1;
+                            savedSpots.value = data.savedSpots || [];
+                            exchangeRate.value = data.exchangeRate || 1;
                             targetLang.value = data.targetLang || 'en';
                             targetCurrency.value = data.targetCurrency || 'USD';
                             tripTitle.value = data.title || 'New Trip';
                             checklist.value = data.checklist || [...DEFAULT_CHECKLIST];
                             chatMessages.value = data.chatMessages ? Object.values(data.chatMessages) : [];
                             flightInfo.value = data.flightInfo || { code: '', time: '' };
-                            collections.value = data.collections || [];
-                            
                             saveTripToLocal(id, tripTitle.value);
                             if (viewMode.value === 'map' && activeTab.value === 'itinerary') setTimeout(() => { initMap(); updateMapMarkers(); }, 500);
+                        } else {
+                            if(pageState.value === 'app') { alert("找不到行程"); pageState.value = 'landing'; }
                         }
                     });
                 };
 
                 const saveToCloud = () => {
                     update(dbRef(db, 'trips/' + tripId.value), {
-                        days: days.value,
-                        people: people.value,
-                        expenses: expenses.value,
-                        exchangeRate: exchangeRate.value,
-                        title: tripTitle.value,
-                        targetLang: targetLang.value,
-                        targetCurrency: targetCurrency.value,
-                        checklist: checklist.value,
-                        flightInfo: flightInfo.value,
-                        collections: collections.value
+                        days: days.value, people: people.value, expenses: expenses.value, savedSpots: savedSpots.value,
+                        exchangeRate: exchangeRate.value, title: tripTitle.value, targetLang: targetLang.value,
+                        targetCurrency: targetCurrency.value, checklist: checklist.value, flightInfo: flightInfo.value
                     });
                     saveTripToLocal(tripId.value, tripTitle.value);
                 };
 
                 // Calculator
-                const openCalculatorForExpense = () => {
-                    calculatorSource.value = 'expense';
-                    calcExpression.value = formExpense.value.inputAmount ? String(formExpense.value.inputAmount) : '';
-                    // Default to Foreign mode if useForeignCurrency is true, else TWD
-                    calcMode.value = useForeignCurrency.value ? 'foreign_to_twd' : 'twd_to_foreign';
-                    showCalculatorModal.value = true;
-                };
-                const openCalculatorGeneral = () => {
-                    calculatorSource.value = 'general';
-                    calcExpression.value = '';
-                    calcMode.value = 'foreign_to_twd';
-                    showCalculatorModal.value = true;
-                };
                 const appendCalc = (val) => {
                     const lastChar = calcExpression.value.slice(-1);
                     if (['+','-','*','/','.'].includes(val) && ['+','-','*','/','.'].includes(lastChar)) { calcExpression.value = calcExpression.value.slice(0, -1) + val; return; }
@@ -248,32 +219,22 @@
                 const calcResultValue = computed(() => {
                     try { if (!calcExpression.value || /[^0-9+\-*/.]/.test(calcExpression.value)) return 0; return eval(calcExpression.value) || 0; } catch (e) { return 0; }
                 });
-                const confirmCalculator = () => {
-                    if (calculatorSource.value === 'expense') {
-                        const result = calcResultValue.value;
-                        formExpense.value.inputAmount = Number.isInteger(result) ? result : parseFloat(result.toFixed(2));
-                        // Auto switch currency based on calc mode
-                        if (calcMode.value === 'foreign_to_twd') {
-                            useForeignCurrency.value = true; // Typed foreign
-                        } else {
-                            useForeignCurrency.value = false; // Typed TWD
-                        }
-                    }
-                    showCalculatorModal.value = false;
-                };
                 const updateExchangeRate = () => saveToCloud();
 
                 // Map
                 const initMap = () => {
-                    const c = document.getElementById('map'); if (!c) return;
+                    const container = document.getElementById('map');
+                    if (!container) return;
                     if (map) { map.invalidateSize(); return; }
                     map = L.map('map', {zoomControl: false}).setView([35,139], 13);
                     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
                     L.control.zoom({ position: 'bottomright' }).addTo(map);
                 };
                 const updateMapMarkers = () => {
-                    if(!map) return; map.invalidateSize(); markers.forEach(m=>map.removeLayer(m)); markers=[];
-                    const bounds = []; sortedActivities.value.forEach(item => {
+                    if(!map) return;
+                    map.invalidateSize(); markers.forEach(m=>map.removeLayer(m)); markers=[];
+                    const acts = sortedActivities.value; const bounds = [];
+                    acts.forEach(item => {
                         if(item.lat && item.lng){
                             const icon = L.divIcon({className: 'custom-div-icon', html: `<div style="background:#4A3B32;color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,0.3);">${item.time.split(':')[0]}</div>`, iconSize:[32,32], iconAnchor:[16,16]});
                             markers.push(L.marker([item.lat, item.lng], {icon}).addTo(map).bindPopup(item.title)); bounds.push([item.lat, item.lng]);
@@ -281,50 +242,31 @@
                     });
                     if(bounds.length>0) map.fitBounds(bounds, {padding:[50,50]});
                 };
-                watch(viewMode, (v) => { if (v === 'map') nextTick(() => setTimeout(() => { initMap(); updateMapMarkers(); }, 100)); });
+                watch(viewMode, (v) => { if (v === 'map') nextTick(() => { setTimeout(() => { initMap(); updateMapMarkers(); }, 100); }); });
 
-                // Modal Map
-                const initModalMap = () => {
-                    if (modalMap) { modalMap.invalidateSize(); return; }
-                    modalMap = L.map('modal-map', {zoomControl:false}).setView([35.6895, 139.6917], 13);
-                    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(modalMap);
-                    modalMarker = L.marker([35.6895, 139.6917], {draggable: true}).addTo(modalMap);
-                    modalMarker.on('dragend', function(e){ const p = e.target.getLatLng(); formActivity.value.lat=p.lat; formActivity.value.lng=p.lng; modalMap.panTo(p); });
-                    modalMap.on('click', function(e) { modalMarker.setLatLng(e.latlng); formActivity.value.lat=e.latlng.lat; formActivity.value.lng=e.latlng.lng; });
-                };
-                watch(locationMode, (v) => { if (v === 'manual') nextTick(() => { initModalMap(); setTimeout(() => modalMap.invalidateSize(), 300); }); });
-
-                // Actions
+                // Core Logic
                 const createTrip = async () => {
                     const newId = Math.random().toString(36).substring(2, 8).toUpperCase();
                     const rate = parseFloat(wizardData.value.rate) || 1;
-                    const initialData = { days: [{activities:[]},{activities:[]}], people: ['我'], expenses: [], exchangeRate: rate, targetCurrency: wizardData.value.currency.toUpperCase(), targetLang: wizardData.value.lang, title: tripTitle.value, checklist: [...DEFAULT_CHECKLIST], createdAt: Date.now() };
+                    const initialData = { days: [{activities:[]},{activities:[]}], people: ['我'], expenses: [], savedSpots: [], exchangeRate: rate, targetCurrency: wizardData.value.currency.toUpperCase(), targetLang: wizardData.value.lang, title: tripTitle.value, checklist: [...DEFAULT_CHECKLIST], createdAt: Date.now() };
                     saveTripToLocal(newId, tripTitle.value);
                     await set(dbRef(db, 'trips/' + newId), initialData);
                     loadTrip(newId);
                 };
-                const deleteLocalTrip = (idx) => { if(confirm("確定移除？")) { savedTrips.value.splice(idx, 1); localStorage.setItem('mySavedTrips', JSON.stringify(savedTrips.value)); }};
+                const deleteLocalTrip = (idx) => { if(confirm("確定移除？")) { savedTrips.value.splice(idx, 1); localStorage.setItem('mySavedTrips', JSON.stringify(savedTrips.value)); } };
                 const performTranslation = async () => {
                     if (!translateText.value) return; isTranslating.value = true; translatedResult.value = '';
-                    try { const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(translateText.value)}&langpair=zh-TW|${targetLang.value}`); const data = await res.json(); translatedResult.value = data.responseData ? data.responseData.translatedText : "翻譯失敗"; } catch (e) { translatedResult.value = "連線錯誤"; } finally { isTranslating.value = false; }
+                    try { const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(translateText.value)}&langpair=zh-TW|${targetLang.value}`); const data = await res.json(); translatedResult.value = data.responseData ? data.responseData.translatedText : "翻譯失敗"; } 
+                    catch (e) { translatedResult.value = "連線錯誤"; } finally { isTranslating.value = false; }
                 };
                 const processImage = (file, cb) => { if(!file)return; const r=new FileReader(); r.onload=(e)=>{const i=new Image();i.onload=()=>{const c=document.createElement('canvas');const ctx=c.getContext('2d');const s=Math.min(1,800/i.width);c.width=i.width*s;c.height=i.height*s;ctx.drawImage(i,0,0,c.width,c.height);cb(c.toDataURL('image/jpeg',0.7));};i.src=e.target.result;};r.readAsDataURL(file); };
                 const handleChatImageUpload=(e)=>processImage(e.target.files[0],(b)=>chatImage.value=b);
                 const handleActivityImageUpload=(e)=>processImage(e.target.files[0],(b)=>formActivity.value.image=b);
-                const removeChatImage=()=>chatImage.value=null;
-                const removeActivityImage=()=>formActivity.value.image=null;
                 const locateUser = () => { if (!map) return; navigator.geolocation.getCurrentPosition(p=>{ if(userMarker) map.removeLayer(userMarker); userMarker = L.circleMarker([p.coords.latitude, p.coords.longitude], {radius:8, fillColor:"#3B82F6", color:"#fff", weight:2, fillOpacity:1}).addTo(map); map.setView([p.coords.latitude, p.coords.longitude], 15); }); };
                 const saveCurrentLocation = () => { isLoading.value = true; navigator.geolocation.getCurrentPosition(async (p) => { formActivity.value.lat = p.coords.latitude; formActivity.value.lng = p.coords.longitude; locationMode.value = 'manual'; searchResultAddress.value = "已定位"; try { const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${p.coords.latitude}&lon=${p.coords.longitude}`); const data = await res.json(); if(data && data.display_name) formActivity.value.location = data.display_name.split(',')[0]; } catch(e){} isLoading.value = false; }, () => { alert("無法定位"); isLoading.value=false; }); };
                 const startWizard = () => { pageState.value = 'wizard'; wizardStep.value = 1; };
                 const detectDestination = async () => { if(!wizardData.value.destination) return; let key = wizardData.value.destination.toLowerCase(); if(key.includes('紐西蘭')) key='nz'; if(key.includes('東京')) key='tokyo'; const info = CITY_DB[key] || { c:'USD', l:'en', f:'✈️' }; wizardData.value.currency=info.c; wizardData.value.lang=info.l; wizardData.value.flag=info.f; tripTitle.value = `${wizardData.value.destination}之旅`; wizardStep.value=2; };
-                
-                // Add Modal Logic
-                const openAddModal = () => { 
-                    if(activeTab.value==='itinerary') { isEditing.value=false; formActivity.value={id:Date.now(),time:'10:00',title:'',location:'',image:null}; locationMode.value='auto'; showActivityModal.value=true; }
-                    else if(activeTab.value==='expenses') { formExpense.value={title:'',inputAmount:'',payer:people.value[0]}; useForeignCurrency.value=false; showExpenseModal.value=true; }
-                    else if(activeTab.value==='collection') { if(formCollection.value) { collections.value.unshift({id:Date.now(), text:formCollection.value}); formCollection.value=''; saveToCloud(); } }
-                };
-                
+                const openAddModal = () => { if(activeTab.value==='itinerary') { isEditing.value=false; formActivity.value={id:Date.now(),time:'10:00',title:'',location:'',image:null}; locationMode.value='auto'; showActivityModal.value=true; } else if(activeTab.value==='expenses') { formExpense.value={title:'',inputAmount:'',payer:people.value[0]}; useForeignCurrency.value=false; showExpenseModal.value=true; } };
                 const saveActivity = () => { const targetDay = days.value[currentDayIndex.value]; if(isEditing.value) { const idx = targetDay.activities.findIndex(a=>a.id===formActivity.value.id); if(idx!==-1) targetDay.activities[idx]={...formActivity.value}; } else targetDay.activities.push({...formActivity.value}); showActivityModal.value=false; saveToCloud(); if(viewMode.value==='map') setTimeout(()=>updateMapMarkers(),500); };
                 const saveExpense = () => { let amt = formExpense.value.inputAmount; let orig = null; if(useForeignCurrency.value){ orig=`${amt} ${targetCurrency.value}`; amt=Math.round(amt*exchangeRate.value); } expenses.value.unshift({id:Date.now(), title:formExpense.value.title, amount:amt, originalAmount:orig, payer:formExpense.value.payer, date:new Date().toLocaleDateString()}); showExpenseModal.value=false; saveToCloud(); };
                 const deleteActivity = (id) => { days.value[currentDayIndex.value].activities = days.value[currentDayIndex.value].activities.filter(a=>a.id!==id); saveToCloud(); if(viewMode.value==='map') setTimeout(()=>updateMapMarkers(),500); };
@@ -335,15 +277,7 @@
                 const deleteCheckItem = (id) => { checklist.value=checklist.value.filter(x=>x.id!==id); saveToCloud(); };
                 const backToLanding = () => { tripId.value = ''; window.history.pushState({ path: window.location.pathname }, '', window.location.pathname); pageState.value = 'landing'; };
                 const joinTrip = () => { if(joinIdInput.value) loadTrip(joinIdInput.value); };
-                const updateTripSettings = () => { saveToCloud(); showSettings.value=false; };
-                const searchLocation = async()=>{if(!formActivity.value.location)return; isLoading.value=true; try{const res=await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(formActivity.value.location)}`);const d=await res.json();if(d[0]){formActivity.value.lat=parseFloat(d[0].lat);formActivity.value.lng=parseFloat(d[0].lon);searchResultAddress.value=d[0].display_name;}}catch(e){}isLoading.value=false;};
-                const saveFlight = () => saveToCloud();
-                const searchFlight = () => { if(flightInfo.value.code) window.open(`https://www.google.com/search?q=${flightInfo.value.code}+航班`, '_blank'); };
                 
-                // New Collection Logic
-                const addCollection = () => { if(formCollection.value) { collections.value.push({id:Date.now(), text:formCollection.value}); formCollection.value=''; saveToCloud(); } };
-                const deleteCollection = (id) => { collections.value = collections.value.filter(c => c.id !== id); saveToCloud(); };
-
                 // Getters
                 const currentDayActivities = computed(() => days.value[currentDayIndex.value]?.activities || []);
                 const sortedActivities = computed(() => [...currentDayActivities.value].sort((a, b) => a.time.localeCompare(b.time)));
@@ -358,7 +292,7 @@
                     people, expenses, newPersonName, exchangeRate, targetCurrency, targetLang,
                     showActivityModal, showExpenseModal, showTranslateModal, showCalculatorModal, showImagePreview,
                     isEditing, formActivity, formExpense, formChat, chatImage, translateText, translatedResult, isTranslating,
-                    calcExpression, calcResultValue, calcMode,
+                    calcExpression, calcResultValue, savedSpots,
                     newItemText, totalExpense, perPersonShare, debts, useForeignCurrency, checklist, chatMessages, flightInfo,
                     locationMode, searchResultAddress, isLoading,
                     startWizard, detectDestination, createTrip, loadTrip, deleteLocalTrip, backToLanding, joinTrip,
@@ -368,15 +302,14 @@
                     addPerson: ()=>{if(newPersonName.value){people.value.push(newPersonName.value);newPersonName.value='';saveToCloud();}}, 
                     removePerson: (i)=>{people.value.splice(i,1);saveToCloud();}, 
                     resetData: ()=>{if(confirm('清空？')){days.value=[{activities:[]}];expenses.value=[];saveToCloud();}},
-                    updateTripSettings,
+                    updateTripSettings: ()=>{saveToCloud();showSettings.value=false;},
                     shareLink: ()=>navigator.clipboard.writeText(window.location.href).then(()=>alert('Copied!')),
-                    toggleCheck, addCheckItem, deleteCheckItem, sendMessage, saveFlight, searchFlight,
-                    handleChatImageUpload, removeChatImage, handleActivityImageUpload, removeActivityImage,
-                    searchLocation, saveCurrentLocation, performTranslation, appendCalc, clearCalc, backspaceCalc, updateExchangeRate,
+                    toggleCheck, addCheckItem, deleteCheckItem, sendMessage, saveFlight: ()=>saveToCloud(),
+                    handleChatImageUpload, removeChatImage: ()=>chatImage.value=null, handleActivityImageUpload, removeActivityImage: ()=>formActivity.value.image=null,
+                    searchLocation: async()=>{if(!formActivity.value.location)return; isLoading.value=true; try{const res=await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(formActivity.value.location)}`);const d=await res.json();if(d[0]){formActivity.value.lat=parseFloat(d[0].lat);formActivity.value.lng=parseFloat(d[0].lon);searchResultAddress.value=d[0].display_name;}}catch(e){}isLoading.value=false;},
+                    saveCurrentLocation, performTranslation, appendCalc, clearCalc, backspaceCalc, updateExchangeRate,
                     locateUser, getWeatherIcon: (c)=>{if(c===undefined)return'🌤️';if(c<=3)return'☁️';if(c<=60)return'🌧️';return'⛈️';},
-                    formatNumber: (n)=>n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,","),
-                    collections, formCollection, addCollection, deleteCollection,
-                    openCalculatorForExpense, openCalculatorGeneral, confirmCalculator
+                    formatNumber: (n)=>n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,",")
                 };
             }
         }).mount('#app');
@@ -388,148 +321,87 @@
         <!-- 1. Landing -->
         <div v-if="pageState === 'landing'" class="h-full flex flex-col p-6 overflow-y-auto bg-milk">
             <div class="mt-8 mb-6 text-center"><h1 class="text-4xl font-bold text-coffee mb-1">Travel Buddy</h1><p class="text-latte font-bold text-sm tracking-widest">MOBILE V11</p></div>
-            <button @click="startWizard" class="btn-primary w-full p-5 mb-6 flex items-center justify-between"><div class="flex items-center gap-4"><div class="bg-white/20 w-12 h-12 rounded-full flex items-center justify-center text-2xl">✈️</div><div class="text-left"><h3 class="font-bold text-lg">建立新行程</h3></div></div><i class="fa-solid fa-arrow-right"></i></button>
-            <div class="card flex gap-2 mb-8 items-center"><input v-model="joinIdInput" placeholder="輸入行程 ID..." class="flex-1 bg-transparent outline-none font-bold text-coffee"><button @click="joinTrip" class="btn-secondary px-4 py-2 text-sm">加入</button></div>
+            <button @click="startWizard" class="bg-coffee text-white p-5 rounded-2xl shadow-xl flex items-center justify-between mb-6 group active:scale-95 transition flex-shrink-0"><div class="flex items-center gap-4"><div class="bg-white/10 w-12 h-12 rounded-full flex items-center justify-center text-2xl">✈️</div><div class="text-left"><h3 class="font-bold text-lg">建立新行程</h3></div></div><i class="fa-solid fa-arrow-right"></i></button>
+            <div class="bg-white p-2 rounded-2xl border border-stone-100 flex gap-2 mb-8 shadow-sm flex-shrink-0"><input v-model="joinIdInput" placeholder="輸入行程 ID..." class="flex-1 bg-transparent p-3 outline-none font-bold text-coffee"><button @click="joinTrip" class="bg-latte text-white px-4 rounded-xl font-bold">加入</button></div>
             <h3 class="font-bold text-gray-400 text-sm mb-3 px-2">我的行程</h3>
-            <div class="space-y-3 pb-10"><div v-for="(trip, idx) in savedTrips" :key="trip.id" class="card flex justify-between items-center"><div @click="loadTrip(trip.id)" class="flex-1 cursor-pointer"><h4 class="font-bold text-coffee text-lg">{{ trip.title }}</h4></div><button @click="deleteLocalTrip(idx)" class="w-8 h-8 flex items-center justify-center text-gray-300"><i class="fa-solid fa-trash"></i></button></div></div>
+            <div class="space-y-3 pb-10"><div v-for="(trip, idx) in savedTrips" :key="trip.id" class="bg-white p-4 rounded-2xl border border-stone-100 shadow-sm flex justify-between items-center"><div @click="loadTrip(trip.id)" class="flex-1 cursor-pointer"><h4 class="font-bold text-coffee text-lg">{{ trip.title }}</h4></div><button @click="deleteLocalTrip(idx)" class="w-8 h-8 flex items-center justify-center text-gray-300"><i class="fa-solid fa-trash"></i></button></div></div>
         </div>
 
         <!-- 2. Wizard -->
         <div v-if="pageState === 'wizard'" class="h-full flex flex-col p-8 bg-milk">
-            <div v-if="wizardStep === 1" class="flex-1 flex flex-col justify-center"><button @click="pageState='landing'" class="absolute top-6 left-6 text-gray-400"><i class="fa-solid fa-arrow-left"></i></button><h2 class="text-3xl font-bold text-coffee mb-2">去哪裡?</h2><input v-model="wizardData.destination" @keyup.enter="detectDestination" placeholder="輸入地點..." class="input-field text-xl mb-4"><button @click="detectDestination" class="btn-primary w-full py-4 text-xl">下一步</button></div>
-            <div v-if="wizardStep === 2" class="flex-1 flex flex-col justify-center text-center"><button @click="wizardStep=1" class="absolute top-6 left-6 text-gray-400"><i class="fa-solid fa-arrow-left"></i></button><div class="text-6xl mb-4">{{ wizardData.flag }}</div>
-                <div class="w-full mb-4 text-left"><label class="text-xs font-bold text-gray-400 uppercase ml-1">行程名稱</label><input v-model="tripTitle" class="input-field mb-4"></div>
-                <div class="flex gap-4 mb-8 text-left"><div class="flex-1"><label class="text-xs font-bold text-gray-400 uppercase ml-1">幣別</label><input v-model="wizardData.currency" class="input-field uppercase"></div><div class="flex-1"><label class="text-xs font-bold text-gray-400 uppercase ml-1">匯率</label><input v-model="wizardData.rate" type="number" step="0.01" class="input-field text-green-600"></div></div>
-                <button @click="createTrip" class="btn-primary w-full py-4 text-xl">建立行程</button>
-            </div>
+            <div v-if="wizardStep === 1" class="flex-1 flex flex-col justify-center"><button @click="pageState='landing'" class="absolute top-6 left-6 text-gray-400"><i class="fa-solid fa-arrow-left"></i></button><h2 class="text-3xl font-bold text-coffee mb-2">去哪裡?</h2><input v-model="wizardData.destination" @keyup.enter="detectDestination" placeholder="輸入地點..." class="custom-input text-xl mb-4"><button @click="detectDestination" class="bg-latte text-white w-full py-4 rounded-2xl font-bold shadow-lg">下一步</button></div>
+            <div v-if="wizardStep === 2" class="flex-1 flex flex-col justify-center text-center"><button @click="wizardStep=1" class="absolute top-6 left-6 text-gray-400"><i class="fa-solid fa-arrow-left"></i></button><div class="text-6xl mb-4">{{ wizardData.flag }}</div><div class="w-full mb-4 text-left"><label class="text-xs font-bold text-gray-400 uppercase ml-1">行程名稱</label><input v-model="tripTitle" class="custom-input mb-4"></div><div class="flex gap-4 mb-8 text-left"><div class="flex-1"><label class="text-xs font-bold text-gray-400 uppercase ml-1">幣別</label><input v-model="wizardData.currency" class="custom-input uppercase"></div><div class="flex-1"><label class="text-xs font-bold text-gray-400 uppercase ml-1">匯率</label><input v-model="wizardData.rate" type="number" step="0.01" class="custom-input text-green-600"></div></div><button @click="createTrip" class="bg-coffee text-white w-full py-4 rounded-2xl font-bold shadow-xl">建立行程</button></div>
         </div>
 
         <!-- 3. App -->
         <div v-if="pageState === 'app'" class="h-full flex flex-col bg-milk">
-            <header class="flex-shrink-0 px-4 h-16 flex justify-between items-center bg-milk/95 backdrop-blur z-20 border-b border-[#E6DDC3]/50">
+            <header class="flex-shrink-0 px-4 h-16 flex justify-between items-center bg-milk/95 backdrop-blur z-20 border-b border-gray-100/50">
                 <button @click="backToLanding" class="w-10 h-10 flex items-center justify-center text-gray-500"><i class="fa-solid fa-chevron-left"></i></button>
                 <div class="text-center"><h1 class="text-lg font-bold text-coffee truncate max-w-[150px]">{{ tripTitle }}</h1><div class="flex items-center justify-center gap-1"><span class="w-1.5 h-1.5 rounded-full" :class="isSyncing ? 'bg-orange-400 animate-pulse' : 'bg-green-500'"></span><span class="text-[10px] text-gray-400 font-bold tracking-wider">ONLINE</span></div></div>
                 <button @click="showMenu = !showMenu" class="w-10 h-10 flex items-center justify-center text-coffee"><i class="fa-solid fa-bars text-xl"></i></button>
-                <div v-if="showMenu" class="absolute top-14 right-4 w-48 bg-white rounded-2xl shadow-xl border border-[#E6DDC3] overflow-hidden py-1 z-50">
-                    <button @click="openCalculatorGeneral();showMenu=false" class="w-full text-left px-4 py-3 hover:bg-khaki flex items-center gap-3 text-sm font-bold text-coffee"><i class="fa-solid fa-calculator w-5"></i>匯率計算</button>
-                    <button @click="showTranslateModal=true;showMenu=false" class="w-full text-left px-4 py-3 hover:bg-khaki flex items-center gap-3 text-sm font-bold text-coffee"><i class="fa-solid fa-language w-5"></i>翻譯助手</button>
-                    <div class="h-px bg-[#E6DDC3] my-1"></div>
-                    <button @click="showSettings=true;showMenu=false" class="w-full text-left px-4 py-3 hover:bg-khaki flex items-center gap-3 text-sm font-bold text-coffee"><i class="fa-solid fa-gear w-5"></i>設定</button>
-                </div>
+                <div v-if="showMenu" class="absolute top-14 right-4 w-48 bg-cream rounded-2xl shadow-xl border border-[#EBE5D9] overflow-hidden py-1 z-50"><button @click="showCalculatorModal=true;showMenu=false" class="w-full text-left px-4 py-3 hover:bg-khaki flex items-center gap-3 text-sm font-bold text-coffee"><i class="fa-solid fa-calculator w-5"></i>匯率計算</button><button @click="showTranslateModal=true;showMenu=false" class="w-full text-left px-4 py-3 hover:bg-khaki flex items-center gap-3 text-sm font-bold text-coffee"><i class="fa-solid fa-language w-5"></i>翻譯助手</button><div class="h-px bg-[#EBE5D9] my-1"></div><button @click="showSettings=true;showMenu=false" class="w-full text-left px-4 py-3 hover:bg-khaki flex items-center gap-3 text-sm font-bold text-coffee"><i class="fa-solid fa-gear w-5"></i>設定</button></div>
             </header>
 
-            <main class="flex-1 overflow-y-auto relative pt-4 pb-24 hide-scrollbar">
-                
+            <main class="flex-1 overflow-y-auto relative pt-20 pb-24 hide-scrollbar">
                 <!-- Itinerary -->
                 <div v-if="activeTab === 'itinerary'" class="min-h-full pb-24">
-                    <div class="sticky top-0 z-10 bg-milk/95 backdrop-blur px-4 py-2 flex gap-2 overflow-x-auto hide-scrollbar border-b border-[#E6DDC3]/50">
-                        <button v-for="(day, idx) in days" :key="idx" @click="changeDay(idx)" class="flex-shrink-0 flex flex-col items-center justify-center w-14 h-16 rounded-xl border-2 transition-all" :class="currentDayIndex === idx ? 'bg-coffee border-coffee text-white shadow-md scale-105' : 'bg-white border-[#E6DDC3] text-gray-400'"><span class="text-[9px] font-bold opacity-70">DAY</span><span class="text-lg font-bold">{{ idx + 1 }}</span></button>
-                        <button @click="addDay" class="flex-shrink-0 w-14 h-16 rounded-xl border-2 border-dashed border-[#E6DDC3] text-latte flex items-center justify-center"><i class="fa-solid fa-plus"></i></button>
+                    <div class="sticky top-0 z-10 bg-milk/95 backdrop-blur px-4 py-2 flex gap-2 overflow-x-auto hide-scrollbar border-b border-gray-100/50">
+                        <button v-for="(day, idx) in days" :key="idx" @click="changeDay(idx)" class="flex-shrink-0 flex flex-col items-center justify-center w-14 h-16 rounded-xl border transition-all" :class="currentDayIndex === idx ? 'bg-coffee border-coffee text-white shadow-md scale-105' : 'bg-white border-[#EBE5D9] text-gray-400'"><span class="text-[9px] font-bold opacity-70">DAY</span><span class="text-lg font-bold">{{ idx + 1 }}</span></button>
+                        <button @click="addDay" class="flex-shrink-0 w-14 h-16 rounded-xl border border-dashed border-latte/30 text-latte flex items-center justify-center"><i class="fa-solid fa-plus"></i></button>
                     </div>
-                    <div class="px-6 py-2 flex justify-end" v-if="currentDayActivities.length > 0"><div class="bg-[#E6DDC3] rounded-lg p-1 flex"><button @click="viewMode='list'" class="px-3 py-1 rounded-md text-xs font-bold transition-all" :class="viewMode==='list'?'bg-white shadow text-coffee':'text-gray-400'">列表</button><button @click="viewMode='map'" class="px-3 py-1 rounded-md text-xs font-bold transition-all" :class="viewMode==='map'?'bg-white shadow text-coffee':'text-gray-400'">地圖</button></div></div>
+                    <div class="px-6 py-2 flex justify-end" v-if="currentDayActivities.length > 0"><div class="bg-[#EBE5D9] rounded-lg p-1 flex"><button @click="viewMode='list'" class="px-3 py-1 rounded-md text-xs font-bold transition-all" :class="viewMode==='list'?'bg-white shadow text-coffee':'text-gray-400'">列表</button><button @click="viewMode='map'" class="px-3 py-1 rounded-md text-xs font-bold transition-all" :class="viewMode==='map'?'bg-white shadow text-coffee':'text-gray-400'">地圖</button></div></div>
                     <div class="px-4">
                         <div v-show="viewMode === 'list'" class="space-y-4">
+                            <div class="bg-white rounded-2xl p-4 border border-[#EBE5D9] shadow-sm"><div class="flex justify-between mb-2"><span class="text-xs font-bold text-gray-400">FLIGHT</span><button @click="saveFlight" class="text-xs text-latte font-bold">Save</button></div><div class="flex gap-2"><input v-model="flightInfo.code" placeholder="BR198" class="flex-1 bg-gray-50 rounded p-2 text-sm font-bold uppercase"><input v-model="flightInfo.time" type="time" class="w-20 bg-gray-50 rounded p-2 text-sm"></div></div>
                             <div v-if="currentDayActivities.length === 0" class="text-center py-10 opacity-40"><i class="fa-solid fa-route text-4xl mb-2 text-latte"></i><p class="text-xs font-bold">NO PLAN</p></div>
-                            <div v-for="item in sortedActivities" :key="item.id" class="flex gap-3 relative"><div class="flex flex-col items-center pt-2 w-10"><span class="text-xs font-bold text-coffee">{{ item.time }}</span><div class="w-px h-full bg-[#E6DDC3] my-1"></div></div><div class="flex-1 card mb-2" @click="editActivity(item)"><div class="flex justify-between items-start"><h3 class="font-bold text-coffee text-base">{{ item.title }}</h3><div v-if="item.weather" class="text-[10px] bg-sky-50 text-sky-600 px-1.5 py-0.5 rounded">{{ getWeatherIcon(item.weather.code) }} {{ item.weather.temp }}°</div></div><div class="flex items-center gap-1 text-xs text-gray-400 mt-1 mb-2"><i class="fa-solid fa-location-dot"></i> {{ item.location || 'Location' }}</div><div v-if="item.image" class="h-24 w-full rounded-lg overflow-hidden mb-2 bg-gray-100"><img :src="item.image" class="w-full h-full object-cover"></div><div v-if="item.notes" class="bg-khaki/30 p-2 rounded-lg text-xs text-gray-600">{{ item.notes }}</div></div></div>
+                            <div v-for="item in sortedActivities" :key="item.id" class="flex gap-3 relative"><div class="flex flex-col items-center pt-2 w-10"><span class="text-xs font-bold text-coffee">{{ item.time }}</span><div class="w-px h-full bg-[#EBE5D9] my-1"></div></div><div class="flex-1 bg-white p-3 rounded-2xl border border-[#EBE5D9] shadow-sm mb-2" @click="editActivity(item)"><div class="flex justify-between items-start"><h3 class="font-bold text-coffee text-base">{{ item.title }}</h3><div v-if="item.weather" class="text-[10px] bg-sky-50 text-sky-600 px-1.5 py-0.5 rounded">{{ getWeatherIcon(item.weather.code) }} {{ item.weather.temp }}°</div></div><div class="flex items-center gap-1 text-xs text-gray-400 mt-1 mb-2"><i class="fa-solid fa-location-dot"></i> {{ item.location || 'Location' }}</div><div v-if="item.image" class="h-24 w-full rounded-lg overflow-hidden mb-2 bg-gray-100"><img :src="item.image" class="w-full h-full object-cover"></div><div v-if="item.notes" class="bg-khaki/30 p-2 rounded-lg text-xs text-gray-600">{{ item.notes }}</div></div></div>
                         </div>
-                        <div v-show="viewMode === 'map'" class="relative w-full h-[65vh] bg-gray-100 rounded-3xl overflow-hidden shadow-inner border border-[#E6DDC3]"><div id="map-container"><div id="map" style="width: 100%; height: 100%;"></div></div><button @click="locateUser" class="absolute bottom-4 right-4 bg-white w-10 h-10 rounded-xl shadow-lg flex items-center justify-center text-blue-500 z-[400]"><i class="fa-solid fa-location-crosshairs"></i></button></div>
+                        <div v-show="viewMode === 'map'" class="relative w-full h-[65vh] bg-gray-100 rounded-3xl overflow-hidden shadow-inner border border-[#EBE5D9]"><div id="map-container"><div id="map" style="width: 100%; height: 100%;"></div></div><button @click="locateUser" class="absolute bottom-4 right-4 bg-white w-10 h-10 rounded-xl shadow-lg flex items-center justify-center text-blue-500 z-[400]"><i class="fa-solid fa-location-crosshairs"></i></button></div>
                     </div>
                 </div>
 
-                <!-- Traffic (New) -->
-                <div v-if="activeTab === 'traffic'" class="px-4 pb-24">
-                    <div class="card mb-4"><div class="flex justify-between items-center mb-2"><h3 class="font-bold text-coffee text-sm"><i class="fa-solid fa-plane mr-2 text-latte"></i>航班資訊</h3><button @click="saveFlight" class="text-xs text-latte font-bold">儲存</button></div><div class="flex gap-2"><input v-model="flightInfo.code" placeholder="班機 (如 BR198)" class="flex-1 input-field py-2 text-sm uppercase"><input v-model="flightInfo.time" type="time" class="w-24 input-field py-2 text-sm"></div><button @click="searchFlight" class="w-full bg-latte/10 text-latte text-xs py-2 rounded-lg font-bold mt-2" v-if="flightInfo.code">查詢航班動態</button></div>
-                    <div class="text-center text-gray-400 text-sm mt-8">更多交通資訊功能開發中...</div>
-                </div>
-
-                <!-- Collection (New) -->
-                <div v-if="activeTab === 'collection'" class="px-4 pb-24">
-                    <h2 class="font-bold text-coffee mb-4">我的收藏</h2>
-                    <div class="space-y-3 mb-4">
-                        <div v-for="col in collections" :key="col.id" class="card flex justify-between items-center py-3">
-                            <span class="font-bold text-coffee">{{ col.text }}</span>
-                            <button @click="deleteCollection(col.id)" class="text-red-300"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                        <div v-if="collections.length===0" class="text-center text-gray-300 py-10">還沒有收藏地點</div>
+                <!-- Chat (Input Fixed) -->
+                <div v-if="activeTab === 'chat'" class="h-full flex flex-col">
+                    <div class="flex-1 overflow-y-auto py-4 px-4 space-y-3">
+                        <div v-for="(msg,i) in chatMessages" :key="i" class="flex flex-col" :class="msg.user===people[0]?'items-end':'items-start'"><div class="p-3 rounded-2xl max-w-[85%] text-sm shadow-sm" :class="msg.user===people[0]?'bg-coffee text-white rounded-tr-none':'bg-white border border-[#EBE5D9] text-coffee rounded-tl-none'"><img v-if="msg.image" :src="msg.image" class="rounded mb-1 max-w-full" @click="showImagePreview=msg.image">{{ msg.text }}</div><span class="text-[10px] text-gray-300 mt-1">{{ msg.user }}</span></div>
                     </div>
-                    <div class="flex gap-2"><input v-model="formCollection" placeholder="輸入地點或網址..." class="flex-1 input-field py-2 text-sm"><button @click="addCollection" class="btn-primary px-4 py-2 text-sm">新增</button></div>
-                </div>
-
-                <!-- Chat -->
-                <div v-if="activeTab === 'chat'" class="px-4 h-full flex flex-col pb-24 overflow-x-hidden">
-                    <div class="flex-1 overflow-y-auto py-4 space-y-3">
-                        <div v-for="(msg,i) in chatMessages" :key="i" class="flex flex-col" :class="msg.user===people[0]?'items-end':'items-start'"><div class="p-3 rounded-2xl max-w-[85%] text-sm shadow-sm" :class="msg.user===people[0]?'bg-coffee text-white rounded-tr-none':'bg-white border border-[#E6DDC3] text-coffee rounded-tl-none'"><img v-if="msg.image" :src="msg.image" class="rounded mb-1 max-w-full" @click="showImagePreview=msg.image">{{ msg.text }}</div><span class="text-[10px] text-gray-300 mt-1">{{ msg.user }}</span></div>
+                    <div class="bg-white p-3 border-t border-[#EBE5D9] flex gap-2 items-center flex-shrink-0">
+                        <div v-if="chatImage" class="absolute bottom-20 left-4 p-1 bg-white shadow rounded z-50"><img :src="chatImage" class="h-24"><button @click="removeChatImage" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center">×</button></div>
+                        <label class="text-gray-400 p-2 flex-shrink-0 cursor-pointer"><i class="fa-solid fa-camera text-xl"></i><input type="file" @change="handleChatImageUpload" class="hidden" accept="image/*,video/*"></label>
+                        <input v-model="formChat" class="flex-1 bg-gray-50 rounded-xl px-4 py-2 text-sm outline-none" style="min-width:0;" placeholder="訊息...">
+                        <button @click="sendMessage" class="bg-latte text-white w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md"><i class="fa-solid fa-paper-plane"></i></button>
                     </div>
-                    <div class="bg-white p-2 rounded-2xl border border-[#E6DDC3] flex gap-2 shadow-lg mb-2 items-center relative flex-shrink-0 w-full box-border mx-auto"><div v-if="chatImage" class="absolute bottom-full left-0 mb-2 p-1 bg-white shadow rounded"><img :src="chatImage" class="h-16"><button @click="removeChatImage" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-[10px] flex items-center justify-center">×</button></div><label class="text-gray-400 p-2 flex-shrink-0 cursor-pointer"><i class="fa-solid fa-image text-lg"></i><input type="file" @change="handleChatImageUpload" class="hidden" accept="image/*"></label><input v-model="formChat" class="flex-1 bg-transparent text-sm outline-none" style="min-width:0;" placeholder="訊息..."><button @click="sendMessage" class="bg-latte text-white w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md"><i class="fa-solid fa-paper-plane text-sm"></i></button></div>
                 </div>
 
-                <!-- Expenses -->
-                <div v-if="activeTab === 'expenses'" class="px-4 pb-24"><div class="bg-coffee rounded-3xl p-6 text-white shadow-xl mb-6 mt-2"><p class="text-xs opacity-60">TOTAL</p><h2 class="text-3xl font-bold mb-2">{{ formatNumber(totalExpense) }}</h2><div class="flex justify-between text-xs opacity-80 pt-4 border-t border-white/10"><span>每人 ${{ formatNumber(perPersonShare) }}</span><span>{{ people.length }} 人</span></div></div><div class="space-y-2 mb-20"><div v-for="exp in expenses" :key="exp.id" class="card flex justify-between items-center py-3"><div class="flex gap-3"><div class="w-8 h-8 rounded-full bg-khaki flex items-center justify-center text-xs font-bold text-coffee">{{ exp.payer[0] }}</div><div><p class="font-bold text-sm text-coffee">{{ exp.title }}</p><p class="text-[10px] text-gray-400">{{ exp.date }} <span v-if="exp.originalAmount" class="text-latte">({{ exp.originalAmount }})</span></p></div></div><div class="text-right"><p class="font-bold text-sm text-coffee">${{ formatNumber(exp.amount) }}</p><button @click="deleteExpense(exp.id)" class="text-red-200 text-xs">刪除</button></div></div></div></div>
+                <!-- Traffic -->
+                <div v-if="activeTab === 'traffic'" class="px-4 pb-24 flex flex-col items-center justify-center h-full opacity-50"><i class="fa-solid fa-train text-6xl mb-4 text-latte"></i><p class="text-coffee font-bold">交通資訊 (開發中)</p></div>
+
+                <!-- Collection -->
+                <div v-if="activeTab === 'collection'" class="px-4 pb-24"><h2 class="font-bold text-coffee mb-4 mt-2">我的收藏</h2><div v-if="savedSpots.length===0" class="text-center opacity-50 py-10"><i class="fa-solid fa-bookmark text-4xl mb-2 text-latte"></i><p class="text-xs">尚無收藏地點</p></div></div>
+
+                <div v-if="activeTab === 'checklist'" class="px-4 pb-24"><h2 class="font-bold text-coffee mb-4 mt-2">清單</h2><div class="space-y-2 mb-4"><div v-for="item in checklist" :key="item.id" @click="toggleCheck(item.id)" class="bg-white p-3 rounded-xl border border-[#EBE5D9] flex items-center gap-3 shadow-sm" :class="item.checked?'opacity-50':''"><div class="w-5 h-5 rounded-full border flex items-center justify-center" :class="item.checked?'bg-green-500 border-green-500 text-white':'border-gray-200'"><i class="fa-solid fa-check text-xs"></i></div><span class="flex-1 font-bold text-sm text-coffee">{{ item.text }}</span><button @click.stop="deleteCheckItem(item.id)" class="text-red-200"><i class="fa-solid fa-times"></i></button></div></div><div class="flex gap-2"><input v-model="newItemText" placeholder="新增..." class="flex-1 bg-white border border-[#EBE5D9] rounded-xl p-3 shadow-sm text-coffee font-bold"><button @click="addCheckItem" class="bg-coffee text-white px-4 rounded-xl"><i class="fa-solid fa-plus"></i></button></div></div>
+                <div v-if="activeTab === 'expenses'" class="px-4 pb-24"><div class="bg-coffee rounded-3xl p-6 text-white shadow-xl mb-6 mt-2"><p class="text-xs opacity-60">TOTAL</p><h2 class="text-3xl font-bold mb-2">{{ formatNumber(totalExpense) }}</h2><div class="flex justify-between text-xs opacity-80 pt-4 border-t border-white/10"><span>每人 ${{ formatNumber(perPersonShare) }}</span><span>{{ people.length }} 人</span></div></div><div class="space-y-2 mb-20"><div v-for="exp in expenses" :key="exp.id" class="bg-white p-3 rounded-xl flex justify-between items-center shadow-sm border border-[#EBE5D9]"><div class="flex gap-3"><div class="w-8 h-8 rounded-full bg-khaki flex items-center justify-center text-xs font-bold text-coffee">{{ exp.payer[0] }}</div><div><p class="font-bold text-sm text-coffee">{{ exp.title }}</p><p class="text-[10px] text-gray-400">{{ exp.date }} <span v-if="exp.originalAmount" class="text-latte">({{ exp.originalAmount }})</span></p></div></div><div class="text-right"><p class="font-bold text-sm text-coffee">${{ formatNumber(exp.amount) }}</p><button @click="deleteExpense(exp.id)" class="text-red-200 text-xs">刪除</button></div></div></div></div>
             </main>
 
-            <!-- Bottom Navigation (5 items) -->
-            <nav class="flex-shrink-0 bg-white/95 backdrop-blur border-t border-[#E6DDC3] flex justify-between px-2 pt-2 pb-safe z-30 text-[10px] font-bold text-gray-400">
+            <!-- Bottom Navigation (5 Items) -->
+            <nav class="flex-shrink-0 bg-white/95 backdrop-blur border-t border-gray-100 flex justify-between px-2 pt-2 pb-safe z-30 text-[10px] font-bold text-gray-400">
                 <button @click="activeTab='itinerary'" class="flex-1 flex flex-col items-center gap-1" :class="activeTab==='itinerary'?'text-coffee':''"><i class="fa-solid fa-map text-xl"></i>行程</button>
-                <button @click="activeTab='traffic'" class="flex-1 flex flex-col items-center gap-1" :class="activeTab==='traffic'?'text-coffee':''"><i class="fa-solid fa-bus text-xl"></i>交通</button>
-                <button @click="activeTab='collection'" class="flex-1 flex flex-col items-center gap-1" :class="activeTab==='collection'?'text-coffee':''"><i class="fa-solid fa-bookmark text-xl"></i>收藏</button>
+                <button @click="activeTab='traffic'" class="flex-1 flex flex-col items-center gap-1" :class="activeTab==='traffic'?'text-coffee':''"><i class="fa-solid fa-train text-xl"></i>交通</button>
+                <button @click="activeTab='collection'" class="flex-1 flex flex-col items-center gap-1 pt-6" :class="activeTab==='collection'?'text-coffee':''"><i class="fa-solid fa-bookmark text-xl"></i>收藏</button>
                 <button @click="activeTab='chat'" class="flex-1 flex flex-col items-center gap-1" :class="activeTab==='chat'?'text-coffee':''"><i class="fa-solid fa-comments text-xl"></i>聊天</button>
-                <button @click="activeTab='expenses'" class="flex-1 flex flex-col items-center gap-1" :class="activeTab==='expenses'?'text-coffee':''"><i class="fa-solid fa-wallet text-xl"></i>錢包</button>
+                <button @click="activeTab='expenses'" class="flex-1 flex flex-col items-center gap-1" :class="activeTab==='expenses'?'text-coffee':''"><i class="fa-solid fa-wallet text-xl"></i>分帳</button>
             </nav>
-            
-            <!-- FAB (Moved to right) -->
-            <button v-if="activeTab!=='chat'" @click="openAddModal" class="absolute bottom-20 right-4 w-14 h-14 bg-coffee text-white rounded-full shadow-2xl flex items-center justify-center text-xl z-40 mb-safe active:scale-90 transition-transform"><i class="fa-solid fa-plus"></i></button>
+            <!-- FAB (Elevated) -->
+            <button v-if="activeTab!=='chat' && activeTab!=='checklist'" @click="openAddModal" class="absolute bottom-20 left-1/2 -translate-x-1/2 w-14 h-14 bg-coffee text-white rounded-full shadow-2xl flex items-center justify-center text-xl z-40 mb-safe active:scale-90 transition-transform"><i class="fa-solid fa-plus"></i></button>
 
-            <!-- Modals (Calculator, Translate, Activity, Expense, Settings...) -->
+            <!-- Modals -->
             <!-- Calculator -->
-            <div v-if="showCalculatorModal" class="fixed inset-0 z-[70] flex items-center justify-center p-6 bg-black/50 backdrop-blur-sm">
-                <div class="bg-milk w-full rounded-2xl p-6 shadow-2xl border border-[#E6DDC3]">
-                    <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-coffee">計算機</h3><button @click="showCalculatorModal=false"><i class="fa-solid fa-times text-gray-400"></i></button></div>
-                    
-                    <!-- Rate and Mode Switch -->
-                    <div class="card p-2 mb-2 space-y-2">
-                        <div class="flex justify-between items-center"><span class="text-xs font-bold text-gray-400 pl-2">匯率</span><input v-model="exchangeRate" @change="updateExchangeRate" type="number" step="0.01" class="text-right font-bold text-green-600 w-24 outline-none bg-transparent" placeholder="匯率"></div>
-                        <div class="flex gap-2">
-                            <button @click="calcMode='foreign_to_twd'" :class="calcMode==='foreign_to_twd'?'bg-coffee text-white':'bg-white text-gray-400'" class="flex-1 py-2 rounded-xl text-xs font-bold border border-[#E6DDC3]">外幣 ➞ 台幣</button>
-                            <button @click="calcMode='twd_to_foreign'" :class="calcMode==='twd_to_foreign'?'bg-coffee text-white':'bg-white text-gray-400'" class="flex-1 py-2 rounded-xl text-xs font-bold border border-[#E6DDC3]">台幣 ➞ 外幣</button>
-                        </div>
-                    </div>
-
-                    <!-- Screen -->
-                    <div class="card p-4 mb-4 text-right shadow-inner">
-                        <div class="text-sm text-gray-400 h-5 mb-1">{{ calcExpression || '' }}</div>
-                        <div class="text-3xl font-bold text-coffee break-all mb-2">{{ calcExpression || '0' }} <span class="text-sm">{{ calcMode==='foreign_to_twd' ? targetCurrency : 'TWD' }}</span></div>
-                        <div class="text-sm text-gray-400 font-bold text-right border-t border-gray-100 pt-1">
-                            = {{ calcMode==='foreign_to_twd' ? 'TWD' : targetCurrency }} 
-                            {{ calcMode==='foreign_to_twd' 
-                                ? formatNumber(Math.round(calcResultValue * exchangeRate)) 
-                                : formatNumber((calcResultValue / (exchangeRate || 1)).toFixed(2)) 
-                            }}
-                        </div>
-                    </div>
-
-                    <!-- Keypad -->
-                    <div class="grid grid-cols-4 gap-2">
-                        <button @click="clearCalc" class="calc-btn text-red-400">C</button><button @click="appendCalc('/')" class="calc-btn calc-btn-op">÷</button><button @click="appendCalc('*')" class="calc-btn calc-btn-op">×</button><button @click="backspaceCalc" class="calc-btn"><i class="fa-solid fa-delete-left"></i></button>
-                        <button @click="appendCalc('7')" class="calc-btn">7</button><button @click="appendCalc('8')" class="calc-btn">8</button><button @click="appendCalc('9')" class="calc-btn">9</button><button @click="appendCalc('-')" class="calc-btn calc-btn-op">-</button>
-                        <button @click="appendCalc('4')" class="calc-btn">4</button><button @click="appendCalc('5')" class="calc-btn">5</button><button @click="appendCalc('6')" class="calc-btn">6</button><button @click="appendCalc('+')" class="calc-btn calc-btn-op">+</button>
-                        <button @click="appendCalc('1')" class="calc-btn">1</button><button @click="appendCalc('2')" class="calc-btn">2</button><button @click="appendCalc('3')" class="calc-btn">3</button><button class="calc-btn row-span-2 calc-btn-action flex items-center justify-center" @click="confirmCalculator"><i class="fa-solid fa-check"></i></button>
-                        <button @click="appendCalc('0')" class="calc-btn col-span-2">0</button><button @click="appendCalc('.')" class="calc-btn">.</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Translate -->
-            <div v-if="showTranslateModal" class="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-6"><div class="bg-milk w-full rounded-2xl p-6 shadow-2xl"><div class="flex justify-between items-center mb-4"><h3 class="font-bold text-coffee">即時翻譯 ({{ targetLang }})</h3><button @click="showTranslateModal=false"><i class="fa-solid fa-times text-gray-400"></i></button></div><textarea v-model="translateText" class="w-full border-2 border-[#E6DDC3] rounded-xl p-3 mb-4 h-24 text-coffee font-bold" placeholder="輸入文字..."></textarea><div v-if="translatedResult" class="bg-blue-50 p-3 rounded-xl mb-4 text-blue-800 font-bold text-lg">{{ translatedResult }}</div><button @click="performTranslation" class="btn-primary w-full py-3 flex items-center justify-center gap-2"><i v-if="isTranslating" class="fa-solid fa-circle-notch animate-spin"></i>{{ isTranslating ? '翻譯中...' : '翻譯' }}</button></div></div>
-            
-            <!-- Activity Modal -->
-            <div v-if="showActivityModal" class="fixed inset-0 bg-black/50 z-[60] flex items-end justify-center"><div class="bg-milk w-full rounded-t-[2rem] p-6 shadow-2xl max-h-[85vh] overflow-y-auto pb-safe"><h3 class="text-lg font-bold mb-4 text-coffee">{{ isEditing ? '編輯' : '新增' }}行程</h3><div class="space-y-4"><div class="flex gap-3"><input v-model="formActivity.time" type="time" class="w-1/3 input-field"><input v-model="formActivity.title" placeholder="標題" class="flex-1 input-field"></div><div class="bg-white border-2 border-[#E6DDC3] rounded-xl p-2"><div class="flex gap-1 mb-2"><button @click="locationMode='auto'" class="flex-1 py-1.5 rounded-lg text-xs font-bold transition-colors" :class="locationMode==='auto'?'bg-khaki text-coffee':'text-gray-400'">搜尋</button><button @click="locationMode='manual'" class="flex-1 py-1.5 rounded-lg text-xs font-bold transition-colors" :class="locationMode==='manual'?'bg-khaki text-coffee':'text-gray-400'">地圖</button></div><button @click="saveCurrentLocation" class="w-full bg-blue-50 text-blue-600 py-2 rounded-lg text-xs font-bold mb-2 flex items-center justify-center gap-2"><i class="fa-solid fa-location-crosshairs"></i> {{ isLoading ? '定位中...' : '📍 定位目前位置 (儲存)' }}</button><div v-show="locationMode==='auto'" class="flex gap-2"><input v-model="formActivity.location" placeholder="輸入地點..." class="flex-1 bg-gray-50 rounded-lg p-2 text-sm text-coffee font-bold"><button @click="searchLocation" class="bg-coffee text-white px-3 rounded-lg text-xs font-bold">搜</button></div><div v-show="locationMode==='manual'"><div id="modal-map"></div><p class="text-[10px] text-center text-gray-400 mt-1">拖曳地圖以定位</p></div></div><textarea v-model="formActivity.notes" rows="2" placeholder="備註" class="input-field text-sm"></textarea><label class="block w-full border-2 border-dashed border-[#D1C7B7] rounded-xl p-3 text-center text-gray-400 text-xs"><span v-if="!formActivity.image"><i class="fa-solid fa-camera mr-1"></i>上傳照片</span><span v-else class="text-coffee">已選擇照片 (點擊更換)</span><input type="file" @change="handleActivityImageUpload" class="hidden" accept="image/*"></label></div><div class="flex gap-3 mt-6"><button @click="showActivityModal=false" class="flex-1 py-3 bg-khaki rounded-xl font-bold text-coffee">取消</button><button @click="saveActivity" class="flex-1 py-3 bg-coffee text-white rounded-xl font-bold">儲存</button></div></div></div>
-            
-            <!-- Expense Modal -->
-            <div v-if="showExpenseModal" class="fixed inset-0 bg-black/50 z-[60] flex items-end justify-center"><div class="bg-milk w-full rounded-t-3xl p-6 pb-safe"><h3 class="font-bold mb-4 text-coffee">記帳</h3><div class="flex bg-khaki p-1 rounded-xl mb-4"><button @click="useForeignCurrency=false" class="flex-1 py-2 rounded-lg text-xs font-bold" :class="!useForeignCurrency?'bg-white shadow text-coffee':'text-gray-400'">TWD</button><button @click="useForeignCurrency=true" class="flex-1 py-2 rounded-lg text-xs font-bold" :class="useForeignCurrency?'bg-white shadow text-coffee':'text-gray-400'">{{ targetCurrency }}</button></div><input v-model="formExpense.title" placeholder="項目" class="input-field mb-2"><div class="flex gap-2 mb-4 items-center"><button @click="openCalculatorForExpense" class="bg-khaki text-coffee w-12 h-12 rounded-xl flex items-center justify-center shadow-sm border border-[#E6DDC3]"><i class="fa-solid fa-calculator"></i></button><input v-model.number="formExpense.inputAmount" type="number" placeholder="金額" class="flex-1 input-field"><select v-model="formExpense.payer" class="w-1/3 input-field"><option v-for="p in people" :value="p">{{p}}</option></select></div><button @click="saveExpense" class="btn-primary w-full py-3 text-lg">儲存</button><button @click="showExpenseModal=false" class="w-full mt-2 text-gray-400 py-2 font-bold">取消</button></div></div>
-            
-            <!-- Settings Modal -->
-            <div v-if="showSettings" class="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-6"><div class="bg-milk w-full max-w-sm rounded-2xl p-6 border border-[#E6DDC3]"><h3 class="font-bold mb-4 text-coffee">設定</h3><div class="space-y-3 mb-4"><input v-model="tripTitle" class="input-field" placeholder="行程名稱"><input v-model="exchangeRate" type="number" class="input-field text-green-600" placeholder="匯率"></div><div class="space-y-2"><div v-for="(p,i) in people" :key="i" class="flex justify-between bg-white border-2 border-[#E6DDC3] p-2 rounded-xl"><span>{{p}}</span><button @click="removePerson(i)" class="text-red-300">×</button></div><div class="flex gap-2"><input v-model="newPersonName" placeholder="新成員" class="flex-1 input-field py-2 text-sm"><button @click="addPerson" class="bg-coffee text-white px-3 rounded-xl">+</button></div></div><div class="flex gap-2 mt-6"><button @click="updateTripSettings" class="flex-1 bg-coffee text-white py-2 rounded-xl font-bold">儲存</button><button @click="showSettings=false" class="flex-1 bg-khaki text-coffee py-2 rounded-xl font-bold">取消</button></div></div></div>
-            
+            <div v-if="showCalculatorModal" class="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-6"><div class="bg-milk w-full rounded-2xl p-6 shadow-2xl border border-[#EBE5D9]"><div class="flex justify-between items-center mb-4"><h3 class="font-bold text-coffee">計算機</h3><button @click="showCalculatorModal=false"><i class="fa-solid fa-times text-gray-400"></i></button></div><div class="bg-white p-2 rounded-xl mb-2 flex justify-between items-center border border-[#EBE5D9] shadow-sm"><span class="text-xs font-bold text-gray-400 pl-2">匯率</span><input v-model="exchangeRate" @change="updateExchangeRate" type="number" class="text-right font-bold text-green-600 w-20 outline-none bg-transparent" placeholder="匯率"></div><div class="bg-white p-4 rounded-xl mb-4 text-right border-2 border-[#EBE5D9] shadow-inner"><div class="text-sm text-gray-400 h-5 mb-1">{{ calcExpression || '' }}</div><div class="text-3xl font-bold text-coffee break-all mb-2">{{ calcExpression || '0' }}</div><div class="text-sm text-gray-400 font-bold text-right border-t border-gray-100 pt-1">= TWD {{ formatNumber(Math.round(calcResultValue * exchangeRate)) }}</div></div><div class="grid grid-cols-4 gap-2"><button @click="clearCalc" class="calc-btn text-red-400">C</button><button @click="appendCalc('/')" class="calc-btn calc-btn-op">÷</button><button @click="appendCalc('*')" class="calc-btn calc-btn-op">×</button><button @click="backspaceCalc" class="calc-btn"><i class="fa-solid fa-delete-left"></i></button><button @click="appendCalc('7')" class="calc-btn">7</button><button @click="appendCalc('8')" class="calc-btn">8</button><button @click="appendCalc('9')" class="calc-btn">9</button><button @click="appendCalc('-')" class="calc-btn calc-btn-op">-</button><button @click="appendCalc('4')" class="calc-btn">4</button><button @click="appendCalc('5')" class="calc-btn">5</button><button @click="appendCalc('6')" class="calc-btn">6</button><button @click="appendCalc('+')" class="calc-btn calc-btn-op">+</button><button @click="appendCalc('1')" class="calc-btn">1</button><button @click="appendCalc('2')" class="calc-btn">2</button><button @click="appendCalc('3')" class="calc-btn">3</button><button class="calc-btn row-span-2 calc-btn-action flex items-center justify-center" @click="showCalculatorModal=false"><i class="fa-solid fa-check"></i></button><button @click="appendCalc('0')" class="calc-btn col-span-2">0</button><button @click="appendCalc('.')" class="calc-btn">.</button></div></div></div>
+            <!-- Other Modals (Translate, Activity, Expense, Settings...) -->
+            <div v-if="showTranslateModal" class="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-6"><div class="bg-milk w-full rounded-2xl p-6 shadow-2xl"><div class="flex justify-between items-center mb-4"><h3 class="font-bold text-coffee">即時翻譯 ({{ targetLang }})</h3><button @click="showTranslateModal=false"><i class="fa-solid fa-times text-gray-400"></i></button></div><textarea v-model="translateText" class="w-full border-2 border-[#EBE5D9] rounded-xl p-3 mb-4 h-24 text-coffee font-bold" placeholder="輸入文字..."></textarea><div v-if="translatedResult" class="bg-blue-50 p-3 rounded-xl mb-4 text-blue-800 font-bold text-lg">{{ translatedResult }}</div><button @click="performTranslation" class="w-full bg-coffee text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2"><i v-if="isTranslating" class="fa-solid fa-circle-notch animate-spin"></i>{{ isTranslating ? '翻譯中...' : '翻譯' }}</button></div></div>
+            <div v-if="showActivityModal" class="fixed inset-0 bg-black/50 z-[60] flex items-end justify-center"><div class="bg-milk w-full rounded-t-[2rem] p-6 shadow-2xl max-h-[85vh] overflow-y-auto pb-safe"><h3 class="text-lg font-bold mb-4 text-coffee">{{ isEditing ? '編輯' : '新增' }}行程</h3><div class="space-y-4"><div class="flex gap-3"><input v-model="formActivity.time" type="time" class="w-1/3 custom-input"><input v-model="formActivity.title" placeholder="標題" class="flex-1 custom-input"></div><div class="bg-white border-2 border-[#EBE5D9] rounded-xl p-2"><div class="flex gap-1 mb-2"><button @click="locationMode='auto'" class="flex-1 py-1.5 rounded-lg text-xs font-bold transition-colors" :class="locationMode==='auto'?'bg-khaki text-coffee':'text-gray-400'">搜尋</button><button @click="locationMode='manual'" class="flex-1 py-1.5 rounded-lg text-xs font-bold transition-colors" :class="locationMode==='manual'?'bg-khaki text-coffee':'text-gray-400'">地圖</button></div><button @click="saveCurrentLocation" class="w-full bg-blue-50 text-blue-600 py-2 rounded-lg text-xs font-bold mb-2 flex items-center justify-center gap-2"><i class="fa-solid fa-location-crosshairs"></i> {{ isLoading ? '定位中...' : '📍 定位目前位置 (儲存)' }}</button><div v-show="locationMode==='auto'" class="flex gap-2"><input v-model="formActivity.location" placeholder="輸入地點..." class="flex-1 bg-gray-50 rounded-lg p-2 text-sm text-coffee font-bold"><button @click="searchLocation" class="bg-coffee text-white px-3 rounded-lg text-xs font-bold">搜</button></div><div v-show="locationMode==='manual'"><div id="modal-map"></div><p class="text-[10px] text-center text-gray-400 mt-1">拖曳地圖以定位</p></div></div><textarea v-model="formActivity.notes" rows="2" placeholder="備註" class="custom-input text-sm"></textarea><label class="block w-full border-2 border-dashed border-[#D1C7B7] rounded-xl p-3 text-center text-gray-400 text-xs"><span v-if="!formActivity.image"><i class="fa-solid fa-camera mr-1"></i>上傳照片</span><span v-else class="text-coffee">已選擇照片 (點擊更換)</span><input type="file" @change="handleActivityImageUpload" class="hidden" accept="image/*"></label></div><div class="flex gap-3 mt-6"><button @click="showActivityModal=false" class="flex-1 py-3 bg-khaki rounded-xl font-bold text-coffee">取消</button><button @click="saveActivity" class="flex-1 py-3 bg-coffee text-white rounded-xl font-bold">儲存</button></div></div></div>
+            <div v-if="showExpenseModal" class="fixed inset-0 bg-black/50 z-[60] flex items-end justify-center"><div class="bg-milk w-full rounded-t-3xl p-6 pb-safe"><h3 class="font-bold mb-4 text-coffee">記帳</h3><div class="flex bg-khaki p-1 rounded-xl mb-4"><button @click="useForeignCurrency=false" class="flex-1 py-2 rounded-lg text-xs font-bold" :class="!useForeignCurrency?'bg-white shadow text-coffee':'text-gray-400'">TWD</button><button @click="useForeignCurrency=true" class="flex-1 py-2 rounded-lg text-xs font-bold" :class="useForeignCurrency?'bg-white shadow text-coffee':'text-gray-400'">{{ targetCurrency }}</button></div><input v-model="formExpense.title" placeholder="項目" class="custom-input mb-2"><div class="flex gap-2 mb-4"><input v-model.number="formExpense.inputAmount" type="number" placeholder="金額" class="flex-1 custom-input"><select v-model="formExpense.payer" class="w-1/3 custom-input"><option v-for="p in people" :value="p">{{p}}</option></select></div><button @click="saveExpense" class="w-full bg-coffee text-white py-3 rounded-xl font-bold">儲存</button><button @click="showExpenseModal=false" class="w-full mt-2 text-gray-400 py-2 font-bold">取消</button></div></div>
+            <div v-if="showSettings" class="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-6"><div class="bg-milk w-full max-w-sm rounded-2xl p-6 border border-[#EBE5D9]"><h3 class="font-bold mb-4 text-coffee">設定</h3><div class="space-y-3 mb-4"><input v-model="tripTitle" class="custom-input" placeholder="行程名稱"><input v-model="exchangeRate" type="number" class="custom-input text-green-600" placeholder="匯率"></div><div class="space-y-2"><div v-for="(p,i) in people" :key="i" class="flex justify-between bg-white border-2 border-[#EBE5D9] p-2 rounded-xl"><span>{{p}}</span><button @click="removePerson(i)" class="text-red-300">×</button></div><div class="flex gap-2"><input v-model="newPersonName" placeholder="新成員" class="flex-1 custom-input py-2 text-sm"><button @click="addPerson" class="bg-coffee text-white px-3 rounded-xl">+</button></div></div><div class="flex gap-2 mt-6"><button @click="updateTripSettings" class="flex-1 bg-coffee text-white py-2 rounded-xl font-bold">儲存</button><button @click="showSettings=false" class="flex-1 bg-khaki text-coffee py-2 rounded-xl font-bold">取消</button></div></div></div>
             <div v-if="showImagePreview" class="fixed inset-0 bg-black/95 z-[70] flex items-center justify-center" @click="showImagePreview=null"><img :src="showImagePreview" class="max-w-full max-h-full"></div>
         </div>
     </div>
