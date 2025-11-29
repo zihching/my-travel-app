@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Travel Buddy V16</title>
+    <title>Travel Buddy V18</title>
     
     <!-- 1. 錯誤偵測器 -->
     <script>
@@ -179,7 +179,7 @@
                     } catch(e) { console.error(e); pageState.value = 'landing'; }
                 });
 
-                // --- V15 Search Logic (Reused for Places) ---
+                // --- V15 Search Logic ---
                 const searchLocationGeneric = async (query, targetObj) => {
                     if (!query) return;
                     isLoading.value = true;
@@ -197,47 +197,83 @@
                     targetObj.lat = parseFloat(result.lat);
                     targetObj.lng = parseFloat(result.lon);
                     const simpleName = result.display_name.split(',')[0];
-                    targetObj.location = simpleName; // Update display name
+                    targetObj.location = simpleName; 
                     searchResultAddress.value = result.display_name;
                     searchResults.value = [];
                 };
 
-                // Wrapper for Activity Search
                 const searchLocation = () => searchLocationGeneric(formActivity.value.location, formActivity.value);
                 const selectSearchResult = (r) => selectSearchResultGeneric(r, formActivity.value);
-
-                // Wrapper for Place Search (V16)
                 const searchPlaceLocation = () => searchLocationGeneric(formPlace.value.location, formPlace.value);
                 const selectPlaceSearchResult = (r) => selectSearchResultGeneric(r, formPlace.value);
 
-                // --- V16 Favorites Logic ---
+                // --- V17: Improved Save Logic with Validation ---
+                const saveActivity = async () => { 
+                    // 1. Validate Title (Custom Message)
+                    if (!formActivity.value.title) {
+                        alert("標題沒打");
+                        return;
+                    }
+                    
+                    isLoading.value = true; // Set loading state
+
+                    try {
+                        // 2. Auto-Search if location text exists but no coords
+                        if (locationMode.value === 'auto' && formActivity.value.location && !formActivity.value.lat) { 
+                            // Try to fetch coords automatically before saving
+                            try {
+                                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(formActivity.value.location)}&limit=1`);
+                                const data = await res.json();
+                                if(data && data[0]) {
+                                    formActivity.value.lat = parseFloat(data[0].lat);
+                                    formActivity.value.lng = parseFloat(data[0].lon);
+                                }
+                            } catch(e) { console.error("Auto search failed", e); }
+                        } 
+                        
+                        const targetDay = days.value[currentDayIndex.value]; 
+                        if(isEditing.value) { 
+                            const idx = targetDay.activities.findIndex(a=>a.id===formActivity.value.id); 
+                            if(idx!==-1) targetDay.activities[idx]={...formActivity.value}; 
+                        } else targetDay.activities.push({...formActivity.value}); 
+                        
+                        showActivityModal.value=false; 
+                        saveToCloud(); 
+                        if(viewMode.value==='map') setTimeout(()=>updateMapMarkers(),500);
+                    } catch (e) {
+                        alert("儲存失敗: " + e.message);
+                    } finally {
+                        isLoading.value = false; // Clear loading state
+                    }
+                };
+
+                const saveExpense = () => { 
+                    if(!formExpense.value.title || !formExpense.value.inputAmount) {
+                        alert("請輸入項目和金額！");
+                        return;
+                    }
+                    let amt = formExpense.value.inputAmount; 
+                    let orig = null; 
+                    if(useForeignCurrency.value){ orig=`${amt} ${targetCurrency.value}`; amt=Math.round(amt*exchangeRate.value); } 
+                    expenses.value.unshift({id:Date.now(), title:formExpense.value.title, amount:amt, originalAmount:orig, payer:formExpense.value.payer, date:new Date().toLocaleDateString()}); 
+                    showExpenseModal.value=false; 
+                    saveToCloud(); 
+                };
+
+                // --- Favorites Logic ---
                 const addGroup = () => {
-                    if(!formGroup.value.title) return;
+                    if(!formGroup.value.title) { alert("請輸入群組名稱"); return; }
                     favorites.value.push({ id: Date.now(), title: formGroup.value.title, places: [] });
                     formGroup.value.title = '';
                     showGroupModal.value = false;
                     saveToCloud();
                 };
-
-                const deleteGroup = (id) => {
-                    if(confirm("確定刪除此群組？")) {
-                        favorites.value = favorites.value.filter(g => g.id !== id);
-                        saveToCloud();
-                    }
-                };
-
+                const deleteGroup = (id) => { if(confirm("確定刪除此群組？")) { favorites.value = favorites.value.filter(g => g.id !== id); saveToCloud(); } };
                 const openGroup = (id) => { viewingGroupId.value = id; };
                 const closeGroup = () => { viewingGroupId.value = null; };
-
-                const openAddPlaceModal = () => {
-                    formPlace.value = { id: Date.now(), name: '', location: '', lat: null, lng: null, notes: '' };
-                    searchResults.value = [];
-                    searchResultAddress.value = '';
-                    showPlaceModal.value = true;
-                };
-
+                const openAddPlaceModal = () => { formPlace.value = { id: Date.now(), name: '', location: '', lat: null, lng: null, notes: '' }; searchResults.value = []; searchResultAddress.value = ''; showPlaceModal.value = true; };
                 const savePlace = () => {
-                    if(!formPlace.value.name) return;
+                    if(!formPlace.value.name) { alert("請輸入地點名稱"); return; }
                     const groupIndex = favorites.value.findIndex(g => g.id === viewingGroupId.value);
                     if(groupIndex !== -1) {
                         if(!favorites.value[groupIndex].places) favorites.value[groupIndex].places = [];
@@ -246,13 +282,9 @@
                     }
                     showPlaceModal.value = false;
                 };
-
                 const deletePlace = (placeId) => {
                     const groupIndex = favorites.value.findIndex(g => g.id === viewingGroupId.value);
-                    if(groupIndex !== -1) {
-                        favorites.value[groupIndex].places = favorites.value[groupIndex].places.filter(p => p.id !== placeId);
-                        saveToCloud();
-                    }
+                    if(groupIndex !== -1) { favorites.value[groupIndex].places = favorites.value[groupIndex].places.filter(p => p.id !== placeId); saveToCloud(); }
                 };
 
                 // --- Calculator ---
@@ -310,7 +342,7 @@
                             chatMessages.value = data.chatMessages ? Object.values(data.chatMessages) : [];
                             flightInfo.value = data.flightInfo || { code: '', time: '' };
                             transportLinks.value = data.transportLinks || [];
-                            favorites.value = data.favorites || []; // V16 load
+                            favorites.value = data.favorites || []; 
                             
                             if (viewMode.value === 'map' && activeTab.value === 'itinerary') {
                                 setTimeout(() => { initMap(); updateMapMarkers(); }, 500);
@@ -335,7 +367,7 @@
                         checklist: checklist.value,
                         flightInfo: flightInfo.value,
                         transportLinks: transportLinks.value,
-                        favorites: favorites.value // V16 save
+                        favorites: favorites.value 
                     });
                     const existing = savedTrips.value.findIndex(t => t.id === tripId.value);
                     if (existing !== -1) savedTrips.value[existing].title = tripTitle.value;
@@ -444,8 +476,6 @@
                     }
                 });
 
-                const saveActivity = async () => { if (!formActivity.value.title) return; if (locationMode.value === 'auto' && formActivity.value.location && !formActivity.value.lat) { await searchLocation(); } const targetDay = days.value[currentDayIndex.value]; if(isEditing.value) { const idx = targetDay.activities.findIndex(a=>a.id===formActivity.value.id); if(idx!==-1) targetDay.activities[idx]={...formActivity.value}; } else targetDay.activities.push({...formActivity.value}); showActivityModal.value=false; saveToCloud(); if(viewMode.value==='map') setTimeout(()=>updateMapMarkers(),500); };
-                const saveExpense = () => { let amt = formExpense.value.inputAmount; let orig = null; if(useForeignCurrency.value){ orig=`${amt} ${targetCurrency.value}`; amt=Math.round(amt*exchangeRate.value); } expenses.value.unshift({id:Date.now(), title:formExpense.value.title, amount:amt, originalAmount:orig, payer:formExpense.value.payer, date:new Date().toLocaleDateString()}); showExpenseModal.value=false; saveToCloud(); };
                 const deleteActivity = (id) => { days.value[currentDayIndex.value].activities = days.value[currentDayIndex.value].activities.filter(a=>a.id!==id); saveToCloud(); if(viewMode.value==='map') setTimeout(()=>updateMapMarkers(),500); };
                 const deleteExpense = (id) => { expenses.value = expenses.value.filter(e=>e.id!==id); saveToCloud(); };
                 const sendMessage = () => { if(!formChat.value.trim() && !chatImage.value) return; push(dbRef(dbInstance, 'trips/'+tripId.value+'/chatMessages'), {user:people.value[0], text:formChat.value, image:chatImage.value, time:new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}); formChat.value=''; chatImage.value=null; };
@@ -513,7 +543,7 @@
         
         <!-- 1. Landing -->
         <div v-if="pageState === 'landing'" class="h-full flex flex-col p-6 overflow-y-auto bg-milk">
-            <div class="mt-8 mb-6 text-center"><h1 class="text-4xl font-bold text-coffee mb-1">Travel Buddy</h1><p class="text-latte font-bold text-sm tracking-widest">MOBILE V16</p></div>
+            <div class="mt-8 mb-6 text-center"><h1 class="text-4xl font-bold text-coffee mb-1">Travel Buddy</h1><p class="text-latte font-bold text-sm tracking-widest">MOBILE V18</p></div>
             <button @click="startWizard" class="bg-coffee text-white p-5 rounded-2xl shadow-xl flex items-center justify-between mb-6 group active:scale-95 transition flex-shrink-0"><div class="flex items-center gap-4"><div class="bg-white/10 w-12 h-12 rounded-full flex items-center justify-center text-2xl">✈️</div><div class="text-left"><h3 class="font-bold text-lg">建立新行程</h3></div></div><i class="fa-solid fa-arrow-right"></i></button>
             <div class="bg-white p-2 rounded-2xl border border-stone-100 flex gap-2 mb-8 shadow-sm flex-shrink-0"><input v-model="joinIdInput" placeholder="輸入行程 ID..." class="flex-1 bg-transparent p-3 outline-none font-bold text-coffee"><button @click="joinTrip" class="bg-latte text-white px-4 rounded-xl font-bold">加入</button></div>
             <h3 class="font-bold text-gray-400 text-sm mb-3 px-2">我的行程</h3>
@@ -657,7 +687,7 @@
             <textarea v-model="formPlace.notes" class="w-full border rounded-xl p-3 text-sm" placeholder="備註..." rows="2"></textarea></div><div class="flex gap-2"><button @click="showPlaceModal=false" class="flex-1 py-3 bg-gray-100 rounded-xl font-bold text-gray-500">取消</button><button @click="savePlace" class="flex-1 py-3 bg-coffee text-white rounded-xl font-bold">儲存</button></div></div></div>
 
             <!-- Existing Modals -->
-            <div v-if="showActivityModal" class="fixed inset-0 bg-black/50 z-[60] flex items-end justify-center"><div class="bg-milk w-full rounded-t-[2rem] p-6 shadow-2xl max-h-[85vh] overflow-y-auto pb-safe"><h3 class="text-lg font-bold mb-4 text-coffee">{{ isEditing ? '編輯' : '新增' }}行程</h3><div class="space-y-4"><div class="flex gap-3"><input v-model="formActivity.time" type="time" class="w-1/3 bg-white border border-stone-100 rounded-xl p-3 font-bold"><input v-model="formActivity.title" placeholder="標題" class="flex-1 bg-white border border-stone-100 rounded-xl p-3 font-bold"></div><div class="bg-white border border-stone-100 rounded-xl p-2"><div class="flex gap-1 mb-2"><button @click="locationMode='auto'" class="flex-1 py-1.5 rounded-lg text-xs font-bold transition-colors" :class="locationMode==='auto'?'bg-gray-100 text-coffee':'text-gray-400'">搜尋</button><button @click="locationMode='manual'" class="flex-1 py-1.5 rounded-lg text-xs font-bold transition-colors" :class="locationMode==='manual'?'bg-gray-100 text-coffee':'text-gray-400'">地圖</button></div><button @click="saveCurrentLocation" class="w-full bg-blue-50 text-blue-600 py-2 rounded-lg text-xs font-bold mb-2 flex items-center justify-center gap-2"><i class="fa-solid fa-location-crosshairs"></i> {{ isLoading ? '定位中...' : '📍 定位目前位置 (儲存)' }}</button><div v-show="locationMode==='auto'" class="flex gap-2"><input v-model="formActivity.location" placeholder="輸入地點..." class="flex-1 bg-gray-50 rounded-lg p-2 text-sm"><button @click="searchLocation" class="bg-coffee text-white px-3 rounded-lg text-xs font-bold">搜</button></div><div v-if="locationMode==='auto' && searchResults.length > 0" class="bg-white border border-stone-100 rounded-xl mt-2 overflow-hidden shadow-sm"><div v-for="(res, idx) in searchResults" :key="idx" @click="selectSearchResult(res)" class="p-3 border-b border-gray-50 last:border-0 hover:bg-gray-50 cursor-pointer"><p class="font-bold text-coffee text-sm">{{ res.display_name.split(',')[0] }}</p><p class="text-[10px] text-gray-400 truncate">{{ res.display_name }}</p></div></div><p v-if="searchResultAddress && searchResults.length === 0" class="text-xs text-green-600 bg-green-50 p-2 rounded-lg mt-2"><i class="fa-solid fa-check-circle mr-1"></i>已確認: {{ searchResultAddress }}</p><div v-show="locationMode==='manual'"><div id="modal-map"></div><p class="text-[10px] text-center text-gray-400 mt-1">拖曳地圖以定位</p></div></div><textarea v-model="formActivity.notes" rows="2" placeholder="備註" class="w-full bg-white border border-stone-100 rounded-xl p-3 text-sm"></textarea><label class="block w-full border-2 border-dashed border-gray-200 rounded-xl p-3 text-center text-gray-400 text-xs"><span v-if="!formActivity.image"><i class="fa-solid fa-camera mr-1"></i>上傳照片</span><span v-else class="text-coffee">已選擇照片 (點擊更換)</span><input type="file" @change="handleActivityImageUpload" class="hidden" accept="image/*"></label></div><div class="flex gap-3 mt-6"><button @click="showActivityModal=false" class="flex-1 py-3 bg-gray-100 rounded-xl font-bold text-gray-500">取消</button><button @click="saveActivity" class="flex-1 py-3 bg-coffee text-white rounded-xl font-bold">儲存</button></div></div></div>
+            <div v-if="showActivityModal" class="fixed inset-0 bg-black/50 z-[60] flex items-end justify-center"><div class="bg-milk w-full rounded-t-[2rem] p-6 shadow-2xl max-h-[85vh] overflow-y-auto pb-safe"><h3 class="text-lg font-bold mb-4 text-coffee">{{ isEditing ? '編輯' : '新增' }}行程</h3><div class="space-y-4"><div class="flex gap-3"><input v-model="formActivity.time" type="time" class="w-1/3 bg-white border border-stone-100 rounded-xl p-3 font-bold"><input v-model="formActivity.title" placeholder="標題" class="flex-1 bg-white border border-stone-100 rounded-xl p-3 font-bold"></div><div class="bg-white border border-stone-100 rounded-xl p-2"><div class="flex gap-1 mb-2"><button @click="locationMode='auto'" class="flex-1 py-1.5 rounded-lg text-xs font-bold transition-colors" :class="locationMode==='auto'?'bg-gray-100 text-coffee':'text-gray-400'">搜尋</button><button @click="locationMode='manual'" class="flex-1 py-1.5 rounded-lg text-xs font-bold transition-colors" :class="locationMode==='manual'?'bg-gray-100 text-coffee':'text-gray-400'">地圖</button></div><button @click="saveCurrentLocation" class="w-full bg-blue-50 text-blue-600 py-2 rounded-lg text-xs font-bold mb-2 flex items-center justify-center gap-2"><i class="fa-solid fa-location-crosshairs"></i> {{ isLoading ? '定位中...' : '📍 定位目前位置 (儲存)' }}</button><div v-show="locationMode==='auto'" class="flex gap-2"><input v-model="formActivity.location" placeholder="輸入地點..." class="flex-1 bg-gray-50 rounded-lg p-2 text-sm"><button @click="searchLocation" class="bg-coffee text-white px-3 rounded-lg text-xs font-bold">搜</button></div><div v-if="locationMode==='auto' && searchResults.length > 0" class="bg-white border border-stone-100 rounded-xl mt-2 overflow-hidden shadow-sm"><div v-for="(res, idx) in searchResults" :key="idx" @click="selectSearchResult(res)" class="p-3 border-b border-gray-50 last:border-0 hover:bg-gray-50 cursor-pointer"><p class="font-bold text-coffee text-sm">{{ res.display_name.split(',')[0] }}</p><p class="text-[10px] text-gray-400 truncate">{{ res.display_name }}</p></div></div><p v-if="searchResultAddress && searchResults.length === 0" class="text-xs text-green-600 bg-green-50 p-2 rounded-lg mt-2"><i class="fa-solid fa-check-circle mr-1"></i>已確認: {{ searchResultAddress }}</p><div v-show="locationMode==='manual'"><div id="modal-map"></div><p class="text-[10px] text-center text-gray-400 mt-1">拖曳地圖以定位</p></div></div><textarea v-model="formActivity.notes" rows="2" placeholder="備註" class="w-full bg-white border border-stone-100 rounded-xl p-3 text-sm"></textarea><label class="block w-full border-2 border-dashed border-gray-200 rounded-xl p-3 text-center text-gray-400 text-xs"><span v-if="!formActivity.image"><i class="fa-solid fa-camera mr-1"></i>上傳照片</span><span v-else class="text-coffee">已選擇照片 (點擊更換)</span><input type="file" @change="handleActivityImageUpload" class="hidden" accept="image/*"></label></div><div class="flex gap-3 mt-6"><button @click="showActivityModal=false" class="flex-1 py-3 bg-gray-100 rounded-xl font-bold text-gray-500">取消</button><button @click="saveActivity" class="flex-1 py-3 bg-coffee text-white rounded-xl font-bold">{{ isLoading ? '在跑了...' : '儲存' }}</button></div></div></div>
             <div v-if="showExpenseModal" class="fixed inset-0 bg-black/50 z-[60] flex items-end justify-center"><div class="bg-milk w-full rounded-t-3xl p-6 pb-safe"><h3 class="font-bold mb-4">記帳</h3><div class="flex bg-gray-100 p-1 rounded-xl mb-4"><button @click="useForeignCurrency=false" class="flex-1 py-2 rounded-lg text-xs font-bold" :class="!useForeignCurrency?'bg-white shadow':''">TWD</button><button @click="useForeignCurrency=true" class="flex-1 py-2 rounded-lg text-xs font-bold" :class="useForeignCurrency?'bg-white shadow':''">{{ targetCurrency }}</button></div><input v-model="formExpense.title" placeholder="項目" class="w-full bg-white border rounded-xl p-3 mb-2"><div class="flex gap-2 mb-4"><input v-model.number="formExpense.inputAmount" type="number" placeholder="金額" class="flex-1 bg-white border rounded-xl p-3"><select v-model="formExpense.payer" class="w-1/3 bg-white border rounded-xl p-3"><option v-for="p in people" :value="p">{{p}}</option></select></div><button @click="saveExpense" class="w-full bg-coffee text-white py-3 rounded-xl font-bold">儲存</button><button @click="showExpenseModal=false" class="w-full mt-2 text-gray-400 py-2">取消</button></div></div>
             <div v-if="showSettings" class="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-6"><div class="bg-white w-full max-w-sm rounded-2xl p-6"><h3 class="font-bold mb-4">設定</h3><div class="space-y-3 mb-4"><input v-model="tripTitle" class="w-full bg-gray-50 p-2 rounded border" placeholder="行程名稱"><input v-model="exchangeRate" type="number" class="w-full bg-gray-50 p-2 rounded border" placeholder="匯率"></div><div class="space-y-2"><div v-for="(p,i) in people" :key="i" class="flex justify-between bg-gray-50 p-2 rounded"><span>{{p}}</span><button @click="removePerson(i)" class="text-red-300">×</button></div><div class="flex gap-2"><input v-model="newPersonName" placeholder="新成員" class="flex-1 border rounded p-1"><button @click="addPerson" class="bg-coffee text-white px-3 rounded">+</button></div></div><div class="flex gap-2 mt-6"><button @click="updateTripSettings" class="flex-1 bg-coffee text-white py-2 rounded-lg">儲存</button><button @click="showSettings=false" class="flex-1 bg-gray-100 py-2 rounded-lg">取消</button></div></div></div>
             <div v-if="showCalculatorModal" class="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-6"><div class="bg-white w-full rounded-2xl p-6"><div class="text-right text-2xl font-bold mb-4 bg-gray-50 p-3 rounded">{{ calcExpression || 0 }}<div class="text-xs text-gray-400 mt-1">={{ formatNumber(Math.round(calcResultValue)) }} / {{ formatNumber(Math.round(calcResultValue * exchangeRate)) }} TWD</div></div><div class="grid grid-cols-4 gap-2"><button @click="clearCalc" class="calc-btn text-red-400">C</button><button @click="appendCalc('/')" class="calc-btn calc-btn-op">÷</button><button @click="appendCalc('*')" class="calc-btn calc-btn-op">×</button><button @click="backspaceCalc" class="calc-btn"><i class="fa-solid fa-delete-left"></i></button><button @click="appendCalc('7')" class="calc-btn">7</button><button @click="appendCalc('8')" class="calc-btn">8</button><button @click="appendCalc('9')" class="calc-btn">9</button><button @click="appendCalc('-')" class="calc-btn calc-btn-op">-</button><button @click="appendCalc('4')" class="calc-btn">4</button><button @click="appendCalc('5')" class="calc-btn">5</button><button @click="appendCalc('6')" class="calc-btn">6</button><button @click="appendCalc('+')" class="calc-btn calc-btn-op">+</button><button @click="appendCalc('1')" class="calc-btn">1</button><button @click="appendCalc('2')" class="calc-btn">2</button><button @click="appendCalc('3')" class="calc-btn">3</button><button class="calc-btn row-span-2 calc-btn-eq flex items-center justify-center" @click="calculateResult">=</button><button @click="appendCalc('0')" class="calc-btn col-span-2">0</button><button @click="appendCalc('.')" class="calc-btn">.</button></div><button @click="showCalculatorModal=false" class="w-full mt-4 py-2 text-gray-400 font-bold">關閉</button></div></div>
