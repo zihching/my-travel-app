@@ -37,7 +37,7 @@
         .calc-btn-action { @apply bg-[#A98467] text-white border-[#8B6B52] shadow-[0_2px_0_#8B6B52]; }
         .custom-input { @apply w-full bg-white border-2 border-[#E6DDC3] rounded-xl p-3 text-coffee font-bold outline-none focus:border-[#D4A373] transition-colors; }
         
-        /* Transport Icon Selection (淺咖啡色) */
+        /* Transport Icon Selection (淺咖啡色 Latte #D4A373) */
         .transport-opt { @apply w-10 h-10 rounded-full flex items-center justify-center border-2 border-transparent text-gray-400 transition-all; }
         .transport-opt.active { @apply bg-[#D4A373] text-white border-[#B08968] shadow-sm; }
     </style>
@@ -87,7 +87,7 @@
         const DEFAULT_CHECKLIST = [{ id: 1, text: '護照', checked: false }, { id: 2, text: '網卡/Wi-Fi', checked: false }];
 
         const TRANSPORT_TYPES = [
-            { id: 'walk', icon: 'fa-person-walking', label: '步行', speed: 5 }, // km/h
+            { id: 'walk', icon: 'fa-person-walking', label: '步行', speed: 5 },
             { id: 'train', icon: 'fa-train-subway', label: '地鐵', speed: 40 },
             { id: 'bus', icon: 'fa-bus', label: '公車', speed: 20 },
             { id: 'car', icon: 'fa-car', label: '開車', speed: 40 },
@@ -300,7 +300,6 @@
                 const handleActivityImageUpload=(e)=>processImage(e.target.files[0],(b)=>formActivity.value.image=b);
                 const locateUser = () => { if (!map) return; navigator.geolocation.getCurrentPosition(p=>{ if(userMarker) map.removeLayer(userMarker); userMarker = L.circleMarker([p.coords.latitude, p.coords.longitude], {radius:8, fillColor:"#3B82F6", color:"#fff", weight:2, fillOpacity:1}).addTo(map); map.setView([p.coords.latitude, p.coords.longitude], 15); }); };
                 
-                // Improved Save Current Location & Estimator
                 const saveCurrentLocation = () => { isLoading.value = true; navigator.geolocation.getCurrentPosition(async (p) => { 
                     formActivity.value.lat = p.coords.latitude; 
                     formActivity.value.lng = p.coords.longitude; 
