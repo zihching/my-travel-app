@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Travel Buddy V24</title>
+    <title>Travel Buddy V25</title>
     
     <!-- Tailwind CSS Core -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- ⚠️ 關鍵修復：將設定檔移出 module，讓 Tailwind 讀得到 -->
     <script>
         tailwind.config = {
             theme: {
@@ -78,9 +77,6 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
         import { getDatabase, ref as dbRef, set, onValue, update, push } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
 
-        // -----------------------------------------------------------
-        // ✅ Key 已經填好
-        // -----------------------------------------------------------
         const firebaseConfig = {
             apiKey: "AIzaSyDFUGYOobmVxYfQMBYz1iq4z1HlrdbTi8Q",
             authDomain: "travel-55c4b.firebaseapp.com",
@@ -91,7 +87,7 @@
             appId: "1:925227625640:web:bdc242cbddf8e1d6f8a69d",
             measurementId: "G-K1B4N26V1T"
         };
-        
+
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
@@ -118,7 +114,6 @@
 
         createApp({
             setup() {
-                // State
                 const pageState = ref('landing'); 
                 const savedTrips = ref([]);
                 const activeTab = ref('itinerary');
@@ -131,7 +126,6 @@
                 const wizardStep = ref(1);
                 const wizardData = ref({ destination: '', currency: 'TWD', rate: 1, lang: 'en', flag: '✈️' });
 
-                // Data
                 const days = ref([{ activities: [] }, { activities: [] }]); 
                 const currentDayIndex = ref(0);
                 const people = ref(['我']);
@@ -145,7 +139,6 @@
                 const chatMessages = ref([]);
                 const flightInfo = ref({ code: '', time: '' });
                 
-                // Forms
                 const newPersonName = ref('');
                 const useForeignCurrency = ref(false);
                 const showActivityModal = ref(false);
@@ -168,8 +161,8 @@
                 const calcMode = ref('foreign'); 
                 const calculatorTarget = ref(null);
                 const newItemText = ref('');
+                const newSpotText = ref(''); // New for Collection
                 const joinIdInput = ref('');
-
                 let map = null;
                 let modalMap = null;
                 let modalMarker = null;
@@ -241,7 +234,6 @@
                     saveTripToLocal(tripId.value, tripTitle.value);
                 };
 
-                // Calculator
                 const appendCalc = (val) => {
                     if ((calcExpression.value === '0' || calcExpression.value === '') && !['+','-','*','/','.'].includes(val)) { calcExpression.value = val; return; }
                     const lastChar = calcExpression.value.slice(-1);
@@ -260,7 +252,6 @@
                 const evaluateExpenseAmount = () => { try { const v=String(formExpense.value.inputAmount); if(/[^0-9+\-*/.]/.test(v))return; const r=eval(v); if(!isNaN(r)) formExpense.value.inputAmount=r; } catch(e){} };
                 const formatNumber = (n) => { if (n === null || n === undefined || isNaN(n) || !isFinite(n)) return '0'; return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); };
 
-                // Map
                 const initMap = () => {
                     const container = document.getElementById('map'); if (!container) return; if (map) { map.invalidateSize(); return; }
                     map = L.map('map', {zoomControl: false}).setView([35,139], 13); L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map); L.control.zoom({ position: 'bottomright' }).addTo(map);
@@ -278,7 +269,6 @@
                 };
                 watch(viewMode, (v) => { if (v === 'map') nextTick(() => { setTimeout(() => { initMap(); updateMapMarkers(); }, 100); }); });
 
-                // Core
                 const createTrip = async () => {
                     const newId = Math.random().toString(36).substring(2, 8).toUpperCase(); const rate = parseFloat(wizardData.value.rate) || 1;
                     const initialData = { days: [{activities:[]},{activities:[]}], people: ['我'], expenses: [], savedSpots: [], exchangeRate: rate, targetCurrency: wizardData.value.currency.toUpperCase(), targetLang: wizardData.value.lang, title: tripTitle.value, checklist: [...DEFAULT_CHECKLIST], createdAt: Date.now() };
@@ -311,6 +301,19 @@
                 const addCheckItem = () => { if(newItemText.value) { checklist.value.push({id:Date.now(), text:newItemText.value, checked:false}); newItemText.value=''; saveToCloud(); }};
                 const toggleCheck = (id) => { const i = checklist.value.find(x=>x.id===id); if(i) i.checked=!i.checked; saveToCloud(); };
                 const deleteCheckItem = (id) => { checklist.value=checklist.value.filter(x=>x.id!==id); saveToCloud(); };
+                
+                // Collection (New)
+                const addSpot = () => {
+                    if (!newSpotText.value) return;
+                    savedSpots.value.push({ id: Date.now(), text: newSpotText.value });
+                    newSpotText.value = '';
+                    saveToCloud();
+                };
+                const deleteSpot = (id) => {
+                    savedSpots.value = savedSpots.value.filter(s => s.id !== id);
+                    saveToCloud();
+                };
+
                 const backToLanding = () => { tripId.value = ''; window.history.pushState({ path: window.location.pathname }, '', window.location.pathname); pageState.value = 'landing'; };
                 const joinTrip = () => { if(joinIdInput.value) loadTrip(joinIdInput.value); };
                 const addPerson = ()=>{if(newPersonName.value){people.value.push(newPersonName.value);newPersonName.value='';saveToCloud();}};
@@ -344,7 +347,7 @@
                     showActivityModal, showExpenseModal, showTranslateModal, showCalculatorModal, showImagePreview,
                     isEditing, formActivity, formExpense, formChat, chatImage, translateText, translatedResult, isTranslating,
                     calcExpression, calcResultValue, calcMode, convertedValue, savedSpots, evaluateExpenseAmount,
-                    newItemText, totalExpense, perPersonShare, debts, useForeignCurrency, checklist, chatMessages, flightInfo,
+                    newItemText, newSpotText, totalExpense, perPersonShare, debts, useForeignCurrency, checklist, chatMessages, flightInfo,
                     locationMode, searchResultAddress, isLoading, TRANSPORT_TYPES, searchResults,
                     startWizard, detectDestination, createTrip, loadTrip, deleteLocalTrip, backToLanding, joinTrip,
                     changeDay, addDay, 
@@ -357,7 +360,8 @@
                     handleChatImageUpload, removeChatImage, handleActivityImageUpload, removeActivityImage,
                     searchLocation, selectLocation, saveCurrentLocation, performTranslation,
                     appendCalc, clearCalc, backspaceCalc, updateExchangeRate,
-                    openCalculatorForExpense, openCalculatorNormal, applyCalculatorResult
+                    openCalculatorForExpense, openCalculatorNormal, applyCalculatorResult,
+                    addSpot, deleteSpot
                 };
             }
         }).mount('#app');
@@ -368,7 +372,7 @@
         
         <!-- 1. Landing -->
         <div v-if="pageState === 'landing'" class="h-full flex flex-col p-6 overflow-y-auto bg-milk">
-            <div class="mt-8 mb-6 text-center"><h1 class="text-4xl font-bold text-coffee mb-1">Travel Buddy</h1><p class="text-latte font-bold text-sm tracking-widest">MOBILE V24</p></div>
+            <div class="mt-8 mb-6 text-center"><h1 class="text-4xl font-bold text-coffee mb-1">Travel Buddy</h1><p class="text-latte font-bold text-sm tracking-widest">MOBILE V25</p></div>
             <button @click="startWizard" class="bg-coffee text-white p-5 rounded-2xl shadow-xl flex items-center justify-between mb-6 group active:scale-95 transition flex-shrink-0"><div class="flex items-center gap-4"><div class="bg-white/10 w-12 h-12 rounded-full flex items-center justify-center text-2xl">✈️</div><div class="text-left"><h3 class="font-bold text-lg">建立新行程</h3></div></div><i class="fa-solid fa-arrow-right"></i></button>
             <div class="bg-white p-2 rounded-2xl border border-stone-100 flex gap-2 mb-8 shadow-sm flex-shrink-0"><input v-model="joinIdInput" placeholder="輸入行程 ID..." class="flex-1 bg-transparent p-3 outline-none font-bold text-coffee"><button @click="joinTrip" class="bg-latte text-white px-4 rounded-xl font-bold">加入</button></div>
             <h3 class="font-bold text-gray-400 text-sm mb-3 px-2">我的行程</h3>
@@ -426,14 +430,27 @@
                 <!-- Traffic -->
                 <div v-if="activeTab === 'traffic'" class="px-4 pb-24 flex flex-col items-center justify-center h-full opacity-50"><i class="fa-solid fa-train text-6xl mb-4 text-latte"></i><p class="text-coffee font-bold">交通資訊 (開發中)</p></div>
 
-                <!-- Collection -->
-                <div v-if="activeTab === 'collection'" class="px-4 pb-24"><h2 class="font-bold text-coffee mb-4 mt-2">我的收藏</h2><div v-if="savedSpots.length===0" class="text-center opacity-50 py-10"><i class="fa-solid fa-bookmark text-4xl mb-2 text-latte"></i><p class="text-xs">尚無收藏地點</p></div></div>
+                <!-- Collection (Updated) -->
+                <div v-if="activeTab === 'collection'" class="px-6 pb-24">
+                    <h2 class="font-bold text-coffee mb-4 mt-2">我的收藏</h2>
+                    <div class="space-y-2 mb-4">
+                        <div v-if="savedSpots.length === 0" class="text-center opacity-50 py-10">
+                            <i class="fa-solid fa-bookmark text-4xl mb-2 text-latte"></i><p class="text-xs">尚無收藏地點</p>
+                        </div>
+                        <div v-for="spot in savedSpots" :key="spot.id" class="bg-white p-4 rounded-xl border border-[#EBE5D9] flex items-center gap-3 shadow-sm">
+                            <div class="w-8 h-8 rounded-full bg-[#E6DDC3] flex items-center justify-center text-coffee"><i class="fa-solid fa-map-pin"></i></div>
+                            <span class="flex-1 font-bold text-sm text-coffee">{{ spot.text }}</span>
+                            <button @click="deleteSpot(spot.id)" class="text-red-200 hover:text-red-400"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <div class="flex gap-2"><input v-model="newSpotText" @keyup.enter="addSpot" placeholder="輸入想去的地點..." class="flex-1 bg-white border border-[#EBE5D9] rounded-xl p-3 shadow-sm text-coffee font-bold"><button @click="addSpot" class="bg-coffee text-white px-4 rounded-xl"><i class="fa-solid fa-plus"></i></button></div>
+                </div>
 
                 <!-- Checklist -->
-                <div v-if="activeTab === 'checklist'" class="px-4 pb-24"><h2 class="font-bold text-coffee mb-4 mt-2">清單</h2><div class="space-y-2 mb-4"><div v-for="item in checklist" :key="item.id" @click="toggleCheck(item.id)" class="bg-white p-3 rounded-xl border border-[#EBE5D9] flex items-center gap-3 shadow-sm" :class="item.checked?'opacity-50':''"><div class="w-5 h-5 rounded-full border flex items-center justify-center" :class="item.checked?'bg-green-500 border-green-500 text-white':'border-gray-200'"><i class="fa-solid fa-check text-xs"></i></div><span class="flex-1 font-bold text-sm text-coffee">{{ item.text }}</span><button @click.stop="deleteCheckItem(item.id)" class="text-red-200"><i class="fa-solid fa-times"></i></button></div></div><div class="flex gap-2"><input v-model="newItemText" placeholder="新增..." class="flex-1 bg-white border border-[#EBE5D9] rounded-xl p-3 shadow-sm text-coffee font-bold"><button @click="addCheckItem" class="bg-coffee text-white px-4 rounded-xl"><i class="fa-solid fa-plus"></i></button></div></div>
+                <div v-if="activeTab === 'checklist'" class="px-6 pb-24"><h2 class="font-bold text-coffee mb-4 mt-2">清單</h2><div class="space-y-2 mb-4"><div v-for="item in checklist" :key="item.id" @click="toggleCheck(item.id)" class="bg-white p-4 rounded-xl border border-[#EBE5D9] flex items-center gap-3 shadow-sm" :class="item.checked?'opacity-50':''"><div class="w-5 h-5 rounded-full border flex items-center justify-center" :class="item.checked?'bg-green-500 border-green-500 text-white':'border-gray-200'"><i class="fa-solid fa-check text-xs"></i></div><span class="flex-1 font-bold text-sm text-coffee">{{ item.text }}</span><button @click.stop="deleteCheckItem(item.id)" class="text-red-200"><i class="fa-solid fa-times"></i></button></div></div><div class="flex gap-2"><input v-model="newItemText" placeholder="新增物品..." class="flex-1 bg-white border border-[#EBE5D9] rounded-xl p-3 shadow-sm text-coffee font-bold"><button @click="addCheckItem" class="bg-coffee text-white px-4 rounded-xl"><i class="fa-solid fa-plus"></i></button></div></div>
                 
                 <!-- Expenses -->
-                <div v-if="activeTab === 'expenses'" class="px-4 pb-24"><div class="bg-coffee rounded-3xl p-6 text-white shadow-xl mb-6 mt-2"><p class="text-xs opacity-60">TOTAL</p><h2 class="text-3xl font-bold mb-2">{{ formatNumber(totalExpense) }}</h2><div class="flex justify-between text-xs opacity-80 pt-4 border-t border-white/10"><span>每人 ${{ formatNumber(perPersonShare) }}</span><span>{{ people.length }} 人</span></div></div><div class="space-y-2 mb-20"><div v-for="exp in expenses" :key="exp.id" class="bg-white p-3 rounded-xl flex justify-between items-center shadow-sm border border-[#EBE5D9]"><div class="flex gap-3"><div class="w-8 h-8 rounded-full bg-khaki flex items-center justify-center text-xs font-bold text-coffee">{{ exp.payer[0] }}</div><div><p class="font-bold text-sm text-coffee">{{ exp.title }}</p><p class="text-[10px] text-gray-400">{{ exp.date }} <span v-if="exp.originalAmount" class="text-latte">({{ exp.originalAmount }})</span></p></div></div><div class="text-right"><p class="font-bold text-sm text-coffee">${{ formatNumber(exp.amount) }}</p><button @click="deleteExpense(exp.id)" class="text-red-200 text-xs">刪除</button></div></div></div></div>
+                <div v-if="activeTab === 'expenses'" class="px-6 pb-24"><div class="bg-coffee rounded-3xl p-6 text-white shadow-xl mb-6 mt-2"><p class="text-xs opacity-60">TOTAL</p><h2 class="text-3xl font-bold mb-2">{{ formatNumber(totalExpense) }}</h2><div class="flex justify-between text-xs opacity-80 pt-4 border-t border-white/10"><span>每人 ${{ formatNumber(perPersonShare) }}</span><span>{{ people.length }} 人</span></div></div><div class="space-y-2 mb-20"><div v-for="exp in expenses" :key="exp.id" class="bg-white p-3 rounded-xl flex justify-between items-center shadow-sm border border-[#EBE5D9]"><div class="flex gap-3"><div class="w-8 h-8 rounded-full bg-khaki flex items-center justify-center text-xs font-bold text-coffee">{{ exp.payer[0] }}</div><div><p class="font-bold text-sm text-coffee">{{ exp.title }}</p><p class="text-[10px] text-gray-400">{{ exp.date }} <span v-if="exp.originalAmount" class="text-latte">({{ exp.originalAmount }})</span></p></div></div><div class="text-right"><p class="font-bold text-sm text-coffee">${{ formatNumber(exp.amount) }}</p><button @click="deleteExpense(exp.id)" class="text-red-200 text-xs">刪除</button></div></div></div></div>
             </main>
 
             <!-- Bottom Navigation (5 Items) -->
@@ -445,7 +462,7 @@
                 <button @click="activeTab='expenses'" class="nav-btn" :class="activeTab==='expenses'?'active':''"><i class="fa-solid fa-wallet text-xl"></i>分帳</button>
             </nav>
             <!-- FAB (Elevated & Positioned Right) -->
-            <button v-if="activeTab!=='chat' && activeTab!=='checklist'" @click="openAddModal" class="absolute bottom-20 right-6 w-14 h-14 bg-coffee text-white rounded-full shadow-2xl flex items-center justify-center text-xl z-40 mb-safe active:scale-90 transition-transform"><i class="fa-solid fa-plus"></i></button>
+            <button v-if="activeTab!=='chat' && activeTab!=='checklist' && activeTab!=='collection'" @click="openAddModal" class="absolute bottom-20 right-6 w-14 h-14 bg-coffee text-white rounded-full shadow-2xl flex items-center justify-center text-xl z-40 mb-safe active:scale-90 transition-transform"><i class="fa-solid fa-plus"></i></button>
 
             <!-- Modals -->
             <!-- Calculator (With Toggle) -->
