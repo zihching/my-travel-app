@@ -19,28 +19,40 @@
         /* iOS Safe Area & Full Height Fix */
         html, body { height: 100%; overscroll-behavior: none; }
         body { 
-            background-color: #FEF9E7; /* 淡奶黃色背景 */
+            background-color: #FEF9E7; /* 背景：淡奶油黃 */
             height: 100dvh; 
             display: flex;
             flex-direction: column;
             padding-top: env(safe-area-inset-top);
             padding-bottom: env(safe-area-inset-bottom);
             font-family: 'Zen Maru Gothic', 'Noto Sans TC', sans-serif;
-            color: #4A3B32;
+            color: #4A3B32; /* 深咖啡色文字 */
         }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         #map-container { height: 100%; width: 100%; position: absolute; top: 0; left: 0; z-index: 0; }
         #modal-map { height: 200px; width: 100%; z-index: 1; }
         
+        /* 自定義顏色變數 */
+        .bg-warm-white { background-color: #FFF9E6; } /* 溫暖的米白，取代死白 */
+        .border-khaki { border-color: #E6DDC3; }
+        
         /* Components */
-        .card { @apply bg-white rounded-2xl p-4 shadow-sm border border-[#E6DDC3]; }
+        .card { @apply bg-warm-white rounded-2xl p-4 shadow-sm border border-khaki; }
         .btn-primary { @apply bg-[#8B5E3C] text-white rounded-xl font-bold shadow-md active:scale-95 transition-transform; }
         .btn-secondary { @apply bg-[#E6DDC3] text-[#5C4B43] rounded-xl font-bold; }
-        .input-field { @apply w-full bg-white border-2 border-[#E6DDC3] rounded-xl p-3 text-[#4A3B32] font-bold outline-none focus:border-[#D4A373] transition-colors; }
+        .input-field { @apply w-full bg-warm-white border-2 border-khaki rounded-xl p-3 text-[#4A3B32] font-bold outline-none focus:border-[#D4A373] transition-colors; }
         
-        /* Calculator */
-        .calc-btn { @apply bg-[#FDF6E3] rounded-2xl p-3 text-xl font-bold text-[#5C4B43] active:bg-[#EDE0C3] shadow-[0_2px_0_#DCCEB5] border border-[#DCCEB5]; }
+        /* New Calculator Style (Khaki) */
+        .calc-btn { 
+            @apply bg-[#E6DDC3] rounded-2xl p-3 text-xl font-bold text-[#5C4B43] active:bg-[#D1C7B7] shadow-[0_2px_0_#D1C7B7] border border-[#D1C7B7]; 
+        }
+        .calc-btn-op { 
+            @apply bg-[#D4A373] text-white border-[#B08968] shadow-[0_2px_0_#B08968] active:bg-[#C08A5E]; 
+        }
+        .calc-btn-action {
+            @apply bg-[#8B5E3C] text-white border-[#6F4B30] shadow-[0_2px_0_#6F4B30] active:bg-[#6F4B30];
+        }
     </style>
 
     <!-- Firebase SDKs -->
@@ -50,7 +62,7 @@
         import { getDatabase, ref as dbRef, set, onValue, update, push } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
 
         // -----------------------------------------------------------
-        // ✅ 鑰匙已填好
+        // ✅ 你的專屬鑰匙
         // -----------------------------------------------------------
         const firebaseConfig = {
             apiKey: "AIzaSyDFUGYOobmVxYfQMBYz1iq4z1HlrdbTi8Q",
@@ -75,7 +87,7 @@
                         coffee: '#4A3B32', 
                         latte: '#D4A373', 
                         mocha: '#8B5E3C',
-                        cream: '#FFFDF0',
+                        cream: '#FFF9E6', /* 調整過的米白 */
                         khaki: '#E6DDC3'
                     }
                 }
@@ -128,7 +140,7 @@
                 const showExpenseModal = ref(false);
                 const showTranslateModal = ref(false);
                 const showCalculatorModal = ref(false);
-                const calculatorSource = ref('general'); // 'general' or 'expense'
+                const calculatorSource = ref('general');
                 const showImagePreview = ref(null);
                 
                 const isEditing = ref(false);
@@ -154,10 +166,17 @@
                 let userMarker = null;
 
                 onMounted(() => {
+                    // 修復：更穩健的讀取邏輯
                     try {
                         const localTrips = localStorage.getItem('mySavedTrips');
-                        if (localTrips) savedTrips.value = JSON.parse(localTrips).filter(t => t.id && t.title);
+                        if (localTrips) {
+                            const parsed = JSON.parse(localTrips);
+                            if(Array.isArray(parsed)) {
+                                savedTrips.value = parsed;
+                            }
+                        }
                     } catch(e) { savedTrips.value = []; }
+
                     const urlParams = new URLSearchParams(window.location.search);
                     const id = urlParams.get('id');
                     if (id) loadTrip(id);
@@ -167,15 +186,21 @@
                 // Logic
                 const saveTripToLocal = (id, title) => {
                     if(!id) return;
+                    const displayTitle = title || '未命名行程';
                     const existing = savedTrips.value.findIndex(t => t.id === id);
-                    if (existing !== -1) savedTrips.value[existing].title = title || '未命名行程';
-                    else savedTrips.value.unshift({ id, title: title || '未命名行程' });
+                    if (existing !== -1) {
+                        savedTrips.value[existing].title = displayTitle;
+                    } else {
+                        savedTrips.value.unshift({ id, title: displayTitle });
+                    }
                     localStorage.setItem('mySavedTrips', JSON.stringify(savedTrips.value));
                 };
 
                 const loadTrip = (id) => {
                     tripId.value = id;
-                    window.history.pushState({ path: `${window.location.pathname}?id=${id}` }, '', `${window.location.pathname}?id=${id}`);
+                    // 更新網址但不刷新頁面 (GitHub Pages 友善)
+                    const newUrl = window.location.pathname + `?id=${id}`;
+                    window.history.pushState({ path: newUrl }, '', newUrl);
                     pageState.value = 'app'; 
                     initSync(id);
                 };
@@ -190,7 +215,7 @@
                             days.value = data.days || [{ activities: [] }];
                             people.value = data.people || ['我'];
                             expenses.value = data.expenses || [];
-                            exchangeRate.value = data.exchangeRate || 1;
+                            exchangeRate.value = parseFloat(data.exchangeRate) || 1;
                             targetLang.value = data.targetLang || 'en';
                             targetCurrency.value = data.targetCurrency || 'USD';
                             tripTitle.value = data.title || 'New Trip';
@@ -201,7 +226,10 @@
                             
                             saveTripToLocal(id, tripTitle.value);
                             if (viewMode.value === 'map' && activeTab.value === 'itinerary') setTimeout(() => { initMap(); updateMapMarkers(); }, 500);
-                        } else if(pageState.value === 'app') { alert("找不到行程"); pageState.value = 'landing'; }
+                        } else if(pageState.value === 'app') { 
+                            // 保持在 App 狀態但提示
+                            // alert("找不到行程"); 
+                        }
                     });
                 };
 
@@ -210,7 +238,7 @@
                         days: days.value,
                         people: people.value,
                         expenses: expenses.value,
-                        exchangeRate: exchangeRate.value,
+                        exchangeRate: exchangeRate.value, // Save rate
                         title: tripTitle.value,
                         targetLang: targetLang.value,
                         targetCurrency: targetCurrency.value,
@@ -244,12 +272,12 @@
                 });
                 const confirmCalculator = () => {
                     if (calculatorSource.value === 'expense') {
-                        // 如果是整數，不要小數點；如果不是，保留兩位
                         const result = calcResultValue.value;
                         formExpense.value.inputAmount = Number.isInteger(result) ? result : parseFloat(result.toFixed(2));
                     }
                     showCalculatorModal.value = false;
                 };
+                // 關鍵：計算機內的匯率修改直接同步
                 const updateExchangeRate = () => saveToCloud();
 
                 // Map
