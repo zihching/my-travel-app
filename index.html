@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Travel Buddy V14</title>
+    <title>Travel Buddy V15</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -19,7 +19,7 @@
         /* iOS Safe Area & Full Height Fix */
         html, body { height: 100%; overscroll-behavior: none; }
         body { 
-            background-color: #FFFBE6; /* 淡奶黃 */
+            background-color: #FFFBE6; /* V15: 淡奶黃色背景 */
             height: 100dvh; 
             display: flex;
             flex-direction: column;
@@ -32,6 +32,7 @@
         #map-container { height: 100%; width: 100%; position: absolute; top: 0; left: 0; z-index: 0; }
         #modal-map { height: 200px; width: 100%; z-index: 1; }
         
+        /* Calculator Style (Khaki) */
         .calc-btn { @apply bg-[#E6DDC3] rounded-2xl p-4 text-xl font-bold text-[#5C4B43] active:scale-95 transition-transform shadow-[0_2px_0_#D1C7B7] border border-[#D1C7B7]; }
         .calc-btn-op { @apply bg-[#D4A373] text-white border-[#B08968] shadow-[0_2px_0_#B08968]; }
         .calc-btn-action { @apply bg-[#A98467] text-white border-[#8B6B52] shadow-[0_2px_0_#8B6B52]; }
@@ -45,7 +46,7 @@
         import { getDatabase, ref as dbRef, set, onValue, update, push } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
 
         // -----------------------------------------------------------
-        // ✅ Key 已經填好，直接用！
+        // ✅ Key 已經填好
         // -----------------------------------------------------------
         const firebaseConfig = {
             apiKey: "AIzaSyDFUGYOobmVxYfQMBYz1iq4z1HlrdbTi8Q",
@@ -65,7 +66,9 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { milk: '#FFFBE6', coffee: '#4A3B32', latte: '#D4A373', mocha: '#9C6644', cream: '#FFF9DB', khaki: '#E6DDC3' }
+                    colors: { 
+                        milk: '#FFFBE6', coffee: '#4A3B32', latte: '#D4A373', mocha: '#9C6644', cream: '#FFF9DB', khaki: '#E6DDC3'
+                    }
                 }
             }
         }
@@ -102,7 +105,7 @@
                 const currentDayIndex = ref(0);
                 const people = ref(['我']);
                 const expenses = ref([]);
-                const savedSpots = ref([]);
+                const savedSpots = ref([]); 
                 const exchangeRate = ref(1);
                 const targetLang = ref('en');
                 const targetCurrency = ref('USD');
@@ -125,7 +128,7 @@
                 const locationMode = ref('auto'); 
                 const searchResultAddress = ref('');
                 
-                const formExpense = ref({ title: '', inputAmount: '', payer: '' }); 
+                const formExpense = ref({ title: '', inputAmount: '', payer: '' });
                 const formChat = ref('');
                 const chatImage = ref(null);
                 const translateText = ref('');
@@ -195,6 +198,7 @@
                             checklist.value = data.checklist || [...DEFAULT_CHECKLIST];
                             chatMessages.value = data.chatMessages ? Object.values(data.chatMessages) : [];
                             flightInfo.value = data.flightInfo || { code: '', time: '' };
+                            
                             saveTripToLocal(id, tripTitle.value);
                             if (viewMode.value === 'map' && activeTab.value === 'itinerary') setTimeout(() => { initMap(); updateMapMarkers(); }, 500);
                         } else {
@@ -214,10 +218,8 @@
 
                 // Calculator
                 const appendCalc = (val) => {
-                    // 修復：如果原本是 0 或 空，且輸入數字，直接取代
                     if ((calcExpression.value === '0' || calcExpression.value === '') && !['+','-','*','/','.'].includes(val)) {
-                        calcExpression.value = val;
-                        return;
+                        calcExpression.value = val; return;
                     }
                     const lastChar = calcExpression.value.slice(-1);
                     if (['+','-','*','/','.'].includes(val) && ['+','-','*','/','.'].includes(lastChar)) { calcExpression.value = calcExpression.value.slice(0, -1) + val; return; }
@@ -225,9 +227,20 @@
                 };
                 const clearCalc = () => calcExpression.value = '';
                 const backspaceCalc = () => calcExpression.value = calcExpression.value.slice(0, -1);
+                
                 const calcResultValue = computed(() => {
                     try { if (!calcExpression.value || /[^0-9+\-*/.]/.test(calcExpression.value)) return 0; return eval(calcExpression.value) || 0; } catch (e) { return 0; }
                 });
+                
+                const convertedValue = computed(() => {
+                    const res = calcResultValue.value;
+                    if (calcMode.value === 'foreign') {
+                        return Math.round(res * exchangeRate.value);
+                    } else {
+                        return (res / exchangeRate.value).toFixed(2);
+                    }
+                });
+
                 const updateExchangeRate = () => saveToCloud();
                 
                 const openCalculatorForExpense = () => {
@@ -235,10 +248,16 @@
                     calcExpression.value = formExpense.value.inputAmount ? String(formExpense.value.inputAmount) : '';
                     showCalculatorModal.value = true;
                 };
-                const openCalculatorNormal = () => { calculatorTarget.value = null; calcExpression.value = ''; showCalculatorModal.value = true; };
+                
                 const applyCalculatorResult = () => {
                     if (calculatorTarget.value === 'expense') formExpense.value.inputAmount = calcResultValue.value;
                     showCalculatorModal.value = false; calculatorTarget.value = null;
+                };
+
+                // Helper for number formatting to prevent crashes
+                const formatNumber = (n) => {
+                    if (n === null || n === undefined || isNaN(n) || !isFinite(n)) return '0';
+                    return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
                 };
 
                 // Map
@@ -317,7 +336,7 @@
                     people, expenses, newPersonName, exchangeRate, targetCurrency, targetLang,
                     showActivityModal, showExpenseModal, showTranslateModal, showCalculatorModal, showImagePreview,
                     isEditing, formActivity, formExpense, formChat, chatImage, translateText, translatedResult, isTranslating,
-                    calcExpression, calcResultValue, calcMode, savedSpots,
+                    calcExpression, calcResultValue, calcMode, convertedValue, savedSpots,
                     newItemText, totalExpense, perPersonShare, debts, useForeignCurrency, checklist, chatMessages, flightInfo,
                     locationMode, searchResultAddress, isLoading,
                     startWizard, detectDestination, createTrip, loadTrip, deleteLocalTrip, backToLanding, joinTrip,
@@ -333,9 +352,9 @@
                     handleChatImageUpload, removeChatImage: ()=>chatImage.value=null, handleActivityImageUpload, removeActivityImage: ()=>formActivity.value.image=null,
                     searchLocation: async()=>{if(!formActivity.value.location)return; isLoading.value=true; try{const res=await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(formActivity.value.location)}`);const d=await res.json();if(d[0]){formActivity.value.lat=parseFloat(d[0].lat);formActivity.value.lng=parseFloat(d[0].lon);searchResultAddress.value=d[0].display_name;}}catch(e){}isLoading.value=false;},
                     saveCurrentLocation, performTranslation, appendCalc, clearCalc, backspaceCalc, updateExchangeRate,
-                    openCalculatorForExpense, openCalculatorNormal, applyCalculatorResult,
+                    openCalculatorForExpense, openCalculatorNormal: ()=>{calculatorTarget.value=null; calcExpression.value=''; showCalculatorModal.value=true;}, applyCalculatorResult,
                     locateUser, getWeatherIcon: (c)=>{if(c===undefined)return'🌤️';if(c<=3)return'☁️';if(c<=60)return'🌧️';return'⛈️';},
-                    formatNumber: (n)=>n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,",")
+                    formatNumber
                 };
             }
         }).mount('#app');
@@ -346,7 +365,7 @@
         
         <!-- 1. Landing -->
         <div v-if="pageState === 'landing'" class="h-full flex flex-col p-6 overflow-y-auto bg-milk">
-            <div class="mt-8 mb-6 text-center"><h1 class="text-4xl font-bold text-coffee mb-1">Travel Buddy</h1><p class="text-latte font-bold text-sm tracking-widest">MOBILE V14</p></div>
+            <div class="mt-8 mb-6 text-center"><h1 class="text-4xl font-bold text-coffee mb-1">Travel Buddy</h1><p class="text-latte font-bold text-sm tracking-widest">MOBILE V15</p></div>
             <button @click="startWizard" class="bg-coffee text-white p-5 rounded-2xl shadow-xl flex items-center justify-between mb-6 group active:scale-95 transition flex-shrink-0"><div class="flex items-center gap-4"><div class="bg-white/10 w-12 h-12 rounded-full flex items-center justify-center text-2xl">✈️</div><div class="text-left"><h3 class="font-bold text-lg">建立新行程</h3></div></div><i class="fa-solid fa-arrow-right"></i></button>
             <div class="bg-white p-2 rounded-2xl border border-stone-100 flex gap-2 mb-8 shadow-sm flex-shrink-0"><input v-model="joinIdInput" placeholder="輸入行程 ID..." class="flex-1 bg-transparent p-3 outline-none font-bold text-coffee"><button @click="joinTrip" class="bg-latte text-white px-4 rounded-xl font-bold">加入</button></div>
             <h3 class="font-bold text-gray-400 text-sm mb-3 px-2">我的行程</h3>
