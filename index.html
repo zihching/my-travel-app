@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Travel Buddy V19</title>
+    <title>Travel Buddy V20</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -15,7 +15,8 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
 
-    <style>
+    <!-- ⚠️ 關鍵修復：加上 type="text/tailwindcss" 讓瀏覽器讀懂自定義樣式 -->
+    <style type="text/tailwindcss">
         /* iOS Safe Area & Full Height Fix */
         html, body { height: 100%; overscroll-behavior: none; }
         body { 
@@ -32,14 +33,28 @@
         #map-container { height: 100%; width: 100%; position: absolute; top: 0; left: 0; z-index: 0; }
         #modal-map { height: 200px; width: 100%; z-index: 1; }
         
-        .calc-btn { @apply bg-[#E6DDC3] rounded-2xl p-4 text-xl font-bold text-[#5C4B43] active:scale-95 transition-transform shadow-[0_2px_0_#D1C7B7] border border-[#D1C7B7]; }
-        .calc-btn-op { @apply bg-[#D4A373] text-white border-[#B08968] shadow-[0_2px_0_#B08968]; }
-        .calc-btn-action { @apply bg-[#A98467] text-white border-[#8B6B52] shadow-[0_2px_0_#8B6B52]; }
-        .custom-input { @apply w-full bg-white border-2 border-[#E6DDC3] rounded-xl p-3 text-coffee font-bold outline-none focus:border-[#D4A373] transition-colors; }
+        /* Calculator Style (Khaki) */
+        .calc-btn { 
+            @apply bg-[#E6DDC3] rounded-2xl p-4 text-xl font-bold text-[#5C4B43] active:scale-95 transition-transform shadow-[0_2px_0_#D1C7B7] border border-[#D1C7B7]; 
+        }
+        .calc-btn-op { 
+            @apply bg-[#D4A373] text-white border-[#B08968] shadow-[0_2px_0_#B08968]; 
+        }
+        .calc-btn-action { 
+            @apply bg-[#A98467] text-white border-[#8B6B52] shadow-[0_2px_0_#8B6B52]; 
+        }
+        
+        .custom-input { 
+            @apply w-full bg-white border-2 border-[#E6DDC3] rounded-xl p-3 text-coffee font-bold outline-none focus:border-[#D4A373] transition-colors; 
+        }
         
         /* Transport Icon Selection (淺咖啡色 Latte #D4A373) */
-        .transport-opt { @apply w-10 h-10 rounded-full flex items-center justify-center border-2 border-transparent text-gray-400 transition-all; }
-        .transport-opt.active { @apply bg-[#D4A373] text-white border-[#B08968] shadow-sm; }
+        .transport-opt { 
+            @apply w-10 h-10 rounded-full flex items-center justify-center border-2 border-transparent text-gray-400 transition-all; 
+        }
+        .transport-opt.active { 
+            @apply bg-[#D4A373] text-white border-[#B08968] shadow-sm; 
+        }
     </style>
 
     <!-- Firebase SDKs -->
@@ -137,7 +152,7 @@
                 const formActivity = ref({ id: null, time: '10:00', title: '', location: '', notes: '', weather: null, lat: null, lng: null, image: null, transport: 'walk', travelTime: '' });
                 const locationMode = ref('auto'); 
                 const searchResultAddress = ref('');
-                const searchResults = ref([]); // 多個搜尋結果
+                const searchResults = ref([]); 
                 
                 const formExpense = ref({ title: '', inputAmount: '', payer: '' }); 
                 const formChat = ref('');
@@ -473,7 +488,7 @@
         
         <!-- 1. Landing -->
         <div v-if="pageState === 'landing'" class="h-full flex flex-col p-6 overflow-y-auto bg-milk">
-            <div class="mt-8 mb-6 text-center"><h1 class="text-4xl font-bold text-coffee mb-1">Travel Buddy</h1><p class="text-latte font-bold text-sm tracking-widest">MOBILE V19</p></div>
+            <div class="mt-8 mb-6 text-center"><h1 class="text-4xl font-bold text-coffee mb-1">Travel Buddy</h1><p class="text-latte font-bold text-sm tracking-widest">MOBILE V20</p></div>
             <button @click="startWizard" class="bg-coffee text-white p-5 rounded-2xl shadow-xl flex items-center justify-between mb-6 group active:scale-95 transition flex-shrink-0"><div class="flex items-center gap-4"><div class="bg-white/10 w-12 h-12 rounded-full flex items-center justify-center text-2xl">✈️</div><div class="text-left"><h3 class="font-bold text-lg">建立新行程</h3></div></div><i class="fa-solid fa-arrow-right"></i></button>
             <div class="bg-white p-2 rounded-2xl border border-stone-100 flex gap-2 mb-8 shadow-sm flex-shrink-0"><input v-model="joinIdInput" placeholder="輸入行程 ID..." class="flex-1 bg-transparent p-3 outline-none font-bold text-coffee"><button @click="joinTrip" class="bg-latte text-white px-4 rounded-xl font-bold">加入</button></div>
             <h3 class="font-bold text-gray-400 text-sm mb-3 px-2">我的行程</h3>
@@ -515,7 +530,7 @@
                     </div>
                 </div>
 
-                <!-- Chat -->
+                <!-- Chat (Input Fixed) -->
                 <div v-if="activeTab === 'chat'" class="h-full flex flex-col">
                     <div class="flex-1 overflow-y-auto py-4 px-4 space-y-3">
                         <div v-for="(msg,i) in chatMessages" :key="i" class="flex flex-col" :class="msg.user===people[0]?'items-end':'items-start'"><div class="p-3 rounded-2xl max-w-[85%] text-sm shadow-sm" :class="msg.user===people[0]?'bg-coffee text-white rounded-tr-none':'bg-white border border-[#EBE5D9] text-coffee rounded-tl-none'"><img v-if="msg.image" :src="msg.image" class="rounded mb-1 max-w-full" @click="showImagePreview=msg.image">{{ msg.text }}</div><span class="text-[10px] text-gray-300 mt-1">{{ msg.user }}</span></div>
@@ -545,7 +560,7 @@
             <nav class="flex-shrink-0 bg-white/95 backdrop-blur border-t border-gray-100 flex justify-between px-2 pt-2 pb-safe z-30 text-[10px] font-bold text-gray-400">
                 <button @click="activeTab='itinerary'" class="flex-1 flex flex-col items-center gap-1" :class="activeTab==='itinerary'?'text-coffee':''"><i class="fa-solid fa-map text-xl"></i>行程</button>
                 <button @click="activeTab='traffic'" class="flex-1 flex flex-col items-center gap-1" :class="activeTab==='traffic'?'text-coffee':''"><i class="fa-solid fa-train text-xl"></i>交通</button>
-                <button @click="activeTab='collection'" class="flex-1 flex flex-col items-center gap-1 pt-6" :class="activeTab==='collection'?'text-coffee':''"><i class="fa-solid fa-bookmark text-xl"></i>收藏</button>
+                <button @click="activeTab='collection'" class="flex-1 flex flex-col items-center gap-1" :class="activeTab==='collection'?'text-coffee':''"><i class="fa-solid fa-bookmark text-xl"></i>收藏</button>
                 <button @click="activeTab='chat'" class="flex-1 flex flex-col items-center gap-1" :class="activeTab==='chat'?'text-coffee':''"><i class="fa-solid fa-comments text-xl"></i>聊天</button>
                 <button @click="activeTab='expenses'" class="flex-1 flex flex-col items-center gap-1" :class="activeTab==='expenses'?'text-coffee':''"><i class="fa-solid fa-wallet text-xl"></i>分帳</button>
             </nav>
