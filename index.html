@@ -1,578 +1,761 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { 
-  MapPin, 
-  Calendar, 
-  Heart, 
-  Search, 
-  User, 
-  Plus, 
-  Minus, 
-  Star, 
-  Clock, 
-  ChevronLeft,
-  Share2,
-  Navigation,
-  MessageCircle,
-  Wallet,
-  MoreHorizontal,
-  Bus,
-  Train,
-  Car,
-  Ship,
-  Plane,
-  Camera,
-  X,
-  Smile,
-  Coffee
-} from 'lucide-react';
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Travel Buddy - 旅遊小幫手</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <!-- Leaflet (Map) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-const THEME = {
-  bg: "bg-[#FFF9F2]",
-  card: "bg-white",
-  primary: "bg-[#8B5E3C]",
-  primaryLight: "bg-[#DBC1AC]",
-  accentPink: "bg-[#FFE5E5] text-[#FF8BA7]",
-  accentYellow: "bg-[#FFF8D6] text-[#F4C430]",
-  accentBlue: "bg-[#E3F2FD] text-[#64B5F6]",
-  textMain: "text-[#5D4037]",
-  textSub: "text-[#9D8168]",
-  input: "bg-[#FFFCF8] border-[#F2E8DE]",
-  shadow: "shadow-[0_8px_20px_-6px_rgba(139,94,60,0.1)]",
-  radius: "rounded-[32px]",
-};
+    <!-- FontAwesome (Icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-const SUGGESTED_DESTINATIONS = [
-  {
-    id: 1,
-    title: "台北 101 觀景台",
-    location: "台北, 台灣",
-    category: "城市",
-    rating: 4.8,
-    price: 600,
-    image: "https://images.unsplash.com/photo-1596711683416-562db932ba53?q=80&w=800&auto=format&fit=crop",
-    description: "去高空看風景，像在雲端上一樣 ✨"
-  },
-  {
-    id: 2,
-    title: "清水寺散策",
-    location: "京都, 日本",
-    category: "文化",
-    rating: 4.9,
-    price: 120,
-    image: "https://images.unsplash.com/photo-1582239023570-87d296603a11?q=80&w=800&auto=format&fit=crop",
-    description: "穿著和服在古老寺院漫步，超級浪漫 🌸"
-  },
-  {
-    id: 3,
-    title: "皇后鎮大冒險",
-    location: "紐西蘭",
-    category: "自然",
-    rating: 4.9,
-    price: 4500,
-    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=800&auto=format&fit=crop",
-    description: "跳傘、高空鞦韆，心跳加速的感覺！ ❤️"
-  },
-  {
-    id: 4,
-    title: "可愛哈比村",
-    location: "紐西蘭",
-    category: "文化",
-    rating: 4.8,
-    price: 1800,
-    image: "https://images.unsplash.com/photo-1574351651322-63b7115d7325?q=80&w=800&auto=format&fit=crop",
-    description: "走進童話世界，尋找比爾博的家 🏡"
-  }
-];
+    <!-- Firebase (Modular) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc, serverTimestamp, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-const CATEGORIES = ["全部 ✨", "城市 🏙️", "自然 🌳", "海島 🏖️", "文化 ⛩️"];
+        // 全域變數供 Vue 使用
+        window.firebaseModules = { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken, getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc, serverTimestamp, where };
+    </script>
 
-const BottomNav = ({ activeTab, setActiveTab }) => {
-  const navItems = [
-    { id: 'itinerary', icon: Calendar, label: '行程' },
-    { id: 'explore', icon: Search, label: '探索' },
-    { id: 'saved', icon: Heart, label: '收藏' },
-    { id: 'chat', icon: MessageCircle, label: '聊天' },
-    { id: 'budget', icon: Wallet, label: '錢包' },
-  ];
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'milk-yellow': '#FFF8E7',
+                        'milk-yellow-dark': '#FDF0D0',
+                        'coffee': '#432818',
+                        'coffee-light': '#6F4E37',
+                        'accent': '#BB9457'
+                    },
+                    fontFamily: {
+                        sans: ['Noto Sans TC', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
 
-  return (
-    <div className="fixed bottom-0 left-0 right-0 px-6 pb-6 pt-0 z-50 pointer-events-none flex justify-center">
-      <div className={`pointer-events-auto bg-white/90 backdrop-blur-md border border-white/50 px-6 py-4 ${THEME.radius} ${THEME.shadow} flex justify-between items-center w-full max-w-sm`}>
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = activeTab === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`flex flex-col items-center justify-center transition-all duration-300 relative group`}
+    <style>
+        /* 隱藏 Scrollbar 但保留功能 */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        body {
+            background-color: #FFF8E7;
+            color: #432818;
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* Leaflet 地圖高度 */
+        #map {
+            height: 100%;
+            width: 100%;
+            z-index: 0;
+        }
+        .app-container {
+            max-width: 480px; /* 手機寬度模擬 */
+            margin: 0 auto;
+            background-color: #FFF8E7;
+            min-height: 100vh;
+            position: relative;
+            box-shadow: 0 0 20px rgba(67, 40, 24, 0.1);
+        }
+        .slide-enter-active, .slide-leave-active {
+            transition: all 0.3s ease;
+        }
+        .slide-enter-from, .slide-leave-to {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+    </style>
+</head>
+<body>
+
+<div id="app" class="app-container flex flex-col h-screen overflow-hidden">
+
+    <!-- Loading Screen -->
+    <div v-if="loading" class="absolute inset-0 z-50 flex items-center justify-center bg-milk-yellow flex-col">
+        <i class="fa-solid fa-plane fa-bounce text-4xl text-coffee mb-4"></i>
+        <p class="text-coffee font-bold">載入旅程中...</p>
+    </div>
+
+    <!-- Top Bar (Header) -->
+    <div class="px-4 pt-4 pb-2 bg-milk-yellow z-10 shadow-sm" v-if="currentTab !== 'map'">
+        <div class="flex justify-between items-center mb-2">
+            <h1 class="text-xl font-bold text-coffee"><i class="fa-solid fa-suitcase-rolling mr-2"></i>我們的旅程</h1>
+            <div class="flex gap-2">
+                <button @click="showCalc = !showCalc" class="p-2 rounded-full bg-milk-yellow-dark text-coffee">
+                    <i class="fa-solid fa-calculator"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Horizontal Date Slider (Only for Itinerary) -->
+        <div v-if="currentTab === 'itinerary'" class="flex overflow-x-auto no-scrollbar gap-2 py-2">
+            <button 
+                v-for="(day, index) in tripDays" 
+                :key="index"
+                @click="selectedDayIndex = index"
+                class="flex-shrink-0 px-4 py-2 rounded-xl transition-all duration-300 flex flex-col items-center min-w-[70px]"
+                :class="selectedDayIndex === index ? 'bg-coffee text-milk-yellow shadow-md transform scale-105' : 'bg-milk-yellow-dark text-coffee-light'"
             >
-              {isActive && (
-                <div className="absolute -top-1 w-10 h-10 bg-[#FFF4E6] rounded-full -z-10 scale-100 transition-transform"></div>
-              )}
-              
-              <Icon 
-                size={24} 
-                strokeWidth={isActive ? 2.5 : 2} 
-                className={`transition-colors duration-300 ${isActive ? 'text-[#8B5E3C] transform -translate-y-1' : 'text-[#DBC1AC]'}`}
-              />
-              {isActive && (
-                 <div className="w-1 h-1 bg-[#8B5E3C] rounded-full mt-1"></div>
-              )}
+                <span class="text-xs font-bold">Day {{ index + 1 }}</span>
+                <span class="text-sm">{{ formatDate(day) }}</span>
             </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-};
-
-const Header = ({ title, subtitle, rightIcon: RightIcon, onRightClick }) => (
-  <div className={`px-6 pt-6 pb-2 flex justify-between items-center ${THEME.bg} sticky top-0 z-40`}>
-    <button className={`p-3 bg-white rounded-full ${THEME.shadow} ${THEME.textMain} hover:scale-105 transition-transform`}>
-      <ChevronLeft size={22} />
-    </button>
-    <div className="text-center">
-      <h1 className={`text-xl font-bold ${THEME.textMain} tracking-wide`}>{title}</h1>
-      {subtitle && (
-        <div className="flex items-center justify-center mt-1">
-          <span className="inline-block w-2 h-2 bg-[#A5D6A7] rounded-full mr-2 animate-pulse"></span>
-          <span className="text-xs text-[#8D6E63] font-medium tracking-widest">{subtitle}</span>
+            <button @click="addDay" class="flex-shrink-0 px-3 py-2 rounded-xl bg-white border border-dashed border-coffee text-coffee">
+                <i class="fa-solid fa-plus"></i>
+            </button>
         </div>
-      )}
     </div>
-    <button onClick={onRightClick} className={`p-3 bg-white rounded-full ${THEME.shadow} ${THEME.textMain} hover:scale-105 transition-transform`}>
-      {RightIcon ? <RightIcon size={22} /> : <div className="w-6" />}
-    </button>
-  </div>
-);
 
-const DestinationCard = ({ destination, onAdd }) => (
-  <div className={`bg-white ${THEME.radius} overflow-hidden ${THEME.shadow} mb-5 break-inside-avoid group hover:-translate-y-1 transition-transform duration-300`}>
-    <div className="relative h-44 p-3 pb-0">
-      <img src={destination.image} alt={destination.title} className={`w-full h-full object-cover ${THEME.radius}`} />
-      <div className={`absolute top-5 right-5 ${THEME.accentYellow} px-2 py-1 rounded-full text-xs font-bold flex items-center shadow-sm`}>
-        <Star size={12} className="fill-current mr-1" />
-        {destination.rating}
-      </div>
-    </div>
-    <div className="p-4 pt-3">
-      <h3 className={`font-bold ${THEME.textMain} text-lg mb-1`}>{destination.title}</h3>
-      <p className={`text-xs ${THEME.textSub} mb-3 line-clamp-2 leading-relaxed`}>{destination.description}</p>
-      
-      <div className="flex justify-between items-center mt-2">
-        <div className={`${THEME.accentBlue} px-3 py-1 rounded-full text-xs font-bold`}>
-           ${destination.price}
-        </div>
-        <button 
-          onClick={(e) => {
-            e.stopPropagation();
-            onAdd(destination);
-          }}
-          className={`${THEME.primary} text-white p-2.5 rounded-full shadow-md hover:bg-[#7A4E32] hover:scale-110 active:scale-90 transition-all`}
-        >
-          <Plus size={18} strokeWidth={3} />
-        </button>
-      </div>
-    </div>
-  </div>
-);
-
-const ItineraryView = ({ items, onOpenAdd, onDelete }) => {
-  const [activeDay, setActiveDay] = useState(1);
-
-  return (
-    <div className={`min-h-screen ${THEME.bg} pb-32`}>
-      <Header title="紐西蘭之旅 🥝" subtitle="ONLINE" rightIcon={MoreHorizontal} />
-      
-      <div className="px-6 mt-4 flex items-center space-x-3 overflow-x-auto no-scrollbar py-2">
-        {[1, 2, 3].map(day => (
-          <button 
-            key={day}
-            onClick={() => setActiveDay(day)}
-            className={`min-w-[64px] h-[80px] ${THEME.radius} flex flex-col items-center justify-center transition-all duration-300 border-2 ${
-              activeDay === day 
-                ? `${THEME.primary} border-transparent text-white shadow-lg scale-105` 
-                : 'bg-white border-transparent text-[#DBC1AC] hover:bg-[#FFF4E6]'
-            }`}
-          >
-            <span className="text-[10px] font-bold tracking-wider mb-1 opacity-80">DAY</span>
-            <span className="text-2xl font-black">{day}</span>
-          </button>
-        ))}
-        <button className={`min-w-[64px] h-[80px] ${THEME.radius} border-2 border-dashed border-[#DBC1AC] text-[#DBC1AC] flex items-center justify-center bg-transparent hover:bg-white/50 transition-colors`}>
-          <Plus size={24} />
-        </button>
-      </div>
-
-      <div className="px-6 mt-6">
-        <div className={`bg-white ${THEME.radius} p-5 ${THEME.shadow} relative overflow-hidden`}>
-          <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-[#FFF9F2] rounded-full"></div>
-          <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-[#FFF9F2] rounded-full"></div>
-          
-          <div className="flex justify-between items-center mb-1">
-            <span className="text-xs font-bold text-[#DBC1AC] uppercase tracking-wider flex items-center gap-1">
-              <Plane size={12}/> Flight
-            </span>
-            <span className="text-xs text-[#FFB7B2] font-bold bg-[#FFE5E5] px-2 py-0.5 rounded-full">Save</span>
-          </div>
-          <div className={`flex items-center text-2xl font-black ${THEME.textMain} mt-1`}>
-            BR198 ✈️
-          </div>
-        </div>
-      </div>
-
-      <div className="px-6 mt-6 space-y-4 relative">
-        {items.length > 0 && (
-          <div className="absolute left-[38px] top-4 bottom-4 w-0.5 border-l-2 border-dashed border-[#E5D0BF] z-0"></div>
-        )}
-
-        {items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 opacity-60">
-            <div className="bg-white p-6 rounded-full shadow-sm mb-4">
-               <Coffee size={40} className="text-[#DBC1AC]" />
+    <!-- Main Content Area -->
+    <div class="flex-1 overflow-y-auto overflow-x-hidden relative bg-milk-yellow pb-20 no-scrollbar">
+        
+        <!-- TAB: Itinerary -->
+        <div v-if="currentTab === 'itinerary'" class="p-4 space-y-4">
+            <!-- Weather Widget (Mock/API) -->
+            <div class="bg-gradient-to-r from-blue-100 to-blue-50 rounded-2xl p-4 flex items-center justify-between shadow-sm text-coffee">
+                <div>
+                    <div class="text-xs opacity-70">當地天氣 (Day {{ selectedDayIndex + 1 }})</div>
+                    <div class="text-2xl font-bold flex items-center gap-2">
+                        <span v-if="currentWeather">{{ currentWeather.temp }}°C</span>
+                        <span v-else>--°C</span>
+                        <i class="fa-solid fa-cloud-sun text-orange-400"></i>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="text-sm font-bold">{{ tripLocation }}</div>
+                    <div class="text-xs">{{ currentWeather ? currentWeather.desc : '多雲時晴' }}</div>
+                </div>
             </div>
-            <p className={`mt-2 ${THEME.textMain} font-medium`}>還沒有行程耶</p>
-            <p className={`text-xs ${THEME.textSub}`}>點擊右下角新增一個吧！</p>
-          </div>
-        ) : (
-          items.map((item, idx) => (
-            <div key={idx} className={`bg-white ${THEME.radius} p-4 ${THEME.shadow} flex gap-4 relative z-10 hover:scale-[1.02] transition-transform`}>
-               <div className="flex flex-col items-center">
-                 <div className={`w-14 h-14 ${THEME.accentYellow} rounded-2xl flex items-center justify-center text-xs font-bold text-[#D4A017] shadow-inner`}>
-                    {item.time || "10:00"}
+
+            <!-- Flight Info Card (Only Day 1) -->
+            <div v-if="selectedDayIndex === 0" class="bg-white rounded-2xl p-4 shadow-sm border-l-4 border-accent relative">
+                <div class="flex justify-between items-start mb-2">
+                    <h3 class="font-bold text-coffee"><i class="fa-solid fa-plane-departure mr-2"></i>航班資訊</h3>
+                    <button @click="editingFlight = !editingFlight" class="text-xs text-gray-400"><i class="fa-solid fa-pen"></i></button>
+                </div>
+                <div v-if="!editingFlight">
+                    <div class="flex justify-between text-sm mb-1">
+                        <span>{{ flightInfo.code || '航班號' }}</span>
+                        <span>{{ flightInfo.time || '時間' }}</span>
+                    </div>
+                    <div class="text-xs text-gray-500">{{ flightInfo.terminal || '航廈/登機門' }}</div>
+                </div>
+                <div v-else class="space-y-2">
+                    <input v-model="flightInfo.code" placeholder="航班號 (例如 BR198)" class="w-full text-sm p-1 border rounded bg-gray-50">
+                    <input v-model="flightInfo.time" type="time" class="w-full text-sm p-1 border rounded bg-gray-50">
+                    <input v-model="flightInfo.terminal" placeholder="航廈" class="w-full text-sm p-1 border rounded bg-gray-50">
+                    <button @click="saveFlightInfo" class="w-full bg-coffee text-milk-yellow text-xs py-1 rounded">儲存</button>
+                </div>
+            </div>
+
+            <!-- Itinerary Items -->
+            <div v-if="dayItems.length === 0" class="text-center py-10 text-gray-400">
+                <i class="fa-regular fa-map text-4xl mb-2"></i>
+                <p>還沒有行程，按下方 + 新增</p>
+            </div>
+
+            <div v-for="item in dayItems" :key="item.id" class="bg-white rounded-2xl p-3 shadow-sm flex gap-3 relative group">
+                <!-- Delete Button -->
+                <button @click="deleteItem(item.id)" class="absolute top-2 right-2 text-red-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <i class="fa-solid fa-times-circle"></i>
+                </button>
+
+                <!-- Time -->
+                <div class="flex flex-col items-center justify-start pt-1 min-w-[50px]">
+                    <span class="font-bold text-coffee text-lg">{{ item.time }}</span>
+                    <div class="h-full w-0.5 bg-gray-100 my-1 rounded"></div>
+                </div>
+
+                <!-- Content -->
+                <div class="flex-1 pb-2">
+                    <div class="font-bold text-lg text-coffee mb-1">{{ item.title }}</div>
+                    <div class="text-sm text-gray-500 mb-2 flex items-center">
+                        <i class="fa-solid fa-location-dot mr-1 text-accent"></i> {{ item.location }}
+                    </div>
+                    
+                    <!-- Image Display -->
+                    <div v-if="item.imageUrl" class="mb-2 rounded-lg overflow-hidden h-32 w-full">
+                        <img :src="item.imageUrl" class="w-full h-full object-cover" alt="Location">
+                    </div>
+
+                    <!-- Notes -->
+                    <div v-if="item.notes" class="text-xs text-gray-600 bg-gray-50 p-2 rounded">
+                        {{ item.notes }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Button -->
+            <button @click="showAddItemModal = true" class="w-full py-3 rounded-2xl border-2 border-dashed border-coffee/30 text-coffee/50 font-bold hover:bg-white hover:text-coffee transition-colors">
+                + 新增行程
+            </button>
+        </div>
+
+        <!-- TAB: Map -->
+        <div v-show="currentTab === 'map'" class="h-full w-full relative">
+            <div id="map" class="h-full w-full"></div>
+            <!-- Map Controls Overlay -->
+            <div class="absolute top-4 left-4 right-4 z-[400] bg-white/90 backdrop-blur rounded-xl p-3 shadow-lg">
+                 <div class="flex justify-between items-center">
+                    <span class="font-bold text-coffee text-sm">Day {{ selectedDayIndex + 1 }} 地圖</span>
+                    <button @click="locateMe" class="bg-accent text-white px-3 py-1 rounded-lg text-xs">
+                        <i class="fa-solid fa-location-crosshairs mr-1"></i>我
+                    </button>
                  </div>
-               </div>
-               <div className="flex-1 py-1">
-                 <h3 className={`font-bold text-lg ${THEME.textMain}`}>{item.title}</h3>
-                 <div className="flex items-center text-[#9D8168] text-xs mt-1.5 font-medium">
-                   {item.transport === 'walk' && <User size={12} className="mr-1"/>}
-                   {item.location}
-                 </div>
-               </div>
-               <button onClick={() => onDelete(item.id)} className="absolute top-2 right-2 p-2 text-[#E5D0BF] hover:text-[#FF8BA7] transition-colors">
-                 <X size={16} strokeWidth={3} />
-               </button>
             </div>
-          ))
-        )}
-      </div>
-
-      <button 
-        onClick={onOpenAdd}
-        className={`fixed bottom-28 right-6 w-16 h-16 ${THEME.primary} rounded-[28px] text-white shadow-xl shadow-[#8B5E3C]/30 flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40`}
-      >
-        <Plus size={32} strokeWidth={3} />
-      </button>
-    </div>
-  );
-};
-
-const ExploreView = ({ onAddToPlan }) => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [activeCategory, setActiveCategory] = useState("全部 ✨");
-
-  const filtered = useMemo(() => {
-    return SUGGESTED_DESTINATIONS.filter(d => 
-      (activeCategory.includes("全部") || activeCategory.includes(d.category)) &&
-      d.title.includes(searchTerm)
-    );
-  }, [searchTerm, activeCategory]);
-
-  return (
-    <div className={`min-h-screen ${THEME.bg} pb-32`}>
-      <div className="px-6 pt-8 mb-6">
-        <h1 className={`text-2xl font-bold ${THEME.textMain} mb-2`}>探索景點 🗺️</h1>
-        <p className={`${THEME.textSub} text-sm`}>為你的紐西蘭之旅尋找靈感</p>
-      </div>
-
-      <div className="px-6 mb-6">
-        <div className="relative group">
-          <div className="absolute inset-0 bg-[#E5D0BF]/20 rounded-[24px] transform translate-y-1 transition-transform group-focus-within:translate-y-2"></div>
-          <div className={`relative bg-white ${THEME.radius} flex items-center px-4 py-3 border-2 border-transparent focus-within:border-[#DBC1AC]`}>
-            <Search className="text-[#DBC1AC] mr-3" size={20} />
-            <input 
-              type="text"
-              placeholder="想去哪裡玩？"
-              className={`w-full bg-transparent text-sm outline-none ${THEME.textMain} placeholder:text-[#E5D0BF]`}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
         </div>
-      </div>
 
-      <div className="flex px-6 space-x-3 overflow-x-auto pb-6 no-scrollbar">
-        {CATEGORIES.map(cat => (
-          <button
-            key={cat}
-            onClick={() => setActiveCategory(cat)}
-            className={`px-5 py-2.5 rounded-full whitespace-nowrap text-sm font-bold transition-all ${
-              activeCategory === cat 
-                ? `${THEME.primary} text-white shadow-lg shadow-[#8B5E3C]/20 transform -translate-y-0.5` 
-                : 'bg-white text-[#DBC1AC] hover:bg-[#FFF4E6]'
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
-
-      <div className="px-6 columns-2 gap-5 space-y-5">
-        {filtered.map(dest => (
-          <DestinationCard key={dest.id} destination={dest} onAdd={onAddToPlan} />
-        ))}
-      </div>
-    </div>
-  );
-};
-
-const BudgetView = () => (
-  <div className={`min-h-screen ${THEME.bg} pb-32`}>
-    <Header title="錢包 👛" subtitle="ONLINE" />
-    <div className="px-6 mt-6">
-      <div className={`${THEME.primary} rounded-[40px] p-8 text-[#FFFDF5] shadow-xl relative overflow-hidden`}>
-        <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#A98467] rounded-full opacity-50 blur-3xl"></div>
-        <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-[#A98467] rounded-full opacity-50 blur-3xl"></div>
-        
-        <div className="relative z-10 flex flex-col items-center">
-          <p className="text-sm font-medium opacity-80 mb-2 tracking-widest uppercase">Total Budget</p>
-          <h2 className="text-5xl font-black mb-6 tracking-tight">$0</h2>
-          
-          <div className="w-full bg-white/10 rounded-2xl p-4 flex justify-between items-center backdrop-blur-sm">
-             <div className="flex flex-col items-center w-1/2 border-r border-white/10">
-                <span className="text-xs opacity-70 mb-1">每人應付</span>
-                <span className="font-bold text-lg">$0</span>
-             </div>
-             <div className="flex flex-col items-center w-1/2">
-                <span className="text-xs opacity-70 mb-1">人數</span>
-                <span className="font-bold text-lg">1 人</span>
-             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div className="px-6 mt-12 flex flex-col items-center justify-center opacity-40">
-      <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm">
-         <Wallet size={32} className={THEME.textMain} />
-      </div>
-      <p className={`mt-2 text-sm font-medium ${THEME.textMain}`}>還沒有記帳紀錄喔</p>
-    </div>
-  </div>
-);
-
-const ChatView = () => (
-  <div className={`min-h-screen ${THEME.bg} flex flex-col`}>
-    <Header title="聊天室 💬" subtitle="ONLINE" rightIcon={MoreHorizontal} />
-    <div className="flex-1 px-6 py-4 space-y-6">
-       <div className="flex justify-end group">
-         <div className="flex items-end gap-3 flex-row-reverse">
-            <div className="w-10 h-10 rounded-full bg-[#E5D0BF] overflow-hidden border-2 border-white shadow-sm">
-               <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop" alt="" />
+        <!-- TAB: Money (Expenses) -->
+        <div v-if="currentTab === 'money'" class="p-4 space-y-4">
+            <!-- Balance Summary -->
+            <div class="bg-coffee text-milk-yellow rounded-2xl p-4 shadow-lg">
+                <h3 class="font-bold mb-2 text-sm opacity-80">總支出 (TWD)</h3>
+                <div class="text-3xl font-bold mb-4">${{ totalExpenseTwd }}</div>
+                <div class="flex gap-2 overflow-x-auto">
+                    <div v-for="(balance, user) in userBalances" :key="user" class="bg-white/10 px-3 py-1 rounded-lg text-xs whitespace-nowrap">
+                        {{ user }}: <span :class="balance >= 0 ? 'text-green-300' : 'text-red-300'">{{ balance >= 0 ? '+' : '' }}{{ balance }}</span>
+                    </div>
+                </div>
             </div>
-            <div className={`${THEME.primary} text-white px-5 py-3 rounded-[24px] rounded-tr-none text-sm shadow-sm leading-relaxed`}>
-              我們等等去哪裡？ 🍦
+
+            <!-- Add Expense -->
+            <div class="bg-white rounded-xl p-3 shadow-sm">
+                <div class="flex gap-2 mb-2">
+                    <input v-model="newExpense.desc" placeholder="項目 (如: 晚餐)" class="flex-1 bg-gray-50 p-2 rounded text-sm outline-none">
+                    <input v-model="newExpense.amount" type="number" placeholder="金額" class="w-20 bg-gray-50 p-2 rounded text-sm outline-none">
+                </div>
+                <div class="flex gap-2 mb-2">
+                    <select v-model="newExpense.currency" class="bg-gray-50 p-2 rounded text-sm">
+                        <option value="TWD">TWD</option>
+                        <option value="JPY">JPY</option>
+                        <option value="KRW">KRW</option>
+                        <option value="USD">USD</option>
+                    </select>
+                    <select v-model="newExpense.payer" class="flex-1 bg-gray-50 p-2 rounded text-sm">
+                        <option value="" disabled>誰付錢?</option>
+                        <option v-for="u in users" :value="u">{{ u }}</option>
+                    </select>
+                </div>
+                <button @click="addExpense" class="w-full bg-accent text-white py-2 rounded-lg font-bold text-sm">記一筆</button>
             </div>
-         </div>
-       </div>
-       
-       <div className="flex justify-start">
-         <div className="flex items-end gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#FFD1DC] overflow-hidden border-2 border-white shadow-sm flex items-center justify-center">
-               <span className="text-xs font-bold text-white">Bot</span>
+
+            <!-- Expense List -->
+            <div class="space-y-2">
+                <div v-for="exp in expenses" :key="exp.id" class="bg-white p-3 rounded-xl flex justify-between items-center shadow-sm">
+                    <div>
+                        <div class="font-bold text-coffee">{{ exp.desc }}</div>
+                        <div class="text-xs text-gray-500">{{ exp.payer }} 付款</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-bold text-coffee">{{ exp.amount }} {{ exp.currency }}</div>
+                        <div class="text-xs text-gray-400">≈ {{ (exp.amount * rates[exp.currency]).toFixed(0) }} TWD</div>
+                    </div>
+                    <button @click="deleteExpense(exp.id)" class="text-red-300 ml-2"><i class="fa-solid fa-trash"></i></button>
+                </div>
             </div>
-            <div className={`bg-white ${THEME.textMain} px-5 py-3 rounded-[24px] rounded-tl-none text-sm shadow-sm border border-[#F2E8DE] leading-relaxed`}>
-              我想去吃那間很有名的鬆餅！🥞
+        </div>
+
+        <!-- TAB: Chat -->
+        <div v-if="currentTab === 'chat'" class="flex flex-col h-full">
+            <div class="flex-1 p-4 space-y-3 overflow-y-auto" ref="chatContainer">
+                <div v-for="msg in sortedMessages" :key="msg.id" class="flex flex-col" :class="msg.userId === currentUserId ? 'items-end' : 'items-start'">
+                    <div class="max-w-[80%] rounded-2xl px-4 py-2 text-sm shadow-sm" 
+                         :class="msg.userId === currentUserId ? 'bg-coffee text-milk-yellow' : 'bg-white text-coffee'">
+                        <div class="text-[10px] opacity-70 mb-1" v-if="msg.userId !== currentUserId">{{ msg.userName }}</div>
+                        {{ msg.text }}
+                    </div>
+                    <span class="text-[10px] text-gray-400 mt-1 mx-1">{{ formatTime(msg.timestamp) }}</span>
+                </div>
             </div>
-         </div>
-       </div>
-    </div>
-
-    <div className="p-4 px-6 bg-white/80 backdrop-blur-md pb-28 border-t border-[#F2E8DE]">
-      <div className="flex gap-3 items-center">
-        <button className="p-3 text-[#DBC1AC] bg-[#FFF9F2] rounded-2xl hover:bg-[#FFE5E5] hover:text-[#FF8BA7] transition-colors"><Camera size={22}/></button>
-        <div className="flex-1 relative">
-           <input type="text" placeholder="輸入訊息..." className="w-full bg-[#FFF9F2] rounded-[24px] px-5 py-3 text-sm outline-none text-[#5D4037] placeholder:text-[#E5D0BF]" />
-           <button className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-[#DBC1AC] hover:text-[#8B5E3C]">
-              <Smile size={20}/>
-           </button>
-        </div>
-        <button className={`${THEME.primary} text-white p-3 rounded-2xl shadow-md hover:scale-105 transition-transform`}><Navigation size={20} className="rotate-90"/></button>
-      </div>
-    </div>
-  </div>
-);
-
-const AddItemModal = ({ isOpen, onClose, onSave, initialData }) => {
-  const [title, setTitle] = useState(initialData?.title || "");
-  const [time, setTime] = useState(initialData?.time || "10:00");
-  const [location, setLocation] = useState(initialData?.location || "");
-
-  useEffect(() => {
-    if (initialData) {
-      setTitle(initialData.title || "");
-      setLocation(initialData.location || "");
-    }
-  }, [initialData]);
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center">
-      <div className="absolute inset-0 bg-[#5D4037]/20 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
-      <div className={`bg-[#FFF9F2] w-full max-w-md rounded-t-[40px] sm:rounded-[40px] p-8 relative animate-in slide-in-from-bottom-10 duration-300 max-h-[90vh] overflow-y-auto shadow-2xl`}>
-        
-        <div className="w-12 h-1.5 bg-[#E5D0BF] rounded-full mx-auto mb-8 opacity-50"></div>
-
-        <div className="flex justify-between items-center mb-8">
-          <h2 className={`text-2xl font-black ${THEME.textMain}`}>新增行程 ✨</h2>
-          <button onClick={onClose} className="bg-white p-2 rounded-full shadow-sm hover:rotate-90 transition-transform"><X size={20} className="text-[#DBC1AC]" /></button>
+            <div class="p-3 bg-white border-t border-gray-100 flex gap-2 absolute bottom-0 w-full">
+                <input v-model="newMessage" @keyup.enter="sendMessage" placeholder="說點什麼..." class="flex-1 bg-gray-100 rounded-full px-4 py-2 text-sm outline-none text-coffee">
+                <button @click="sendMessage" class="bg-coffee text-white w-10 h-10 rounded-full flex items-center justify-center">
+                    <i class="fa-solid fa-paper-plane text-xs"></i>
+                </button>
+            </div>
         </div>
 
-        <div className="space-y-5">
-          <div className="flex gap-4">
-             <div className="w-1/3">
-               <div className="bg-white border-2 border-[#F2E8DE] rounded-3xl p-4 h-full flex items-center justify-center font-bold text-[#8B5E3C] text-lg shadow-sm">
-                 {time}
-               </div>
-             </div>
-             <div className="flex-1">
-               <input 
-                 type="text" 
-                 placeholder="標題" 
-                 className="w-full h-full bg-white border-2 border-[#F2E8DE] rounded-3xl px-6 outline-none focus:border-[#DBC1AC] text-[#5D4037] placeholder:text-[#E5D0BF] font-bold shadow-sm"
-                 value={title}
-                 onChange={(e) => setTitle(e.target.value)}
-               />
-             </div>
-          </div>
+        <!-- TAB: Tools (Checklist, Translation) -->
+        <div v-if="currentTab === 'tools'" class="p-4 space-y-4">
+            
+            <!-- Google Translate Link -->
+            <a href="https://translate.google.com/" target="_blank" class="block w-full bg-blue-500 text-white p-4 rounded-2xl flex items-center justify-between shadow-md">
+                <span class="font-bold"><i class="fa-solid fa-language mr-2"></i>Google 翻譯</span>
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </a>
 
-          <div className="bg-white border-2 border-[#F2E8DE] rounded-3xl p-5 shadow-sm">
-             <p className="text-xs text-[#9D8168] font-bold mb-4 uppercase tracking-wider">交通 & 時間</p>
-             <div className="flex justify-between px-1 mb-4">
-                {[User, Bus, Train, Car, Ship, Plane].map((Icon, idx) => (
-                  <button key={idx} className={`p-3 rounded-2xl transition-all ${idx === 0 ? 'bg-[#FFF8D6] text-[#F4C430] scale-110' : 'text-[#DBC1AC] hover:bg-[#FFF9F2]'}`}>
-                    <Icon size={22} strokeWidth={2.5} />
-                  </button>
-                ))}
-             </div>
-             <div className="bg-[#FFF9F2] rounded-2xl p-3 text-center text-xs text-[#9D8168] font-medium border border-[#F2E8DE]">
-               預估時間 (自動計算) ⏱️
-             </div>
-          </div>
-
-          <div className="bg-white border-2 border-[#F2E8DE] rounded-3xl p-5 space-y-4 shadow-sm">
-             <div className="flex bg-[#FFF9F2] rounded-2xl p-1.5">
-               <button className="flex-1 py-2 text-xs font-bold text-[#8B5E3C] bg-white rounded-xl shadow-sm">搜尋</button>
-               <button className="flex-1 py-2 text-xs font-bold text-[#DBC1AC]">地圖</button>
-             </div>
-             
-             <div className="flex items-center bg-[#E3F2FD] rounded-2xl px-4 py-3 text-[#64B5F6] text-sm font-bold justify-center cursor-pointer hover:bg-[#BBDEFB] transition-colors">
-                <Navigation size={16} className="mr-2 fill-current" />
-                定位目前位置 📍
-             </div>
-
-             <div className="flex gap-3">
-               <input 
-                  type="text" 
-                  placeholder="輸入地點..." 
-                  className="flex-1 bg-[#FFF9F2] rounded-2xl px-4 py-3 text-sm outline-none text-[#5D4037] placeholder:text-[#E5D0BF]"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-               />
-               <button className={`${THEME.primary} text-white px-5 rounded-2xl text-sm font-bold hover:scale-105 transition-transform`}>Go</button>
-             </div>
-          </div>
-
-          <div className="border-2 border-dashed border-[#E5D0BF] rounded-3xl py-6 flex flex-col items-center justify-center text-[#DBC1AC] cursor-pointer hover:bg-white hover:border-[#8B5E3C] transition-all bg-[#FFF9F2]/50">
-             <Camera size={28} className="mb-2" />
-             <span className="text-xs font-bold">加張照片 📸</span>
-          </div>
+            <!-- Checklist -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm">
+                <h3 class="font-bold text-coffee mb-3"><i class="fa-solid fa-clipboard-check mr-2"></i>必備清單</h3>
+                <div class="space-y-2">
+                    <div v-for="item in checklist" :key="item.id" @click="toggleCheck(item)" class="flex items-center gap-3 cursor-pointer">
+                        <div class="w-5 h-5 rounded border-2 flex items-center justify-center transition-colors"
+                             :class="item.checked ? 'bg-accent border-accent' : 'border-gray-300'">
+                            <i v-if="item.checked" class="fa-solid fa-check text-white text-xs"></i>
+                        </div>
+                        <span :class="{'line-through text-gray-400': item.checked}">{{ item.text }}</span>
+                    </div>
+                    <div class="flex gap-2 mt-3 pt-3 border-t">
+                        <input v-model="newCheckItem" @keyup.enter="addCheckItem" placeholder="新增項目..." class="flex-1 bg-gray-50 p-2 rounded text-sm">
+                        <button @click="addCheckItem" class="text-accent font-bold px-2">新增</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- User Settings -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm">
+                <h3 class="font-bold text-coffee mb-2">使用者設定</h3>
+                <input v-model="tempUserName" placeholder="你的暱稱" class="border p-2 rounded w-full text-sm mb-2">
+                <button @click="updateUserName" class="bg-coffee text-white px-4 py-2 rounded text-sm w-full">更新暱稱</button>
+            </div>
         </div>
+    </div>
 
-        <div className="flex gap-4 mt-10">
-          <button onClick={onClose} className="flex-1 bg-[#F2E8DE] py-4 rounded-[24px] font-bold text-[#9D8168] hover:bg-[#E5D0BF] transition-colors">取消</button>
-          <button 
-            onClick={() => {
-              onSave({ id: Date.now(), title, time, location, transport: 'walk' });
-              onClose();
-            }} 
-            className={`flex-1 ${THEME.primary} py-4 rounded-[24px] font-bold text-white shadow-lg shadow-[#8B5E3C]/20 hover:scale-105 transition-transform`}
-          >
-            儲存 ✨
-          </button>
+    <!-- Bottom Navigation -->
+    <div class="fixed bottom-0 w-full max-w-[480px] bg-white border-t border-gray-100 flex justify-around py-2 pb-4 z-50 text-[10px] font-bold text-gray-400">
+        <button @click="currentTab = 'itinerary'" class="flex flex-col items-center w-1/5 space-y-1 transition-colors" :class="currentTab === 'itinerary' ? 'text-coffee' : ''">
+            <i class="fa-solid fa-list-ul text-lg" :class="currentTab === 'itinerary' ? 'transform -translate-y-1' : ''"></i>
+            <span>行程</span>
+        </button>
+        <button @click="currentTab = 'map'; initMap()" class="flex flex-col items-center w-1/5 space-y-1 transition-colors" :class="currentTab === 'map' ? 'text-coffee' : ''">
+            <i class="fa-regular fa-map text-lg" :class="currentTab === 'map' ? 'transform -translate-y-1' : ''"></i>
+            <span>地圖</span>
+        </button>
+        <button @click="currentTab = 'money'" class="flex flex-col items-center w-1/5 space-y-1 transition-colors" :class="currentTab === 'money' ? 'text-coffee' : ''">
+            <i class="fa-solid fa-wallet text-lg" :class="currentTab === 'money' ? 'transform -translate-y-1' : ''"></i>
+            <span>分帳</span>
+        </button>
+        <button @click="currentTab = 'chat'; scrollToBottom()" class="flex flex-col items-center w-1/5 space-y-1 transition-colors" :class="currentTab === 'chat' ? 'text-coffee' : ''">
+            <i class="fa-regular fa-comments text-lg" :class="currentTab === 'chat' ? 'transform -translate-y-1' : ''"></i>
+            <span>聊聊</span>
+        </button>
+        <button @click="currentTab = 'tools'" class="flex flex-col items-center w-1/5 space-y-1 transition-colors" :class="currentTab === 'tools' ? 'text-coffee' : ''">
+            <i class="fa-solid fa-grid-2 text-lg" :class="currentTab === 'tools' ? 'transform -translate-y-1' : ''"></i>
+            <span>工具</span>
+        </button>
+    </div>
+
+    <!-- Modals -->
+    <!-- Add Item Modal -->
+    <div v-if="showAddItemModal" class="fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-xl">
+            <h3 class="text-xl font-bold text-coffee mb-4">新增行程</h3>
+            <div class="space-y-3">
+                <input v-model="newItem.time" type="time" class="w-full bg-gray-50 p-3 rounded-xl outline-none">
+                <input v-model="newItem.title" placeholder="標題 (例: 淺草寺)" class="w-full bg-gray-50 p-3 rounded-xl outline-none">
+                <input v-model="newItem.location" placeholder="地點 (供地圖定位)" class="w-full bg-gray-50 p-3 rounded-xl outline-none">
+                <input v-model="newItem.imageUrl" placeholder="圖片網址 (選填)" class="w-full bg-gray-50 p-3 rounded-xl outline-none text-sm">
+                <textarea v-model="newItem.notes" placeholder="備註..." class="w-full bg-gray-50 p-3 rounded-xl outline-none h-20"></textarea>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button @click="showAddItemModal = false" class="flex-1 py-3 rounded-xl bg-gray-100 text-gray-500 font-bold">取消</button>
+                <button @click="addItem" class="flex-1 py-3 rounded-xl bg-coffee text-milk-yellow font-bold">新增</button>
+            </div>
         </div>
-
-      </div>
     </div>
-  );
-};
 
-export default function App() {
-  const [activeTab, setActiveTab] = useState('itinerary');
-  const [itineraryItems, setItineraryItems] = useState([]);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [modalInitialData, setModalInitialData] = useState(null);
+    <!-- Calculator Modal -->
+    <div v-if="showCalc" class="fixed inset-0 z-[70] bg-black/50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-xl relative">
+            <button @click="showCalc = false" class="absolute top-4 right-4 text-gray-400"><i class="fa-solid fa-times"></i></button>
+            <h3 class="text-xl font-bold text-coffee mb-4">匯率換算</h3>
+            
+            <div class="bg-gray-50 p-4 rounded-xl mb-4">
+                <label class="text-xs text-gray-500">外幣金額</label>
+                <div class="flex items-end gap-2">
+                    <input v-model="calcAmount" type="number" class="bg-transparent text-2xl font-bold text-coffee outline-none w-full border-b border-gray-200">
+                    <select v-model="calcCurrency" class="bg-transparent font-bold text-accent">
+                        <option value="JPY">JPY</option>
+                        <option value="KRW">KRW</option>
+                        <option value="USD">USD</option>
+                    </select>
+                </div>
+            </div>
 
-  const handleAddToPlan = (destination) => {
-    setModalInitialData({
-      title: destination.title,
-      location: destination.location
-    });
-    setIsAddModalOpen(true);
-  };
+            <div class="text-center mb-4">
+                <i class="fa-solid fa-arrow-down text-gray-300"></i>
+            </div>
 
-  const handleSaveItem = (item) => {
-    setItineraryItems([...itineraryItems, item]);
-    setActiveTab('itinerary');
-  };
-
-  const handleDeleteItem = (id) => {
-    setItineraryItems(prev => prev.filter(i => i.id !== id));
-  };
-
-  return (
-    <div className={`font-sans text-[#5D4037] ${THEME.bg} min-h-screen selection:bg-[#FFE5E5] notranslate`} translate="no">
-      <main className="max-w-md mx-auto bg-[#FFF9F2] min-h-screen shadow-2xl relative overflow-hidden">
-        
-        {activeTab === 'itinerary' && (
-          <ItineraryView 
-            items={itineraryItems} 
-            onOpenAdd={() => {
-              setModalInitialData(null);
-              setIsAddModalOpen(true);
-            }}
-            onDelete={handleDeleteItem}
-          />
-        )}
-        
-        {activeTab === 'explore' && (
-          <ExploreView onAddToPlan={handleAddToPlan} />
-        )}
-
-        {activeTab === 'budget' && <BudgetView />}
-        {activeTab === 'chat' && <ChatView />}
-        {activeTab === 'saved' && (
-          <div className="flex flex-col items-center justify-center h-screen pb-32 opacity-40">
-             <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-6 shadow-sm">
-                <Heart size={40} className="text-[#FFB7B2] fill-[#FFE5E5]" />
-             </div>
-             <p className="font-bold text-[#8B5E3C]">收藏夾</p>
-             <p className="text-sm">把喜歡的地方都收進來 💕</p>
-          </div>
-        )}
-
-        <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
-        
-        <AddItemModal 
-          isOpen={isAddModalOpen} 
-          onClose={() => setIsAddModalOpen(false)}
-          onSave={handleSaveItem}
-          initialData={modalInitialData}
-        />
-
-      </main>
+            <div class="bg-coffee text-milk-yellow p-4 rounded-xl">
+                <label class="text-xs opacity-70">台幣約</label>
+                <div class="text-3xl font-bold">
+                    ${{ (calcAmount * rates[calcCurrency]).toLocaleString(undefined, {maximumFractionDigits: 0}) }}
+                </div>
+                <div class="text-xs mt-1 text-right opacity-50">匯率: {{ rates[calcCurrency] }}</div>
+            </div>
+            
+            <div class="mt-4 text-xs text-gray-400 text-center">
+                * 匯率可於程式碼中調整，目前為預設值
+            </div>
+        </div>
     </div>
-  );
-}
+
+</div>
+
+<script type="module">
+    const { createApp, ref, computed, onMounted, watch, nextTick } = Vue;
+
+    // Firebase Setup
+    let db, auth;
+    let appId = 'travel-buddy-demo'; 
+    if (typeof __app_id !== 'undefined') appId = __app_id;
+
+    // --- FIREBASE CONFIGURATION (已填入您的資料) ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyDFUGYOobmVxYFQMBYz1iQ4z1HIrdbTi8Q",
+        authDomain: "travel-55c4b.firebaseapp.com",
+        databaseURL: "https://travel-55c4b-default-rtdb.firebaseio.com",
+        projectId: "travel-55c4b",
+        storageBucket: "travel-55c4b.firebasestorage.app",
+        messagingSenderId: "925227625640",
+        appId: "1:925227625640:web:4cc6d501b2e21ab7f8a69d",
+        measurementId: "G-ZE814KZD8Y"
+    };
+
+    // 使用您的 Config 初始化 Firebase
+    const app = window.firebaseModules.initializeApp(firebaseConfig);
+    auth = window.firebaseModules.getAuth(app);
+    db = window.firebaseModules.getFirestore(app);
+    
+    const { signInAnonymously, onAuthStateChanged, signInWithCustomToken } = window.firebaseModules;
+    const { collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc, serverTimestamp, where } = window.firebaseModules;
+
+    createApp({
+        setup() {
+            // -- State --
+            const loading = ref(true);
+            const currentTab = ref('itinerary');
+            const showAddItemModal = ref(false);
+            const showCalc = ref(false);
+            const user = ref(null);
+            const currentUserId = ref('');
+            const currentUserName = ref('旅客');
+            const tempUserName = ref('');
+
+            // Data
+            const tripDays = ref([new Date(), new Date(new Date().setDate(new Date().getDate() + 1)), new Date(new Date().setDate(new Date().getDate() + 2))]); // 3 days default
+            const selectedDayIndex = ref(0);
+            const itineraryItems = ref([]);
+            
+            const users = ref(['我', '朋友A', '朋友B', '朋友C']); // Mock users for split bill
+            const expenses = ref([]);
+            const newExpense = ref({ desc: '', amount: '', currency: 'TWD', payer: '我' });
+            
+            const chatMessages = ref([]);
+            const newMessage = ref('');
+            const chatContainer = ref(null);
+
+            const checklist = ref([]);
+            const newCheckItem = ref('');
+
+            const flightInfo = ref({ code: '', time: '', terminal: '' });
+            const editingFlight = ref(false);
+
+            // New Item Form
+            const newItem = ref({ time: '09:00', title: '', location: '', imageUrl: '', notes: '' });
+            
+            // Calc
+            const calcAmount = ref(1000);
+            const calcCurrency = ref('JPY');
+            const rates = ref({
+                'JPY': 0.22,
+                'KRW': 0.024,
+                'USD': 31.5,
+                'TWD': 1
+            });
+
+            // Map
+            let mapInstance = null;
+            let markers = [];
+            const tripLocation = ref('台北'); // Default for weather
+            const currentWeather = ref(null);
+
+            // -- Computed --
+            const dayItems = computed(() => {
+                const targetDate = formatDate(tripDays.value[selectedDayIndex.value]);
+                return itineraryItems.value
+                    .filter(i => i.dateStr === targetDate)
+                    .sort((a, b) => a.time.localeCompare(b.time));
+            });
+
+            const totalExpenseTwd = computed(() => {
+                return expenses.value.reduce((acc, curr) => {
+                    return acc + (parseFloat(curr.amount) * rates.value[curr.currency]);
+                }, 0).toFixed(0);
+            });
+
+            const userBalances = computed(() => {
+                const balances = {};
+                users.value.forEach(u => balances[u] = 0);
+                
+                expenses.value.forEach(exp => {
+                    const costInTwd = parseFloat(exp.amount) * rates.value[exp.currency];
+                    const perPerson = costInTwd / users.value.length;
+                    
+                    // Payer gets credit
+                    if(balances[exp.payer] !== undefined) balances[exp.payer] += costInTwd;
+                    
+                    // Everyone gets debt
+                    users.value.forEach(u => balances[u] -= perPerson);
+                });
+                
+                // Round
+                Object.keys(balances).forEach(k => balances[k] = Math.round(balances[k]));
+                return balances;
+            });
+
+            const sortedMessages = computed(() => {
+                return [...chatMessages.value].sort((a, b) => (a.timestamp?.seconds || 0) - (b.timestamp?.seconds || 0));
+            });
+
+            // -- Methods --
+            const formatDate = (date) => {
+                const d = new Date(date);
+                return `${d.getMonth() + 1}/${d.getDate()}`;
+            };
+
+            const addDay = () => {
+                const lastDay = tripDays.value[tripDays.value.length - 1];
+                const newDay = new Date(lastDay);
+                newDay.setDate(newDay.getDate() + 1);
+                tripDays.value.push(newDay);
+            };
+
+            const formatTime = (ts) => {
+                if(!ts) return '';
+                const d = new Date(ts.seconds * 1000);
+                return `${d.getHours()}:${d.getMinutes().toString().padStart(2, '0')}`;
+            };
+
+            // Firebase Operations
+            const addItem = async () => {
+                if (!newItem.value.title) return;
+                const dateStr = formatDate(tripDays.value[selectedDayIndex.value]);
+                
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'itinerary'), {
+                    ...newItem.value,
+                    dateStr,
+                    createdAt: serverTimestamp()
+                });
+                
+                showAddItemModal.value = false;
+                newItem.value = { time: '09:00', title: '', location: '', imageUrl: '', notes: '' };
+            };
+
+            const deleteItem = async (id) => {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'itinerary', id));
+            };
+
+            const addExpense = async () => {
+                if (!newExpense.value.amount || !newExpense.value.desc) return;
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'expenses'), {
+                    ...newExpense.value,
+                    createdAt: serverTimestamp()
+                });
+                newExpense.value.desc = '';
+                newExpense.value.amount = '';
+            };
+
+            const deleteExpense = async (id) => {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'expenses', id));
+            };
+
+            const sendMessage = async () => {
+                if (!newMessage.value.trim()) return;
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'chat'), {
+                    text: newMessage.value,
+                    userId: currentUserId.value,
+                    userName: currentUserName.value,
+                    timestamp: serverTimestamp()
+                });
+                newMessage.value = '';
+                scrollToBottom();
+            };
+            
+            const scrollToBottom = async () => {
+                await nextTick();
+                if(chatContainer.value) {
+                    chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+                }
+            };
+
+            const addCheckItem = async () => {
+                 if (!newCheckItem.value.trim()) return;
+                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'checklist'), {
+                     text: newCheckItem.value,
+                     checked: false
+                 });
+                 newCheckItem.value = '';
+            };
+
+            const toggleCheck = async (item) => {
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'checklist', item.id), {
+                    checked: !item.checked
+                });
+            };
+
+            const updateUserName = () => {
+                if(tempUserName.value) {
+                    currentUserName.value = tempUserName.value;
+                    localStorage.setItem('travel_app_username', tempUserName.value);
+                    alert("暱稱已更新！");
+                }
+            };
+
+            const saveFlightInfo = async () => {
+                // Ideally this would also be in Firestore, but for simplicity using LocalStorage or a single Doc
+                // Let's use Firestore singular doc pattern simulation
+                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'flight'), {
+                     ...flightInfo.value,
+                     updatedAt: serverTimestamp()
+                 }); // This is a bit spammy, in real app use setDoc with fixed ID
+                 editingFlight.value = false;
+            };
+
+            // Map & Weather
+            const initMap = () => {
+                nextTick(() => {
+                    if (!mapInstance && document.getElementById('map')) {
+                        mapInstance = L.map('map').setView([25.0330, 121.5654], 13); // Default Taipei
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            attribution: '© OpenStreetMap'
+                        }).addTo(mapInstance);
+                    }
+                    updateMapMarkers();
+                });
+            };
+
+            const updateMapMarkers = () => {
+                if (!mapInstance) return;
+                
+                // Clear existing
+                markers.forEach(m => mapInstance.removeLayer(m));
+                markers = [];
+
+                // Add new from current day items
+                let bounds = [];
+                dayItems.value.forEach(item => {
+                    // This is a simulation. In a real app, you need to Geocode the address string to Lat/Lng
+                    // Here we will simulate random spread around current center if no coords, 
+                    // OR if the user provides coords in location. 
+                    // Since we don't have a geocoding API key, we will simulate "pinning" by just showing current user location + random offsets for demo,
+                    // OR we assume the user might enter "25.03, 121.56" in location.
+                    // For a robust demo without API keys, we will just pin the User's location.
+                });
+            };
+
+            const locateMe = () => {
+                 if (navigator.geolocation && mapInstance) {
+                    navigator.geolocation.getCurrentPosition(position => {
+                        const { latitude, longitude } = position.coords;
+                        mapInstance.setView([latitude, longitude], 15);
+                        
+                        const myIcon = L.divIcon({
+                            className: 'custom-div-icon',
+                            html: `<div style="background-color:#BB9457;width:15px;height:15px;border-radius:50%;border:2px solid white;box-shadow:0 0 10px rgba(0,0,0,0.5);"></div>`,
+                            iconSize: [15, 15],
+                            iconAnchor: [7, 7]
+                        });
+
+                        L.marker([latitude, longitude], {icon: myIcon}).addTo(mapInstance)
+                            .bindPopup("你在這裡").openPopup();
+                            
+                        // Fetch weather for this location
+                        fetchWeather(latitude, longitude);
+                    });
+                } else {
+                    alert("無法取得位置");
+                }
+            };
+            
+            const fetchWeather = async (lat, lng) => {
+                try {
+                    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true`);
+                    const data = await res.json();
+                    if(data.current_weather) {
+                        currentWeather.value = {
+                            temp: data.current_weather.temperature,
+                            desc: '晴/多雲' // OpenMeteo returns numeric codes, simplifying for demo
+                        };
+                    }
+                } catch(e) { console.error(e); }
+            };
+
+            // -- Lifecycle --
+            onMounted(async () => {
+                // Auth - 使用匿名登入 (因為是您自己的 Firebase 專案)
+                try {
+                    await signInAnonymously(auth);
+                } catch (error) {
+                    console.error("登入失敗:", error);
+                    alert("登入失敗，請檢查 Firebase Authentication 是否已開啟 '匿名' 登入功能。");
+                }
+                
+                onAuthStateChanged(auth, (u) => {
+                    if (u) {
+                        user.value = u;
+                        currentUserId.value = u.uid;
+                        loading.value = false;
+                        
+                        // Listeners
+                        onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'itinerary'), (snap) => {
+                            itineraryItems.value = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                        });
+                        onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'expenses'), (snap) => {
+                            expenses.value = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                        });
+                        onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'chat'), (snap) => {
+                            chatMessages.value = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                        });
+                        onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'checklist'), (snap) => {
+                            checklist.value = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                        });
+                        // Flight listener (simplified, taking last)
+                        onSnapshot(query(collection(db, 'artifacts', appId, 'public', 'data', 'flight'), orderBy('updatedAt', 'desc')), (snap) => {
+                           if(!snap.empty) flightInfo.value = snap.docs[0].data();
+                        });
+                    }
+                });
+
+                // Load local name
+                const savedName = localStorage.getItem('travel_app_username');
+                if(savedName) currentUserName.value = savedName;
+                
+                // Init fake weather
+                fetchWeather(25.03, 121.56); // Taipei default
+            });
+
+            return {
+                loading, currentTab, tripDays, selectedDayIndex, dayItems,
+                showAddItemModal, newItem, addItem, deleteItem,
+                initMap, locateMe,
+                expenses, newExpense, addExpense, deleteExpense, totalExpenseTwd, userBalances, users, rates, showCalc, calcAmount, calcCurrency,
+                chatMessages, newMessage, sendMessage, chatContainer, sortedMessages, currentUserId, formatTime,
+                checklist, newCheckItem, addCheckItem, toggleCheck,
+                flightInfo, editingFlight, saveFlightInfo,
+                currentWeather, tripLocation,
+                formatDate, addDay,
+                tempUserName, updateUserName
+            };
+        }
+    }).mount('#app');
+</script>
+</body>
+</html>
