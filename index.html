@@ -23,14 +23,13 @@
     <!-- FontAwesome (Icons) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Firebase (Modular) -->
+    <!-- Firebase (Modular) - Using Stable Version 10.13.1 -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc, serverTimestamp, where, getDoc, setDoc, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc, serverTimestamp, where, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
 
-        // Expose to window for Vue setup
-        window.firebaseModules = { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc, serverTimestamp, where, getDoc, setDoc, enableIndexedDbPersistence };
+        window.firebaseModules = { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc, serverTimestamp, where, getDoc, setDoc };
     </script>
 
     <script>
@@ -63,8 +62,6 @@
         .app-container { max-width: 480px; margin: 0 auto; background-color: #FFF8E7; min-height: 100vh; position: relative; box-shadow: 0 0 20px rgba(67, 40, 24, 0.1); }
         .transport-icon.active { color: #A89F91; transform: scale(1.1); }
         .calc-btn { @apply text-xl font-bold rounded-lg p-4 shadow-sm active:scale-95 transition-transform flex items-center justify-center; }
-        
-        /* Pie Chart CSS */
         .pie-chart {
             width: 120px; height: 120px; border-radius: 50%;
             background: conic-gradient(var(--pie-gradient));
@@ -79,14 +76,20 @@
 
 <div id="app" class="app-container flex flex-col h-screen overflow-hidden">
 
-    <!-- Loading -->
+    <!-- Loading Screen with Diagnostics -->
     <div v-if="loading" class="absolute inset-0 z-[500] flex items-center justify-center bg-milk-yellow flex-col text-center p-4">
         <i class="fa-solid fa-plane fa-bounce text-4xl text-coffee mb-4"></i>
-        <p class="text-coffee font-bold mb-2">載入中...</p>
-        <p v-if="showSlowLoadingHint" class="text-xs text-gray-500 animate-pulse">
-            連線有點慢，正在嘗試連線 Firebase...<br>
-            如果是第一次開啟，請確認 GitHub 網址已加入授權白名單。
-        </p>
+        <p class="text-coffee font-bold mb-2">{{ loadingStatus }}</p>
+        
+        <!-- Slow Loading Hint -->
+        <div v-if="showSlowLoadingHint" class="mt-4 bg-white/50 p-4 rounded-xl max-w-xs animate-pulse">
+            <p class="text-xs text-red-500 font-bold mb-1">連線似乎有點慢...</p>
+            <p class="text-[10px] text-gray-500 mb-3">請確認網路連線，或 Firebase 安全規則是否已設為公開 (Test Mode)。</p>
+            <button @click="loading = false" class="bg-coffee text-white px-4 py-2 rounded-lg text-xs font-bold shadow-md">
+                略過連線，直接進入 (離線模式)
+            </button>
+        </div>
+        <div v-if="errorMsg" class="mt-4 text-red-500 text-xs font-bold max-w-xs bg-red-50 p-2 rounded">{{ errorMsg }}</div>
     </div>
 
     <!-- VIEW: Trip List (Home) -->
@@ -100,7 +103,7 @@
             </div>
             <div class="flex-1 min-w-0">
                 <h1 class="text-2xl font-bold text-coffee truncate">你好，{{ userProfile.name }}</h1>
-                <p class="text-sm text-gray-500">Travel Buddy Pro v2.0</p>
+                <p class="text-sm text-gray-500">Travel Buddy Pro</p>
             </div>
         </div>
 
@@ -176,12 +179,12 @@
             
             <!-- TAB: Itinerary -->
             <div v-if="currentTab === 'itinerary'" class="p-4 space-y-4">
-                <!-- Weather (Forecast) -->
+                <!-- Weather -->
                 <div class="bg-gradient-to-r from-blue-100 to-blue-50 rounded-2xl p-4 flex items-center justify-between shadow-sm text-coffee">
                      <div>
                         <div class="text-xs opacity-70 mb-1"><i class="fa-solid fa-calendar-day mr-1"></i>{{ formatDate(tripDays[selectedDayIndex]) }} 預報</div>
                         <div class="text-2xl font-bold flex items-center gap-2">
-                            {{ weather.tempMax ? `${weather.tempMin}-${weather.tempMax}°C` : '預載中...' }} 
+                            {{ weather.tempMax ? `${weather.tempMin}-${weather.tempMax}°C` : '載入中...' }} 
                             <i class="fa-solid fa-cloud-sun text-orange-400"></i>
                         </div>
                      </div>
@@ -197,9 +200,6 @@
                     <button @click="downloadICS" class="flex-1 bg-white py-2 rounded-xl text-xs font-bold text-coffee shadow-sm border border-coffee/10 flex items-center justify-center gap-1">
                         <i class="fa-regular fa-calendar-plus"></i> 匯出到日曆
                     </button>
-                    <!-- <button class="flex-1 bg-white py-2 rounded-xl text-xs font-bold text-coffee shadow-sm border border-coffee/10">
-                        <i class="fa-solid fa-sort"></i> 排序模式
-                    </button> -->
                 </div>
 
                 <!-- Items -->
@@ -213,21 +213,17 @@
                     <div class="absolute -left-[9px] top-4 w-4 h-4 rounded-full bg-milk-yellow border-2 border-accent z-10"></div>
                     
                     <div class="bg-white rounded-2xl p-3 shadow-sm flex gap-3 relative group border border-transparent hover:border-coffee/10 transition mb-4">
-                        <!-- Delete (Top Right) -->
                         <button @click="deleteItem(item.id)" class="absolute top-2 right-2 text-gray-300 hover:text-red-500 p-2 z-10 transition-colors">
                             <i class="fa-solid fa-trash"></i>
                         </button>
 
-                        <!-- Time -->
                         <div class="flex flex-col items-center justify-start pt-1 min-w-[50px]">
                             <span class="font-bold text-coffee text-lg">{{ item.time }}</span>
-                            <!-- Transport Icon -->
                             <div v-if="item.transport" class="mt-2 text-coffee-light text-sm">
                                 <i :class="getTransportIcon(item.transport)"></i>
                             </div>
                         </div>
 
-                        <!-- Content -->
                         <div class="flex-1 pb-2 pr-6">
                             <div class="font-bold text-lg text-coffee mb-1">{{ item.title }}</div>
                             <div class="text-sm text-gray-500 mb-2 flex items-center cursor-pointer hover:text-accent transition-colors" @click="openMapTo(item)">
@@ -249,22 +245,19 @@
             <!-- TAB: Map -->
             <div v-show="currentTab === 'map'" class="h-full w-full relative">
                 <div id="map"></div>
-                <!-- Location Search on Map -->
                 <div class="absolute top-4 left-4 right-4 z-[400]">
                     <div class="bg-white rounded-xl shadow-lg p-2 flex gap-2">
                         <input v-model="mapSearchQuery" @keyup.enter="searchMapLocation" placeholder="搜尋地圖地點..." class="flex-1 outline-none px-2 text-sm bg-transparent">
                         <button @click="searchMapLocation" class="text-coffee px-2 hover:text-accent"><i class="fa-solid fa-search"></i></button>
                     </div>
                 </div>
-                <!-- Route Legend -->
                 <div class="absolute bottom-20 left-4 z-[400] bg-white/90 p-2 rounded-lg text-xs shadow text-coffee">
                     <div class="flex items-center gap-2"><div class="w-4 h-1 bg-red-500"></div> 行程路徑 ({{ dayItems.length }} 點)</div>
                 </div>
             </div>
 
-            <!-- TAB: Money (Budget & Categories) -->
+            <!-- TAB: Money -->
             <div v-if="currentTab === 'money'" class="p-4 space-y-4">
-                <!-- Budget Card -->
                 <div class="bg-coffee text-milk-yellow rounded-2xl p-4 shadow-lg relative overflow-hidden">
                     <div class="flex justify-between items-end mb-2 relative z-10">
                         <div>
@@ -281,16 +274,13 @@
                             </div>
                         </div>
                     </div>
-                    <!-- Progress Bar -->
                     <div class="w-full h-2 bg-black/20 rounded-full overflow-hidden relative z-10">
                         <div class="h-full bg-accent transition-all duration-500" :style="{width: budgetPercent + '%'}"></div>
                     </div>
                     <div class="text-[10px] mt-1 text-right opacity-60 relative z-10">已使用 {{ budgetPercent }}%</div>
-                    
                     <i class="fa-solid fa-wallet absolute -bottom-4 -right-4 text-8xl opacity-10 rotate-12"></i>
                 </div>
 
-                <!-- Analysis Chart -->
                 <div class="bg-white rounded-2xl p-4 shadow-sm flex items-center justify-between">
                     <div class="pie-chart shadow-inner" :style="{'--pie-gradient': pieGradient}"></div>
                     <div class="flex-1 pl-4">
@@ -307,7 +297,6 @@
                     </div>
                 </div>
 
-                <!-- Expense Form -->
                 <div class="bg-white rounded-xl p-3 shadow-sm space-y-2">
                     <div class="flex gap-2">
                         <input v-model="newExpense.desc" placeholder="消費項目" class="flex-1 bg-gray-50 p-2 rounded text-sm outline-none border border-gray-100">
@@ -333,7 +322,6 @@
                     <button @click="addExpense" class="w-full bg-accent text-white py-2 rounded-lg font-bold text-sm shadow-sm hover:bg-opacity-90">記一筆</button>
                 </div>
 
-                <!-- Balances (Scrollable) -->
                 <div class="flex gap-2 overflow-x-auto no-scrollbar pb-2">
                      <div v-for="(balance, uid) in userBalances" :key="uid" class="bg-white px-3 py-2 rounded-xl text-xs whitespace-nowrap flex items-center gap-2 shadow-sm border border-gray-100">
                         <img :src="getUserAvatar(uid)" class="w-5 h-5 rounded-full bg-gray-300 object-cover">
@@ -344,7 +332,6 @@
                     </div>
                 </div>
                 
-                <!-- Expense List -->
                 <div class="space-y-2 pb-10">
                     <div v-for="exp in expenses" :key="exp.id" class="bg-white p-3 rounded-xl flex justify-between items-center shadow-sm border-l-4" :style="{borderLeftColor: getCategoryColor(exp.category)}">
                         <div class="flex items-center gap-3">
@@ -365,7 +352,7 @@
                 </div>
             </div>
 
-            <!-- TAB: Checklist (New) -->
+            <!-- TAB: Checklist -->
             <div v-if="currentTab === 'checklist'" class="p-4 space-y-4">
                 <div class="bg-white rounded-2xl p-4 shadow-sm">
                     <h3 class="font-bold text-coffee mb-3"><i class="fa-solid fa-clipboard-check mr-2"></i>行前清單</h3>
@@ -389,7 +376,6 @@
 
             <!-- TAB: Tools -->
             <div v-if="currentTab === 'tools'" class="p-4 space-y-6">
-                <!-- Translator -->
                 <div class="bg-white rounded-2xl p-4 shadow-sm">
                     <h3 class="font-bold text-coffee mb-3"><i class="fa-solid fa-language mr-2"></i>即時翻譯</h3>
                     <div class="flex gap-2 mb-2">
@@ -409,25 +395,15 @@
 
         <!-- Bottom Navigation -->
         <div class="fixed bottom-0 w-full max-w-[480px] bg-white border-t border-gray-100 flex justify-around py-2 pb-4 z-50 text-[10px] font-bold text-gray-400">
-            <button @click="currentTab = 'itinerary'" :class="currentTab === 'itinerary' ? 'text-coffee' : ''" class="flex flex-col items-center w-1/6 space-y-1 transition-colors">
-                <i class="fa-solid fa-list-ul text-lg"></i><span>行程</span>
-            </button>
-            <button @click="currentTab = 'map'; initMap()" :class="currentTab === 'map' ? 'text-coffee' : ''" class="flex flex-col items-center w-1/6 space-y-1 transition-colors">
-                <i class="fa-regular fa-map text-lg"></i><span>地圖</span>
-            </button>
-            <button @click="currentTab = 'money'" :class="currentTab === 'money' ? 'text-coffee' : ''" class="flex flex-col items-center w-1/6 space-y-1 transition-colors">
-                <i class="fa-solid fa-wallet text-lg"></i><span>分帳</span>
-            </button>
-            <button @click="currentTab = 'checklist'" :class="currentTab === 'checklist' ? 'text-coffee' : ''" class="flex flex-col items-center w-1/6 space-y-1 transition-colors">
-                <i class="fa-solid fa-check-double text-lg"></i><span>清單</span>
-            </button>
-            <button @click="currentTab = 'tools'" :class="currentTab === 'tools' ? 'text-coffee' : ''" class="flex flex-col items-center w-1/6 space-y-1 transition-colors">
-                <i class="fa-solid fa-toolbox text-lg"></i><span>工具</span>
-            </button>
+            <button @click="currentTab = 'itinerary'" :class="currentTab === 'itinerary' ? 'text-coffee' : ''" class="flex flex-col items-center w-1/6 space-y-1 transition-colors"><i class="fa-solid fa-list-ul text-lg"></i><span>行程</span></button>
+            <button @click="currentTab = 'map'; initMap()" :class="currentTab === 'map' ? 'text-coffee' : ''" class="flex flex-col items-center w-1/6 space-y-1 transition-colors"><i class="fa-regular fa-map text-lg"></i><span>地圖</span></button>
+            <button @click="currentTab = 'money'" :class="currentTab === 'money' ? 'text-coffee' : ''" class="flex flex-col items-center w-1/6 space-y-1 transition-colors"><i class="fa-solid fa-wallet text-lg"></i><span>分帳</span></button>
+            <button @click="currentTab = 'checklist'" :class="currentTab === 'checklist' ? 'text-coffee' : ''" class="flex flex-col items-center w-1/6 space-y-1 transition-colors"><i class="fa-solid fa-check-double text-lg"></i><span>清單</span></button>
+            <button @click="currentTab = 'tools'" :class="currentTab === 'tools' ? 'text-coffee' : ''" class="flex flex-col items-center w-1/6 space-y-1 transition-colors"><i class="fa-solid fa-toolbox text-lg"></i><span>工具</span></button>
         </div>
     </div>
 
-    <!-- MODALS (Create Trip, Profile, Add Item, Calc) - Kept mostly same -->
+    <!-- MODALS -->
     <div v-if="showCreateTripModal" class="fixed inset-0 z-[200] bg-black/50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-xl">
             <h3 class="text-xl font-bold text-coffee mb-4">建立新旅程</h3>
@@ -525,7 +501,6 @@
         </div>
     </div>
 
-    <!-- Profile & Invite Modals are same as before, simplified here -->
     <div v-if="editingProfile && !showForceProfileModal" class="fixed inset-0 z-[80] bg-black/50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl w-full max-w-sm p-6">
             <h3 class="font-bold text-coffee mb-4">編輯個人檔案</h3>
@@ -573,12 +548,14 @@
     let app, auth, db;
     try { app = initializeApp(firebaseConfig); auth = getAuth(app); db = getFirestore(app); } catch(e) { console.error("Firebase Init Error", e); }
 
-    const withTimeout = (promise, ms = 5000) => Promise.race([promise, new Promise((_, reject) => setTimeout(() => reject(new Error("連線逾時")), ms))]);
+    const withTimeout = (promise, ms = 5000) => Promise.race([promise, new Promise((_, reject) => setTimeout(() => reject(new Error("連線逾時 (請檢查網路或Firebase規則)")), ms))]);
 
     createApp({
         setup() {
             // State
             const loading = ref(true);
+            const loadingStatus = ref("初始化中...");
+            const errorMsg = ref("");
             const showSlowLoadingHint = ref(false);
             const isProcessing = ref(false);
             const user = ref(null);
@@ -788,7 +765,7 @@
                     const tripRef = await withTimeout(addDoc(collection(db, 'trips'), { name: newTripName.value, createdBy: user.value.uid, members: [user.value.uid], createdAt: serverTimestamp(), startDate: new Date(newTripDate.value).toISOString(), budget: 0 })); 
                     await withTimeout(setDoc(doc(db, `users/${user.value.uid}/trips`, tripRef.id), { role: 'owner', joinedAt: serverTimestamp() })); 
                     showCreateTripModal.value = false; newTripName.value = ''; alert("建立成功！"); 
-                } catch(e) { alert("建立失敗: " + e.message); } finally { isProcessing.value = false; } 
+                } catch(e) { alert("建立失敗 (請確認Firebase規則設為Test Mode): " + e.message); } finally { isProcessing.value = false; } 
             };
             const joinTrip = async () => { if(!joinCode.value) return; try { const tripRef = doc(db, 'trips', joinCode.value); const tripSnap = await withTimeout(getDoc(tripRef)); if(tripSnap.exists()) { const data = tripSnap.data(); if(!data.members.includes(user.value.uid)) { await updateDoc(tripRef, { members: [...data.members, user.value.uid] }); await setDoc(doc(db, `users/${user.value.uid}/trips`, joinCode.value), { role: 'member', joinedAt: serverTimestamp() }); alert('成功加入！'); } else { alert('已在行程中'); } } else { alert('找不到代碼'); } } catch(e) { alert('加入失敗'); } };
             const enterTrip = async (trip) => { currentTripId.value = trip.id; currentTrip.value = trip; tempBudget.value = trip.budget || 0; const start = new Date(trip.startDate); tripDays.value = [start, new Date(start.getTime()+86400000), new Date(start.getTime()+172800000)]; loadTripData(trip.id); };
@@ -828,7 +805,16 @@
 
             onMounted(async () => {
                 setTimeout(() => { if (loading.value) { showSlowLoadingHint.value = true; setTimeout(() => loading.value = false, 3000); } }, 5000);
-                try { await signInAnonymously(auth); } catch(e) { console.error("Auth", e); loading.value = false; }
+                try { 
+                    loadingStatus.value = "正在連線伺服器...";
+                    await signInAnonymously(auth); 
+                    loadingStatus.value = "驗證成功，讀取資料中...";
+                } catch(e) { 
+                    console.error("Auth", e); 
+                    errorMsg.value = "登入失敗: " + e.message;
+                    loading.value = false; 
+                }
+                
                 onAuthStateChanged(auth, async (u) => {
                     if(u) {
                         user.value = u;
@@ -837,13 +823,17 @@
                             const tripIds = snap.docs.map(d => d.id);
                             if(tripIds.length) { const promises = tripIds.map(tid => getDoc(doc(db, 'trips', tid))); const results = await Promise.all(promises); myTrips.value = results.filter(r => r.exists()).map(r => ({id: r.id, ...r.data()})); } else { myTrips.value = []; }
                             loading.value = false;
-                        }, () => loading.value = false);
+                        }, (err) => {
+                            console.error(err);
+                            errorMsg.value = "資料讀取失敗 (請檢查權限): " + err.code;
+                            loading.value = false;
+                        });
                     } else loading.value = false;
                 });
             });
 
             return {
-                loading, showSlowLoadingHint, isProcessing, user, userProfile, editingProfile, tempProfile, openProfileEdit, saveProfile, handleAvatarUpload, getUserName, getUserAvatar, showForceProfileModal,
+                loading, loadingStatus, errorMsg, showSlowLoadingHint, isProcessing, user, userProfile, editingProfile, tempProfile, openProfileEdit, saveProfile, handleAvatarUpload, getUserName, getUserAvatar, showForceProfileModal,
                 myTrips, currentTripId, currentTrip, createTrip, joinTrip, enterTrip, exitTrip, showCreateTripModal, newTripName, newTripDate, joinCode, showInvite, showTripSettings, openTripSettings, updateTripName, tempTripName, currentTripMembers,
                 currentTab, tripDays, selectedDayIndex, formatDate, addDay, dayItems, showAddItemModal, newItem, openAddItemModal, locationSuggestions, searchLocation, selectLocation, addItem, deleteItem, getTransportIcon,
                 mapSearchQuery, searchMapLocation, initMap, openMapTo, expenses, newExpense, addExpense, deleteExpense, userBalances, totalExpenseTwd, customRates, showCalculator, calcDisplay, calcFormula, openCalculator, calcAppend, calcBackspace, calcClear, calcEqual, confirmCalc,
