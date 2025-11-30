@@ -26,23 +26,21 @@ import {
   Coffee
 } from 'lucide-react';
 
-// --- 風格設定 (Cute Theme) ---
 const THEME = {
-  bg: "bg-[#FFF9F2]",      // 溫暖的奶油米色
-  card: "bg-white",        // 純白卡片
-  primary: "bg-[#8B5E3C]", // 牛奶巧克力色 (主按鈕)
-  primaryLight: "bg-[#DBC1AC]", // 淺奶茶色
-  accentPink: "bg-[#FFE5E5] text-[#FF8BA7]", // 草莓粉 (標籤/愛心)
-  accentYellow: "bg-[#FFF8D6] text-[#F4C430]", // 奶油黃 (星星/亮點)
-  accentBlue: "bg-[#E3F2FD] text-[#64B5F6]", // 寶寶藍 (裝飾)
-  textMain: "text-[#5D4037]", // 深咖啡文字 (比純黑柔和)
-  textSub: "text-[#9D8168]",  // 淺咖啡文字
-  input: "bg-[#FFFCF8] border-[#F2E8DE]", // 柔和輸入框
-  shadow: "shadow-[0_8px_20px_-6px_rgba(139,94,60,0.1)]", // 帶暖色調的軟陰影
-  radius: "rounded-[32px]", // 超級圓角
+  bg: "bg-[#FFF9F2]",
+  card: "bg-white",
+  primary: "bg-[#8B5E3C]",
+  primaryLight: "bg-[#DBC1AC]",
+  accentPink: "bg-[#FFE5E5] text-[#FF8BA7]",
+  accentYellow: "bg-[#FFF8D6] text-[#F4C430]",
+  accentBlue: "bg-[#E3F2FD] text-[#64B5F6]",
+  textMain: "text-[#5D4037]",
+  textSub: "text-[#9D8168]",
+  input: "bg-[#FFFCF8] border-[#F2E8DE]",
+  shadow: "shadow-[0_8px_20px_-6px_rgba(139,94,60,0.1)]",
+  radius: "rounded-[32px]",
 };
 
-// --- 模擬數據 ---
 const SUGGESTED_DESTINATIONS = [
   {
     id: 1,
@@ -88,9 +86,6 @@ const SUGGESTED_DESTINATIONS = [
 
 const CATEGORIES = ["全部 ✨", "城市 🏙️", "自然 🌳", "海島 🏖️", "文化 ⛩️"];
 
-// --- 輔助組件 (Components) ---
-
-// 1. 底部導航 (可愛漂浮版)
 const BottomNav = ({ activeTab, setActiveTab }) => {
   const navItems = [
     { id: 'itinerary', icon: Calendar, label: '行程' },
@@ -112,7 +107,6 @@ const BottomNav = ({ activeTab, setActiveTab }) => {
               onClick={() => setActiveTab(item.id)}
               className={`flex flex-col items-center justify-center transition-all duration-300 relative group`}
             >
-              {/* Active Indicator Blob */}
               {isActive && (
                 <div className="absolute -top-1 w-10 h-10 bg-[#FFF4E6] rounded-full -z-10 scale-100 transition-transform"></div>
               )}
@@ -133,7 +127,6 @@ const BottomNav = ({ activeTab, setActiveTab }) => {
   );
 };
 
-// 2. 頂部標題列
 const Header = ({ title, subtitle, rightIcon: RightIcon, onRightClick }) => (
   <div className={`px-6 pt-6 pb-2 flex justify-between items-center ${THEME.bg} sticky top-0 z-40`}>
     <button className={`p-3 bg-white rounded-full ${THEME.shadow} ${THEME.textMain} hover:scale-105 transition-transform`}>
@@ -154,7 +147,6 @@ const Header = ({ title, subtitle, rightIcon: RightIcon, onRightClick }) => (
   </div>
 );
 
-// 3. 景點卡片 (柔和版)
 const DestinationCard = ({ destination, onAdd }) => (
   <div className={`bg-white ${THEME.radius} overflow-hidden ${THEME.shadow} mb-5 break-inside-avoid group hover:-translate-y-1 transition-transform duration-300`}>
     <div className="relative h-44 p-3 pb-0">
@@ -186,9 +178,6 @@ const DestinationCard = ({ destination, onAdd }) => (
   </div>
 );
 
-// --- 頁面內容 (Views) ---
-
-// 1. 行程頁面
 const ItineraryView = ({ items, onOpenAdd, onDelete }) => {
   const [activeDay, setActiveDay] = useState(1);
 
@@ -196,7 +185,6 @@ const ItineraryView = ({ items, onOpenAdd, onDelete }) => {
     <div className={`min-h-screen ${THEME.bg} pb-32`}>
       <Header title="紐西蘭之旅 🥝" subtitle="ONLINE" rightIcon={MoreHorizontal} />
       
-      {/* Day Selector (Bubbly Style) */}
       <div className="px-6 mt-4 flex items-center space-x-3 overflow-x-auto no-scrollbar py-2">
         {[1, 2, 3].map(day => (
           <button 
@@ -217,10 +205,8 @@ const ItineraryView = ({ items, onOpenAdd, onDelete }) => {
         </button>
       </div>
 
-      {/* Flight Card (Ticket Style) */}
       <div className="px-6 mt-6">
         <div className={`bg-white ${THEME.radius} p-5 ${THEME.shadow} relative overflow-hidden`}>
-          {/* Decorative circles */}
           <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-[#FFF9F2] rounded-full"></div>
           <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-[#FFF9F2] rounded-full"></div>
           
@@ -236,9 +222,7 @@ const ItineraryView = ({ items, onOpenAdd, onDelete }) => {
         </div>
       </div>
 
-      {/* Timeline / Items */}
       <div className="px-6 mt-6 space-y-4 relative">
-        {/* Dotted Line */}
         {items.length > 0 && (
           <div className="absolute left-[38px] top-4 bottom-4 w-0.5 border-l-2 border-dashed border-[#E5D0BF] z-0"></div>
         )}
@@ -274,7 +258,6 @@ const ItineraryView = ({ items, onOpenAdd, onDelete }) => {
         )}
       </div>
 
-      {/* Floating Add Button */}
       <button 
         onClick={onOpenAdd}
         className={`fixed bottom-28 right-6 w-16 h-16 ${THEME.primary} rounded-[28px] text-white shadow-xl shadow-[#8B5E3C]/30 flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40`}
@@ -285,7 +268,6 @@ const ItineraryView = ({ items, onOpenAdd, onDelete }) => {
   );
 };
 
-// 2. 探索頁面
 const ExploreView = ({ onAddToPlan }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeCategory, setActiveCategory] = useState("全部 ✨");
@@ -304,7 +286,6 @@ const ExploreView = ({ onAddToPlan }) => {
         <p className={`${THEME.textSub} text-sm`}>為你的紐西蘭之旅尋找靈感</p>
       </div>
 
-      {/* Search */}
       <div className="px-6 mb-6">
         <div className="relative group">
           <div className="absolute inset-0 bg-[#E5D0BF]/20 rounded-[24px] transform translate-y-1 transition-transform group-focus-within:translate-y-2"></div>
@@ -321,7 +302,6 @@ const ExploreView = ({ onAddToPlan }) => {
         </div>
       </div>
 
-      {/* Categories */}
       <div className="flex px-6 space-x-3 overflow-x-auto pb-6 no-scrollbar">
         {CATEGORIES.map(cat => (
           <button
@@ -338,7 +318,6 @@ const ExploreView = ({ onAddToPlan }) => {
         ))}
       </div>
 
-      {/* Masonry Grid */}
       <div className="px-6 columns-2 gap-5 space-y-5">
         {filtered.map(dest => (
           <DestinationCard key={dest.id} destination={dest} onAdd={onAddToPlan} />
@@ -348,14 +327,11 @@ const ExploreView = ({ onAddToPlan }) => {
   );
 };
 
-// 3. 分帳頁面
 const BudgetView = () => (
   <div className={`min-h-screen ${THEME.bg} pb-32`}>
     <Header title="錢包 👛" subtitle="ONLINE" />
     <div className="px-6 mt-6">
-      {/* Piggy Bank Card */}
       <div className={`${THEME.primary} rounded-[40px] p-8 text-[#FFFDF5] shadow-xl relative overflow-hidden`}>
-        {/* Cute blobs */}
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#A98467] rounded-full opacity-50 blur-3xl"></div>
         <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-[#A98467] rounded-full opacity-50 blur-3xl"></div>
         
@@ -386,7 +362,6 @@ const BudgetView = () => (
   </div>
 );
 
-// 4. 聊天頁面
 const ChatView = () => (
   <div className={`min-h-screen ${THEME.bg} flex flex-col`}>
     <Header title="聊天室 💬" subtitle="ONLINE" rightIcon={MoreHorizontal} />
@@ -414,7 +389,6 @@ const ChatView = () => (
        </div>
     </div>
 
-    {/* Input Area */}
     <div className="p-4 px-6 bg-white/80 backdrop-blur-md pb-28 border-t border-[#F2E8DE]">
       <div className="flex gap-3 items-center">
         <button className="p-3 text-[#DBC1AC] bg-[#FFF9F2] rounded-2xl hover:bg-[#FFE5E5] hover:text-[#FF8BA7] transition-colors"><Camera size={22}/></button>
@@ -430,7 +404,6 @@ const ChatView = () => (
   </div>
 );
 
-// 5. 新增行程 Modal (貼紙風格)
 const AddItemModal = ({ isOpen, onClose, onSave, initialData }) => {
   const [title, setTitle] = useState(initialData?.title || "");
   const [time, setTime] = useState(initialData?.time || "10:00");
@@ -450,7 +423,6 @@ const AddItemModal = ({ isOpen, onClose, onSave, initialData }) => {
       <div className="absolute inset-0 bg-[#5D4037]/20 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
       <div className={`bg-[#FFF9F2] w-full max-w-md rounded-t-[40px] sm:rounded-[40px] p-8 relative animate-in slide-in-from-bottom-10 duration-300 max-h-[90vh] overflow-y-auto shadow-2xl`}>
         
-        {/* Handle bar for mobile feel */}
         <div className="w-12 h-1.5 bg-[#E5D0BF] rounded-full mx-auto mb-8 opacity-50"></div>
 
         <div className="flex justify-between items-center mb-8">
@@ -458,7 +430,6 @@ const AddItemModal = ({ isOpen, onClose, onSave, initialData }) => {
           <button onClick={onClose} className="bg-white p-2 rounded-full shadow-sm hover:rotate-90 transition-transform"><X size={20} className="text-[#DBC1AC]" /></button>
         </div>
 
-        {/* Form Inputs */}
         <div className="space-y-5">
           <div className="flex gap-4">
              <div className="w-1/3">
@@ -538,25 +509,11 @@ const AddItemModal = ({ isOpen, onClose, onSave, initialData }) => {
   );
 };
 
-// --- App 主程式 ---
-
 export default function App() {
   const [activeTab, setActiveTab] = useState('itinerary');
   const [itineraryItems, setItineraryItems] = useState([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [modalInitialData, setModalInitialData] = useState(null);
-
-  // 1. 強制禁止翻譯 (對付熱心的瀏覽器)
-  useEffect(() => {
-    const meta = document.createElement('meta');
-    meta.name = "google";
-    meta.content = "notranslate";
-    document.head.appendChild(meta);
-    return () => {
-      // Cleanup if needed (rare in this single file context but good practice)
-      try { document.head.removeChild(meta); } catch(e) {}
-    }
-  }, []);
 
   const handleAddToPlan = (destination) => {
     setModalInitialData({
@@ -576,7 +533,6 @@ export default function App() {
   };
 
   return (
-    // 2. 加入 translate="no" 和 notranslate class 雙重保險
     <div className={`font-sans text-[#5D4037] ${THEME.bg} min-h-screen selection:bg-[#FFE5E5] notranslate`} translate="no">
       <main className="max-w-md mx-auto bg-[#FFF9F2] min-h-screen shadow-2xl relative overflow-hidden">
         
