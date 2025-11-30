@@ -546,6 +546,18 @@ export default function App() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [modalInitialData, setModalInitialData] = useState(null);
 
+  // 1. 強制禁止翻譯 (對付熱心的瀏覽器)
+  useEffect(() => {
+    const meta = document.createElement('meta');
+    meta.name = "google";
+    meta.content = "notranslate";
+    document.head.appendChild(meta);
+    return () => {
+      // Cleanup if needed (rare in this single file context but good practice)
+      try { document.head.removeChild(meta); } catch(e) {}
+    }
+  }, []);
+
   const handleAddToPlan = (destination) => {
     setModalInitialData({
       title: destination.title,
@@ -564,7 +576,8 @@ export default function App() {
   };
 
   return (
-    <div className={`font-sans text-[#5D4037] ${THEME.bg} min-h-screen selection:bg-[#FFE5E5]`}>
+    // 2. 加入 translate="no" 和 notranslate class 雙重保險
+    <div className={`font-sans text-[#5D4037] ${THEME.bg} min-h-screen selection:bg-[#FFE5E5] notranslate`} translate="no">
       <main className="max-w-md mx-auto bg-[#FFF9F2] min-h-screen shadow-2xl relative overflow-hidden">
         
         {activeTab === 'itinerary' && (
