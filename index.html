@@ -3,23 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Travel Buddy V28</title>
+    <title>Travel Buddy V30</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- 讓 Tailwind 讀懂自定義設定 -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: { 
-                        milk: '#FFFBE6', 
-                        coffee: '#4A3B32', 
-                        latte: '#D4A373', 
-                        mocha: '#9C6644', 
-                        cream: '#FFF9DB', 
-                        khaki: '#E6DDC3' 
+                        milk: '#FFFBE6', coffee: '#4A3B32', latte: '#D4A373', mocha: '#9C6644', cream: '#FFF9DB', khaki: '#E6DDC3' 
                     }
                 }
             }
@@ -35,7 +29,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
 
     <style type="text/tailwindcss">
-        /* iOS Safe Area & Full Height Fix */
         html, body { height: 100%; overscroll-behavior: none; }
         body { 
             background-color: #FFFBE6; 
@@ -55,21 +48,11 @@
         .calc-btn { @apply bg-[#E6DDC3] rounded-2xl p-4 text-xl font-bold text-[#5C4B43] active:scale-95 transition-transform shadow-[0_2px_0_#D1C7B7] border border-[#D1C7B7]; }
         .calc-btn-op { @apply bg-[#D4A373] text-white border-[#B08968] shadow-[0_2px_0_#B08968]; }
         .calc-btn-action { @apply bg-[#A98467] text-white border-[#8B6B52] shadow-[0_2px_0_#8B6B52]; }
-        
-        /* Inputs */
         .custom-input { @apply w-full bg-white border-2 border-[#E6DDC3] rounded-xl p-3 text-coffee font-bold outline-none focus:border-[#D4A373] transition-colors; }
-        
-        /* Transport Icon Selection */
         .transport-opt { @apply w-10 h-10 rounded-full flex items-center justify-center border-2 border-transparent text-gray-400 transition-all; }
         .transport-opt.active { @apply bg-[#D4A373] text-white border-[#B08968] shadow-sm; }
-
-        /* Bottom Nav Button Alignment */
-        .nav-btn {
-            @apply flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-bold text-gray-400 transition-colors h-full pt-2 pb-1;
-        }
-        .nav-btn.active {
-            @apply text-coffee;
-        }
+        .nav-btn { @apply flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-bold text-gray-400 transition-colors h-full pt-2 pb-1; }
+        .nav-btn.active { @apply text-coffee; }
     </style>
 
     <!-- Firebase SDKs -->
@@ -78,9 +61,6 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
         import { getDatabase, ref as dbRef, set, onValue, update, push } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
 
-        // -----------------------------------------------------------
-        // ✅ Key 已經填好
-        // -----------------------------------------------------------
         const firebaseConfig = {
             apiKey: "AIzaSyDFUGYOobmVxYfQMBYz1iq4z1HlrdbTi8Q",
             authDomain: "travel-55c4b.firebaseapp.com",
@@ -106,19 +86,10 @@
         };
 
         const DEFAULT_CHECKLIST = [{ id: 1, text: '護照', checked: false }, { id: 2, text: '網卡/Wi-Fi', checked: false }];
-
-        const TRANSPORT_TYPES = [
-            { id: 'walk', icon: 'fa-person-walking', label: '步行', speed: 5 },
-            { id: 'train', icon: 'fa-train-subway', label: '地鐵', speed: 40 },
-            { id: 'bus', icon: 'fa-bus', label: '公車', speed: 20 },
-            { id: 'car', icon: 'fa-car', label: '開車', speed: 40 },
-            { id: 'ship', icon: 'fa-ship', label: '船', speed: 30 },
-            { id: 'plane', icon: 'fa-plane', label: '飛機', speed: 800 }
-        ];
+        const TRANSPORT_TYPES = [{id:'walk',icon:'fa-person-walking',label:'步行',speed:5},{id:'train',icon:'fa-train-subway',label:'地鐵',speed:40},{id:'bus',icon:'fa-bus',label:'公車',speed:20},{id:'car',icon:'fa-car',label:'開車',speed:40},{id:'ship',icon:'fa-ship',label:'船',speed:30},{id:'plane',icon:'fa-plane',label:'飛機',speed:800}];
 
         createApp({
             setup() {
-                // State
                 const pageState = ref('landing'); 
                 const savedTrips = ref([]);
                 const activeTab = ref('itinerary');
@@ -131,7 +102,12 @@
                 const wizardStep = ref(1);
                 const wizardData = ref({ destination: '', currency: 'TWD', rate: 1, lang: 'en', flag: '✈️' });
 
-                // Data
+                // User Profile (New V30)
+                const userProfile = ref({ name: '', avatar: null });
+                const showProfileModal = ref(false);
+                const tempProfileName = ref('');
+                const tempProfileAvatar = ref(null);
+
                 const days = ref([{ activities: [] }, { activities: [] }]); 
                 const currentDayIndex = ref(0);
                 const people = ref(['我']);
@@ -145,7 +121,6 @@
                 const chatMessages = ref([]);
                 const flightInfo = ref({ code: '', time: '' });
                 
-                // Forms
                 const newPersonName = ref('');
                 const useForeignCurrency = ref(false);
                 const showActivityModal = ref(false);
@@ -159,7 +134,6 @@
                 const searchResultAddress = ref('');
                 const searchResults = ref([]);
                 
-                // Collection Forms
                 const collectionNameInput = ref('');
                 const collectionSearchInput = ref('');
                 const spotSearchResults = ref([]);
@@ -174,6 +148,7 @@
                 const calcMode = ref('foreign'); 
                 const calculatorTarget = ref(null);
                 const newItemText = ref('');
+                const newSpotText = ref('');
                 const joinIdInput = ref('');
                 let map = null;
                 let modalMap = null;
@@ -182,6 +157,15 @@
                 let userMarker = null;
 
                 onMounted(() => {
+                    // 1. Check User Profile
+                    const savedProfile = localStorage.getItem('travel_buddy_profile');
+                    if (savedProfile) {
+                        userProfile.value = JSON.parse(savedProfile);
+                    } else {
+                        showProfileModal.value = true;
+                    }
+
+                    // 2. Load Local Saved Trips (Private List)
                     try {
                         const localTrips = localStorage.getItem('mySavedTrips');
                         if (localTrips) {
@@ -189,11 +173,29 @@
                             savedTrips.value = savedTrips.value.filter(t => t.id && t.title);
                         }
                     } catch(e) { savedTrips.value = []; }
+
+                    // 3. Check URL for Shared Trip
                     const urlParams = new URLSearchParams(window.location.search);
                     const id = urlParams.get('id');
                     if (id) loadTrip(id);
                     else pageState.value = 'landing';
                 });
+
+                // Profile Logic
+                const handleProfileAvatarUpload = (e) => { processImage(e.target.files[0], (b) => tempProfileAvatar.value = b); };
+                const saveProfile = () => {
+                    if(!tempProfileName.value.trim()) return alert("請輸入暱稱");
+                    userProfile.value = { 
+                        name: tempProfileName.value, 
+                        avatar: tempProfileAvatar.value || `https://ui-avatars.com/api/?name=${tempProfileName.value}&background=D4A373&color=fff&size=128`
+                    };
+                    localStorage.setItem('travel_buddy_profile', JSON.stringify(userProfile.value));
+                    showProfileModal.value = false;
+                    // Update people list if new trip
+                    if(people.value.length === 1 && people.value[0] === '我') {
+                        people.value[0] = userProfile.value.name;
+                    }
+                };
 
                 const saveTripToLocal = (id, title) => {
                     if(!id) return;
@@ -219,7 +221,7 @@
                         const data = snapshot.val();
                         if (data) {
                             days.value = data.days || [{ activities: [] }];
-                            people.value = data.people || ['我'];
+                            people.value = data.people || [userProfile.value.name || '我'];
                             expenses.value = data.expenses || [];
                             savedSpots.value = data.savedSpots || [];
                             exchangeRate.value = data.exchangeRate || 1;
@@ -283,46 +285,13 @@
                 };
                 watch(viewMode, (v) => { if (v === 'map') nextTick(() => { setTimeout(() => { initMap(); updateMapMarkers(); }, 100); }); });
 
-                // Collection
-                const searchSpotCollection = async () => {
-                    if (!collectionSearchInput.value) return;
-                    try {
-                        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(collectionSearchInput.value)}&limit=5`);
-                        const data = await res.json();
-                        if (data && data.length > 0) spotSearchResults.value = data;
-                        else alert("找不到地點");
-                    } catch (e) { console.error(e); }
-                };
-                const addSpotFromSearchResult = (item) => {
-                    const name = collectionNameInput.value || item.display_name.split(',')[0];
-                    savedSpots.value.push({ 
-                        id: Date.now(), 
-                        name: name,
-                        address: item.display_name,
-                        lat: item.lat,
-                        lon: item.lon
-                    });
-                    collectionNameInput.value = '';
-                    collectionSearchInput.value = '';
-                    spotSearchResults.value = [];
-                    saveToCloud();
-                };
-                const addSpotDirectly = () => {
-                    if (!collectionNameInput.value) return;
-                    savedSpots.value.push({ id: Date.now(), name: collectionNameInput.value, text: collectionNameInput.value }); // Fallback for display
-                    collectionNameInput.value = '';
-                    spotSearchResults.value = [];
-                    saveToCloud();
-                };
-                const deleteSpot = (id) => { savedSpots.value = savedSpots.value.filter(s => s.id !== id); saveToCloud(); };
-
                 // Core
                 const createTrip = async () => {
                     const newId = Math.random().toString(36).substring(2, 8).toUpperCase(); const rate = parseFloat(wizardData.value.rate) || 1;
-                    const initialData = { days: [{activities:[]},{activities:[]}], people: ['我'], expenses: [], savedSpots: [], exchangeRate: rate, targetCurrency: wizardData.value.currency.toUpperCase(), targetLang: wizardData.value.lang, title: tripTitle.value, checklist: [...DEFAULT_CHECKLIST], createdAt: Date.now() };
+                    const initialData = { days: [{activities:[]},{activities:[]}], people: [userProfile.value.name], expenses: [], savedSpots: [], exchangeRate: rate, targetCurrency: wizardData.value.currency.toUpperCase(), targetLang: wizardData.value.lang, title: tripTitle.value, checklist: [...DEFAULT_CHECKLIST], createdAt: Date.now() };
                     saveTripToLocal(newId, tripTitle.value); await set(dbRef(db, 'trips/' + newId), initialData); loadTrip(newId);
                 };
-                const deleteLocalTrip = (idx) => { if(confirm("確定移除？")) { savedTrips.value.splice(idx, 1); localStorage.setItem('mySavedTrips', JSON.stringify(savedTrips.value)); } };
+                const deleteLocalTrip = (idx) => { if(confirm("確定從我的列表移除？(不會刪除雲端資料)")) { savedTrips.value.splice(idx, 1); localStorage.setItem('mySavedTrips', JSON.stringify(savedTrips.value)); } };
                 const performTranslation = async () => { if (!translateText.value) return; isTranslating.value = true; translatedResult.value = ''; try { const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(translateText.value)}&langpair=zh-TW|${targetLang.value}`); const data = await res.json(); translatedResult.value = data.responseData ? data.responseData.translatedText : "翻譯失敗"; } catch (e) { translatedResult.value = "連線錯誤"; } finally { isTranslating.value = false; } };
                 const processImage = (file, cb) => { if(!file)return; const r=new FileReader(); r.onload=(e)=>{const i=new Image();i.onload=()=>{const c=document.createElement('canvas');const ctx=c.getContext('2d');const s=Math.min(1,800/i.width);c.width=i.width*s;c.height=i.height*s;ctx.drawImage(i,0,0,c.width,c.height);cb(c.toDataURL('image/jpeg',0.7));};i.src=e.target.result;};r.readAsDataURL(file); };
                 const handleChatImageUpload=(e)=>processImage(e.target.files[0],(b)=>chatImage.value=b);
@@ -338,12 +307,26 @@
                 const deleteActivity = (id) => { if(confirm('確定刪除此行程？')) { days.value[currentDayIndex.value].activities = days.value[currentDayIndex.value].activities.filter(a=>a.id!==id); saveToCloud(); if(viewMode.value==='map') setTimeout(()=>updateMapMarkers(),500); showActivityModal.value=false; } };
                 const saveExpense = () => { let amt = Number(formExpense.value.inputAmount); let orig = null; if(useForeignCurrency.value){ orig=`${amt} ${targetCurrency.value}`; amt=Math.round(amt*exchangeRate.value); } expenses.value.unshift({id:Date.now(), title:formExpense.value.title, amount:amt, originalAmount:orig, payer:formExpense.value.payer, date:new Date().toLocaleDateString()}); showExpenseModal.value=false; saveToCloud(); };
                 const deleteExpense = (id) => { expenses.value = expenses.value.filter(e=>e.id!==id); saveToCloud(); };
-                const sendMessage = () => { if(!formChat.value.trim() && !chatImage.value) return; push(dbRef(db, 'trips/'+tripId.value+'/chatMessages'), {user:people.value[0], text:formChat.value, image:chatImage.value, time:new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}); formChat.value=''; chatImage.value=null; };
+                
+                // Chat
+                const sendMessage = () => { 
+                    if(!formChat.value.trim() && !chatImage.value) return; 
+                    push(dbRef(db, 'trips/'+tripId.value+'/chatMessages'), {
+                        user: userProfile.value.name,
+                        avatar: userProfile.value.avatar,
+                        text: formChat.value, 
+                        image: chatImage.value, 
+                        time: new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})
+                    }); 
+                    formChat.value=''; chatImage.value=null; 
+                };
+
                 const addCheckItem = () => { if(newItemText.value) { checklist.value.push({id:Date.now(), text:newItemText.value, checked:false}); newItemText.value=''; saveToCloud(); }};
                 const toggleCheck = (id) => { const i = checklist.value.find(x=>x.id===id); if(i) i.checked=!i.checked; saveToCloud(); };
                 const deleteCheckItem = (id) => { checklist.value=checklist.value.filter(x=>x.id!==id); saveToCloud(); };
                 const backToLanding = () => { tripId.value = ''; window.history.pushState({ path: window.location.pathname }, '', window.location.pathname); pageState.value = 'landing'; };
                 const joinTrip = () => { if(joinIdInput.value) loadTrip(joinIdInput.value); };
+                
                 const addPerson = ()=>{if(newPersonName.value){people.value.push(newPersonName.value);newPersonName.value='';saveToCloud();}};
                 const removePerson = (i)=>{people.value.splice(i,1);saveToCloud();};
                 const resetData = ()=>{if(confirm('清空？')){days.value=[{activities:[]}];expenses.value=[];saveToCloud();}};
@@ -366,6 +349,45 @@
                 const estimateTime = (toLat, toLng) => { const dayActs=days.value[currentDayIndex.value].activities; if(!dayActs||dayActs.length===0)return; let prev=null; if(isEditing.value){const idx=dayActs.findIndex(a=>a.id===formActivity.value.id);if(idx>0)prev=dayActs[idx-1];}else{prev=dayActs[dayActs.length-1];} if(prev&&prev.lat&&prev.lng){const dist=getDistanceFromLatLonInKm(prev.lat,prev.lng,toLat,toLng); const mode=formActivity.value.transport||'walk'; const speed=TRANSPORT_TYPES.find(t=>t.id===mode)?.speed||5; const mins=Math.round((dist/speed)*60); if(mins<60)formActivity.value.travelTime=`${mins} 分鐘`;else{const h=Math.floor(mins/60);const m=mins%60;formActivity.value.travelTime=`${h}小時${m}分`;}} };
                 
                 watch(() => formActivity.value.transport, () => { if(formActivity.value.lat && formActivity.value.lng) estimateTime(formActivity.value.lat, formActivity.value.lng); });
+                
+                // Collection Logic
+                const searchSpotCollection = async () => {
+                    if (!collectionSearchInput.value) return;
+                    try {
+                        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(collectionSearchInput.value)}&limit=5`);
+                        const data = await res.json();
+                        if (data && data.length > 0) spotSearchResults.value = data;
+                        else alert("找不到地點");
+                    } catch (e) { console.error(e); }
+                };
+                const addSpotFromSearchResult = (item) => {
+                    const name = collectionNameInput.value || item.display_name.split(',')[0];
+                    savedSpots.value.push({ 
+                        id: Date.now(), 
+                        name: name,
+                        address: item.display_name,
+                        lat: item.lat,
+                        lon: item.lon,
+                        user: { name: userProfile.value.name, avatar: userProfile.value.avatar }
+                    });
+                    collectionNameInput.value = '';
+                    collectionSearchInput.value = '';
+                    spotSearchResults.value = [];
+                    saveToCloud();
+                };
+                const addSpotDirectly = () => {
+                    if (!collectionNameInput.value) return;
+                    savedSpots.value.push({ 
+                        id: Date.now(), 
+                        name: collectionNameInput.value, 
+                        text: collectionNameInput.value,
+                        user: { name: userProfile.value.name, avatar: userProfile.value.avatar }
+                    }); 
+                    collectionNameInput.value = '';
+                    spotSearchResults.value = [];
+                    saveToCloud();
+                };
+                const deleteSpot = (id) => { savedSpots.value = savedSpots.value.filter(s => s.id !== id); saveToCloud(); };
 
                 return {
                     pageState, wizardStep, wizardData, tripTitle, savedTrips,
@@ -390,7 +412,8 @@
                     searchLocation, selectLocation, saveCurrentLocation, performTranslation,
                     appendCalc, clearCalc, backspaceCalc, updateExchangeRate,
                     openCalculatorForExpense, openCalculatorNormal, applyCalculatorResult,
-                    searchSpotCollection, addSpotFromSearchResult, addSpotDirectly, deleteSpot
+                    searchSpotCollection, addSpotFromSearchResult, addSpotDirectly, deleteSpot,
+                    userProfile, showProfileModal, tempProfileName, tempProfileAvatar, handleProfileAvatarUpload, saveProfile
                 };
             }
         }).mount('#app');
@@ -399,9 +422,19 @@
 <body>
     <div id="app" class="w-full h-full relative">
         
+        <!-- Profile Modal (First Time) -->
+        <div v-if="showProfileModal" class="fixed inset-0 bg-milk z-[100] flex flex-col items-center justify-center p-8">
+            <h2 class="text-2xl font-bold text-coffee mb-2">歡迎加入！</h2>
+            <p class="text-sm text-gray-400 mb-8">請建立你的個人檔案，讓朋友認識你</p>
+            <div class="relative w-24 h-24 mb-6"><div class="w-full h-full rounded-full bg-gray-100 overflow-hidden border-4 border-white shadow-lg"><img v-if="tempProfileAvatar" :src="tempProfileAvatar" class="w-full h-full object-cover"><div v-else class="w-full h-full flex items-center justify-center text-4xl text-gray-300"><i class="fa-solid fa-user"></i></div></div><label class="absolute bottom-0 right-0 w-8 h-8 bg-latte text-white rounded-full flex items-center justify-center cursor-pointer shadow-md"><i class="fa-solid fa-camera text-xs"></i><input type="file" @change="handleProfileAvatarUpload" class="hidden" accept="image/*"></label></div>
+            <input v-model="tempProfileName" placeholder="你的暱稱" class="custom-input text-center text-lg mb-8 w-2/3">
+            <button @click="saveProfile" class="bg-coffee text-white px-10 py-3 rounded-2xl font-bold shadow-xl active:scale-95 transition-transform" :disabled="!tempProfileName">開始旅程</button>
+        </div>
+
         <!-- 1. Landing -->
         <div v-if="pageState === 'landing'" class="h-full flex flex-col p-6 overflow-y-auto bg-milk">
-            <div class="mt-8 mb-6 text-center"><h1 class="text-4xl font-bold text-coffee mb-1">Travel Buddy</h1><p class="text-latte font-bold text-sm tracking-widest">MOBILE V28</p></div>
+            <div class="mt-8 mb-6 text-center"><h1 class="text-4xl font-bold text-coffee mb-1">Travel Buddy</h1><p class="text-latte font-bold text-sm tracking-widest">V30</p></div>
+            <div class="bg-white/50 p-4 rounded-2xl mb-6 flex items-center gap-3 border border-[#EBE5D9]"><img :src="userProfile.avatar" class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"><div><p class="text-xs text-gray-400">Current User</p><p class="font-bold text-coffee text-lg">{{ userProfile.name }}</p></div><button @click="showProfileModal=true" class="ml-auto text-xs bg-white px-3 py-1 rounded-full text-gray-400 border border-gray-200">編輯</button></div>
             <button @click="startWizard" class="bg-coffee text-white p-5 rounded-2xl shadow-xl flex items-center justify-between mb-6 group active:scale-95 transition flex-shrink-0"><div class="flex items-center gap-4"><div class="bg-white/10 w-12 h-12 rounded-full flex items-center justify-center text-2xl">✈️</div><div class="text-left"><h3 class="font-bold text-lg">建立新行程</h3></div></div><i class="fa-solid fa-arrow-right"></i></button>
             <div class="bg-white p-2 rounded-2xl border border-stone-100 flex gap-2 mb-8 shadow-sm flex-shrink-0"><input v-model="joinIdInput" placeholder="輸入行程 ID..." class="flex-1 bg-transparent p-3 outline-none font-bold text-coffee"><button @click="joinTrip" class="bg-latte text-white px-4 rounded-xl font-bold">加入</button></div>
             <h3 class="font-bold text-gray-400 text-sm mb-3 px-2">我的行程</h3>
@@ -443,10 +476,20 @@
                     </div>
                 </div>
 
-                <!-- Chat (Input Fixed) -->
+                <!-- Chat (With Avatar) -->
                 <div v-if="activeTab === 'chat'" class="h-full flex flex-col">
-                    <div class="flex-1 overflow-y-auto py-4 px-4 space-y-3">
-                        <div v-for="(msg,i) in chatMessages" :key="i" class="flex flex-col" :class="msg.user===people[0]?'items-end':'items-start'"><div class="p-3 rounded-2xl max-w-[85%] text-sm shadow-sm" :class="msg.user===people[0]?'bg-coffee text-white rounded-tr-none':'bg-white border border-[#EBE5D9] text-coffee rounded-tl-none'"><img v-if="msg.image" :src="msg.image" class="rounded mb-1 max-w-full" @click="showImagePreview=msg.image">{{ msg.text }}</div><span class="text-[10px] text-gray-300 mt-1">{{ msg.user }}</span></div>
+                    <div class="flex-1 overflow-y-auto py-4 px-4 space-y-4">
+                        <div v-for="(msg,i) in chatMessages" :key="i" class="flex items-end gap-2" :class="msg.user===userProfile.name?'flex-row-reverse':''">
+                            <img :src="msg.avatar || 'https://ui-avatars.com/api/?name='+msg.user" class="w-8 h-8 rounded-full object-cover border border-white shadow-sm flex-shrink-0">
+                            <div class="flex flex-col" :class="msg.user===userProfile.name?'items-end':'items-start'">
+                                <span class="text-[9px] text-gray-400 px-1">{{ msg.user }}</span>
+                                <div class="p-3 rounded-2xl max-w-[240px] text-sm shadow-sm" :class="msg.user===userProfile.name?'bg-coffee text-white rounded-tr-none':'bg-white border border-[#EBE5D9] text-coffee rounded-tl-none'">
+                                    <img v-if="msg.image" :src="msg.image" class="rounded-lg mb-1 w-full object-cover max-h-48" @click="showImagePreview=msg.image">
+                                    <span v-if="msg.text">{{ msg.text }}</span>
+                                </div>
+                                <span class="text-[9px] text-gray-300 px-1 mt-0.5">{{ msg.time }}</span>
+                            </div>
+                        </div>
                     </div>
                     <div class="bg-white p-3 border-t border-[#EBE5D9] flex gap-2 items-center flex-shrink-0">
                         <div v-if="chatImage" class="absolute bottom-20 left-4 p-1 bg-white shadow rounded z-50"><img :src="chatImage" class="h-24"><button @click="removeChatImage" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center">×</button></div>
@@ -463,33 +506,23 @@
                 <div v-if="activeTab === 'collection'" class="px-6 pb-24">
                     <h2 class="font-bold text-coffee mb-4 mt-2">我的收藏</h2>
                     
-                    <!-- Add Area -->
                     <div class="bg-white border border-[#EBE5D9] rounded-xl p-4 shadow-sm mb-4 space-y-3">
-                         <input v-model="collectionNameInput" placeholder="名稱 (選填，如: 秘密基地)" class="custom-input text-sm">
-                         <div class="flex gap-2">
-                             <input v-model="collectionSearchInput" @keyup.enter="searchSpotCollection" placeholder="搜尋地點 (如: 台北101)" class="flex-1 bg-white border-2 border-[#E6DDC3] rounded-xl p-3 text-sm text-coffee font-bold outline-none focus:border-[#D4A373]">
-                             <button @click="searchSpotCollection" class="bg-latte text-white px-4 rounded-lg text-sm font-bold">搜</button>
-                         </div>
-                         <!-- Search Results -->
-                         <div v-if="spotSearchResults.length > 0" class="border-t border-gray-100 pt-2 max-h-40 overflow-y-auto">
-                             <div v-for="(res, idx) in spotSearchResults" :key="idx" @click="addSpotFromSearchResult(res)" class="p-2 text-xs hover:bg-gray-50 cursor-pointer text-coffee font-bold truncate">
-                                 <i class="fa-solid fa-location-dot text-latte mr-2"></i>{{ res.display_name }}
-                             </div>
-                         </div>
-                         <button v-if="!spotSearchResults.length && collectionNameInput" @click="addSpotDirectly" class="w-full py-2 bg-gray-100 text-gray-500 rounded-lg text-xs font-bold hover:bg-coffee hover:text-white transition">直接新增純文字收藏</button>
+                         <div class="flex flex-col gap-2"><label class="text-xs font-bold text-gray-400 ml-1">名稱 (選填)</label><input v-model="collectionNameInput" placeholder="例如: 蜂蜜家" class="custom-input text-sm"></div>
+                         <div class="flex flex-col gap-2"><label class="text-xs font-bold text-gray-400 ml-1">地點搜尋</label><div class="flex gap-2"><input v-model="collectionSearchInput" @keyup.enter="searchSpotCollection" placeholder="輸入地址..." class="flex-1 bg-white border-2 border-[#E6DDC3] rounded-xl p-3 text-sm text-coffee font-bold outline-none focus:border-[#D4A373]"><button @click="searchSpotCollection" class="bg-latte text-white px-4 rounded-lg text-sm font-bold flex-shrink-0">搜</button></div></div>
+                         <div v-if="spotSearchResults.length > 0" class="border-t border-gray-100 pt-2 max-h-40 overflow-y-auto"><div v-for="(res, idx) in spotSearchResults" :key="idx" @click="addSpotFromSearchResult(res)" class="p-3 text-xs border-b last:border-0 hover:bg-gray-50 cursor-pointer text-coffee font-bold flex flex-col"><span>{{ res.display_name.split(',')[0] }}</span><span class="text-[10px] text-gray-400 font-normal truncate">{{ res.display_name }}</span></div></div>
+                         <button v-if="!spotSearchResults.length && collectionNameInput" @click="addSpotDirectly" class="w-full py-2 bg-gray-100 text-gray-500 rounded-lg text-xs font-bold hover:bg-coffee hover:text-white transition mt-2"><i class="fa-solid fa-plus mr-1"></i>直接新增</button>
                     </div>
 
                     <div class="space-y-2 mb-4">
-                        <div v-if="savedSpots.length === 0" class="text-center opacity-50 py-10">
-                            <i class="fa-solid fa-bookmark text-4xl mb-2 text-latte"></i><p class="text-xs">尚無收藏地點</p>
-                        </div>
-                        <div v-for="spot in savedSpots" :key="spot.id" class="bg-white p-4 rounded-xl border border-[#EBE5D9] flex items-start gap-3 shadow-sm">
+                        <div v-if="savedSpots.length === 0" class="text-center opacity-50 py-10"><i class="fa-solid fa-bookmark text-4xl mb-2 text-latte"></i><p class="text-xs">尚無收藏地點</p></div>
+                        <div v-for="spot in savedSpots" :key="spot.id" class="bg-white p-3 rounded-xl border border-[#EBE5D9] flex items-start gap-3 shadow-sm relative">
                             <div class="w-8 h-8 rounded-full bg-[#E6DDC3] flex-shrink-0 flex items-center justify-center text-coffee mt-1"><i class="fa-solid fa-map-pin"></i></div>
-                            <div class="flex-1 overflow-hidden">
+                            <div class="flex-1 overflow-hidden pr-6">
                                 <p class="font-bold text-sm text-coffee truncate">{{ spot.name || spot.text }}</p>
                                 <p v-if="spot.address" class="text-[10px] text-gray-400 truncate">{{ spot.address }}</p>
                             </div>
-                            <button @click="deleteSpot(spot.id)" class="text-red-200 hover:text-red-400 flex-shrink-0"><i class="fa-solid fa-trash"></i></button>
+                            <div v-if="spot.user" class="absolute top-2 right-2 flex items-center gap-1"><img :src="spot.user.avatar" class="w-5 h-5 rounded-full border border-white" :title="spot.user.name"></div>
+                            <button @click="deleteSpot(spot.id)" class="absolute bottom-2 right-2 text-red-200 hover:text-red-400"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     </div>
                 </div>
@@ -498,7 +531,7 @@
                 <div v-if="activeTab === 'checklist'" class="px-4 pb-24"><h2 class="font-bold text-coffee mb-4 mt-2">清單</h2><div class="space-y-2 mb-4"><div v-for="item in checklist" :key="item.id" @click="toggleCheck(item.id)" class="bg-white p-3 rounded-xl border border-[#EBE5D9] flex items-center gap-3 shadow-sm" :class="item.checked?'opacity-50':''"><div class="w-5 h-5 rounded-full border flex items-center justify-center" :class="item.checked?'bg-green-500 border-green-500 text-white':'border-gray-200'"><i class="fa-solid fa-check text-xs"></i></div><span class="flex-1 font-bold text-sm text-coffee">{{ item.text }}</span><button @click.stop="deleteCheckItem(item.id)" class="text-red-200"><i class="fa-solid fa-times"></i></button></div></div><div class="flex gap-2"><input v-model="newItemText" placeholder="新增..." class="flex-1 bg-white border border-[#EBE5D9] rounded-xl p-3 shadow-sm text-coffee font-bold"><button @click="addCheckItem" class="bg-coffee text-white px-4 rounded-xl"><i class="fa-solid fa-plus"></i></button></div></div>
                 
                 <!-- Expenses -->
-                <div v-if="activeTab === 'expenses'" class="px-4 pb-24"><div class="bg-coffee rounded-3xl p-6 text-white shadow-xl mb-6 mt-2"><p class="text-xs opacity-60">TOTAL</p><h2 class="text-3xl font-bold mb-2">{{ formatNumber(totalExpense) }}</h2><div class="flex justify-between text-xs opacity-80 pt-4 border-t border-white/10"><span>每人 ${{ formatNumber(perPersonShare) }}</span><span>{{ people.length }} 人</span></div></div><div class="space-y-2 mb-20"><div v-for="exp in expenses" :key="exp.id" class="bg-white p-3 rounded-xl flex justify-between items-center shadow-sm border border-[#EBE5D9]"><div class="flex gap-3"><div class="w-8 h-8 rounded-full bg-khaki flex items-center justify-center text-xs font-bold text-coffee">{{ exp.payer[0] }}</div><div><p class="font-bold text-sm text-coffee">{{ exp.title }}</p><p class="text-[10px] text-gray-400">{{ exp.date }} <span v-if="exp.originalAmount" class="text-latte">({{ exp.originalAmount }})</span></p></div></div><div class="text-right"><p class="font-bold text-sm text-coffee">${{ formatNumber(exp.amount) }}</p><button @click="deleteExpense(exp.id)" class="text-red-200 text-xs">刪除</button></div></div></div></div>
+                <div v-if="activeTab === 'expenses'" class="px-6 pb-24"><div class="bg-coffee rounded-3xl p-6 text-white shadow-xl mb-6 mt-2"><p class="text-xs opacity-60">TOTAL</p><h2 class="text-3xl font-bold mb-2">{{ formatNumber(totalExpense) }}</h2><div class="flex justify-between text-xs opacity-80 pt-4 border-t border-white/10"><span>每人 ${{ formatNumber(perPersonShare) }}</span><span>{{ people.length }} 人</span></div></div><div class="space-y-2 mb-20"><div v-for="exp in expenses" :key="exp.id" class="bg-white p-3 rounded-xl flex justify-between items-center shadow-sm border border-[#EBE5D9]"><div class="flex gap-3"><div class="w-8 h-8 rounded-full bg-khaki flex items-center justify-center text-xs font-bold text-coffee">{{ exp.payer[0] }}</div><div><p class="font-bold text-sm text-coffee">{{ exp.title }}</p><p class="text-[10px] text-gray-400">{{ exp.date }} <span v-if="exp.originalAmount" class="text-latte">({{ exp.originalAmount }})</span></p></div></div><div class="text-right"><p class="font-bold text-sm text-coffee">${{ formatNumber(exp.amount) }}</p><button @click="deleteExpense(exp.id)" class="text-red-200 text-xs">刪除</button></div></div></div></div>
             </main>
 
             <!-- Bottom Navigation (5 Items) -->
