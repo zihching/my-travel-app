@@ -56,6 +56,9 @@
         .app-container { max-width: 480px; margin: 0 auto; background-color: #FFF8E7; min-height: 100vh; position: relative; box-shadow: 0 0 20px rgba(67, 40, 24, 0.1); }
         .transport-icon.active { color: #A89F91; transform: scale(1.1); }
         .calc-btn { @apply text-xl font-bold rounded-lg p-4 shadow-sm active:scale-95 transition-transform flex items-center justify-center; }
+        /* Modal Animation */
+        .modal-enter-active, .modal-leave-active { transition: opacity 0.3s ease; }
+        .modal-enter-from, .modal-leave-to { opacity: 0; }
     </style>
 </head>
 <body>
@@ -63,7 +66,7 @@
 <div id="app" class="app-container flex flex-col h-screen overflow-hidden">
 
     <!-- Loading -->
-    <div v-if="loading" class="absolute inset-0 z-[100] flex items-center justify-center bg-milk-yellow flex-col text-center p-4">
+    <div v-if="loading" class="absolute inset-0 z-[500] flex items-center justify-center bg-milk-yellow flex-col text-center p-4">
         <i class="fa-solid fa-plane fa-bounce text-4xl text-coffee mb-4"></i>
         <p class="text-coffee font-bold mb-2">載入中...</p>
         <p v-if="showSlowLoadingHint" class="text-xs text-gray-500 animate-pulse">
@@ -123,7 +126,7 @@
         <div class="px-4 pt-4 pb-2 bg-milk-yellow z-10 shadow-sm" v-if="currentTab !== 'map'">
             <div class="flex justify-between items-center mb-2">
                 <button @click="exitTrip" class="text-coffee flex items-center gap-1"><i class="fa-solid fa-chevron-left"></i> 返回</button>
-                <div class="flex items-center gap-2 flex-1 justify-center min-w-0 px-2" @click="showTripSettings = true">
+                <div class="flex items-center gap-2 flex-1 justify-center min-w-0 px-2" @click="openTripSettings">
                     <h1 class="text-lg font-bold text-coffee cursor-pointer truncate">{{ currentTrip.name }} <i class="fa-solid fa-pen text-xs opacity-50"></i></h1>
                 </div>
                 <div class="flex gap-2">
@@ -389,14 +392,42 @@
     <!-- MODALS -->
 
     <!-- Create/Edit Trip Modal -->
-    <div v-if="showCreateTripModal" class="fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4">
+    <div v-if="showCreateTripModal" class="fixed inset-0 z-[200] bg-black/50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-xl">
             <h3 class="text-xl font-bold text-coffee mb-4">建立新旅程</h3>
             <input v-model="newTripName" placeholder="旅程名稱 (例: 日本賞櫻)" class="w-full bg-gray-50 p-3 rounded-xl outline-none mb-4">
             <div class="flex gap-3">
-                <button @click="showCreateTripModal = false" class="flex-1 py-3 bg-gray-100 text-gray-500 rounded-xl">取消</button>
-                <button @click="createTrip" class="flex-1 py-3 bg-coffee text-milk-yellow rounded-xl font-bold">建立</button>
+                <button @click="showCreateTripModal = false" class="flex-1 py-3 bg-gray-100 text-gray-500 rounded-xl" type="button">取消</button>
+                <button @click="createTrip" :disabled="isProcessing" class="flex-1 py-3 bg-coffee text-milk-yellow rounded-xl font-bold disabled:opacity-50" type="button">
+                    {{ isProcessing ? '建立中...' : '建立' }}
+                </button>
             </div>
+        </div>
+    </div>
+    
+    <!-- Force Profile Modal (New User) -->
+    <div v-if="showForceProfileModal" class="fixed inset-0 z-[300] bg-black/80 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl text-center">
+            <i class="fa-solid fa-passport text-4xl text-coffee mb-3"></i>
+            <h3 class="font-bold text-coffee text-xl mb-2">歡迎來到 Travel Buddy!</h3>
+            <p class="text-sm text-gray-500 mb-6">為了讓朋友認得你，請先設定您的稱呼。</p>
+            
+            <div class="flex flex-col items-center mb-4">
+                <div class="w-20 h-20 rounded-full bg-gray-200 overflow-hidden mb-2 relative">
+                    <img v-if="tempProfile.avatar" :src="tempProfile.avatar" class="w-full h-full object-cover">
+                    <i v-else class="fa-solid fa-user text-2xl text-gray-400 absolute inset-0 flex items-center justify-center"></i>
+                </div>
+                <label class="text-xs text-accent cursor-pointer font-bold">
+                    上傳頭貼 (選填)
+                    <input type="file" accept="image/*" class="hidden" @change="handleAvatarUpload">
+                </label>
+            </div>
+            
+            <input v-model="tempProfile.name" placeholder="請輸入暱稱 (必填)" class="w-full bg-gray-50 p-3 rounded-xl mb-6 text-center border-2 focus:border-coffee outline-none transition-colors" :class="{'border-red-300': !tempProfile.name}">
+            
+            <button @click="saveProfile" :disabled="isProcessing || !tempProfile.name" class="w-full bg-coffee text-milk-yellow py-3 rounded-xl font-bold disabled:opacity-50 disabled:cursor-not-allowed" type="button">
+                {{ isProcessing ? '儲存中...' : '開始旅程' }}
+            </button>
         </div>
     </div>
 
@@ -412,7 +443,7 @@
             <div class="relative mb-3">
                 <div class="flex gap-2">
                     <input v-model="newItem.searchQuery" placeholder="輸入名稱 (如: 台北101)" class="flex-1 bg-gray-50 p-2 rounded-xl outline-none text-sm">
-                    <button @click="searchLocation(newItem.searchQuery)" class="bg-accent text-white px-3 rounded-xl text-xs">搜</button>
+                    <button @click="searchLocation(newItem.searchQuery)" class="bg-accent text-white px-3 rounded-xl text-xs" type="button">搜</button>
                 </div>
                 <!-- Search Suggestions -->
                 <div v-if="locationSuggestions.length > 0" class="absolute w-full bg-white border border-gray-100 shadow-lg rounded-xl mt-1 z-10 max-h-40 overflow-y-auto">
@@ -436,8 +467,8 @@
             <textarea v-model="newItem.notes" class="w-full bg-gray-50 p-2 rounded-xl mb-4 h-16"></textarea>
             
             <div class="flex gap-3">
-                <button @click="showAddItemModal = false" class="flex-1 py-3 bg-gray-100 text-gray-500 rounded-xl">取消</button>
-                <button @click="addItem" class="flex-1 py-3 bg-coffee text-milk-yellow rounded-xl font-bold">確認</button>
+                <button @click="showAddItemModal = false" class="flex-1 py-3 bg-gray-100 text-gray-500 rounded-xl" type="button">取消</button>
+                <button @click="addItem" class="flex-1 py-3 bg-coffee text-milk-yellow rounded-xl font-bold" type="button">確認</button>
             </div>
         </div>
     </div>
@@ -482,12 +513,12 @@
                 <button @click="calcAppend('.')" class="calc-btn bg-khaki text-white">.</button>
             </div>
             
-            <button @click="confirmCalc" class="w-full mt-4 bg-accent text-white py-3 rounded-xl font-bold">填入金額</button>
+            <button @click="confirmCalc" class="w-full mt-4 bg-accent text-white py-3 rounded-xl font-bold" type="button">填入金額</button>
         </div>
     </div>
 
-    <!-- Profile Edit Modal -->
-    <div v-if="editingProfile" class="fixed inset-0 z-[80] bg-black/50 flex items-center justify-center p-4">
+    <!-- Profile Edit Modal (Manual Trigger) -->
+    <div v-if="editingProfile && !showForceProfileModal" class="fixed inset-0 z-[80] bg-black/50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl w-full max-w-sm p-6">
             <h3 class="font-bold text-coffee mb-4">編輯個人檔案</h3>
             <div class="flex flex-col items-center mb-4">
@@ -501,8 +532,10 @@
                 </label>
             </div>
             <input v-model="tempProfile.name" placeholder="你的暱稱" class="w-full bg-gray-50 p-3 rounded-xl mb-4">
-            <button @click="saveProfile" class="w-full bg-coffee text-milk-yellow py-3 rounded-xl font-bold">儲存</button>
-            <button @click="editingProfile = false" class="w-full text-gray-400 py-3 mt-1">取消</button>
+            <button @click="saveProfile" :disabled="isProcessing" class="w-full bg-coffee text-milk-yellow py-3 rounded-xl font-bold disabled:opacity-50" type="button">
+                {{ isProcessing ? '儲存中...' : '儲存' }}
+            </button>
+            <button @click="editingProfile = false" class="w-full text-gray-400 py-3 mt-1" type="button">取消</button>
         </div>
     </div>
 
@@ -514,7 +547,7 @@
             <div class="bg-gray-100 p-4 rounded-xl text-2xl font-mono font-bold tracking-widest text-coffee mb-4 select-all">
                 {{ currentTripId }}
             </div>
-            <button @click="showInvite = false" class="text-gray-400">關閉</button>
+            <button @click="showInvite = false" class="text-gray-400" type="button">關閉</button>
         </div>
     </div>
 
@@ -522,9 +555,9 @@
     <div v-if="showTripSettings" class="fixed inset-0 z-[80] bg-black/50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl w-full max-w-sm p-6">
             <h3 class="font-bold text-coffee mb-4">行程設定</h3>
-            <input v-model="currentTrip.name" class="w-full bg-gray-50 p-3 rounded-xl mb-4 font-bold text-coffee">
-            <button @click="updateTripName" class="w-full bg-accent text-white py-3 rounded-xl font-bold mb-2">更新名稱</button>
-            <button @click="showTripSettings = false" class="w-full text-gray-400 py-2">取消</button>
+            <input v-model="tempTripName" placeholder="行程名稱" class="w-full bg-gray-50 p-3 rounded-xl mb-4 font-bold text-coffee">
+            <button @click="updateTripName" class="w-full bg-accent text-white py-3 rounded-xl font-bold mb-2" type="button">更新名稱</button>
+            <button @click="showTripSettings = false" class="w-full text-gray-400 py-2" type="button">取消</button>
         </div>
     </div>
 
@@ -532,7 +565,6 @@
 
 <script type="module">
     const { createApp, ref, computed, onMounted, nextTick, watch } = Vue;
-    // Get Firebase modules from window object (exposed in module script above)
     const { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc, serverTimestamp, where, getDoc, setDoc } = window.firebaseModules;
 
     // --- Config ---
@@ -560,15 +592,18 @@
             // State
             const loading = ref(true);
             const showSlowLoadingHint = ref(false);
+            const isProcessing = ref(false);
             const user = ref(null);
             const userProfile = ref({ name: '新用戶', avatar: '' });
             const editingProfile = ref(false);
+            const showForceProfileModal = ref(false);
             const tempProfile = ref({});
 
             // Trip Management
             const myTrips = ref([]);
             const currentTripId = ref(null);
             const currentTrip = ref({});
+            const tempTripName = ref('');
             const currentTripMembers = ref([]);
             const showCreateTripModal = ref(false);
             const newTripName = ref('');
@@ -576,31 +611,25 @@
             const showInvite = ref(false);
             const showTripSettings = ref(false);
 
-            // App State (Inside Trip)
+            // App State
             const currentTab = ref('itinerary');
             const tripDays = ref([]);
             const selectedDayIndex = ref(0);
-            
-            // Features
-            const allItineraryItems = ref([]); // Holds all items for the trip
+            const allItineraryItems = ref([]);
             const showAddItemModal = ref(false);
             const newItem = ref({ time: '09:00', title: '', searchQuery: '', locationLat: null, locationLng: null, transport: 'walking', notes: '' });
             const locationSuggestions = ref([]);
 
-            // Money
+            // Money & Chat & Tools
             const expenses = ref([]);
             const newExpense = ref({ desc: '', amount: '', currency: 'TWD', payer: '', rate: 1 });
             const customRates = ref({ 'JPY': 0.22, 'KRW': 0.024, 'USD': 32.5 });
             const showCalculator = ref(false);
             const calcDisplay = ref('0');
             const calcFormula = ref('');
-
-            // Chat
             const chatMessages = ref([]);
             const newMessage = ref('');
             const chatContainer = ref(null);
-
-            // Tools
             const transSource = ref('zh-TW');
             const transTarget = ref('en');
             const transInput = ref('');
@@ -611,26 +640,15 @@
             const weather = ref({ temp: null, city: '' });
 
             // Listeners
-            let itemsUnsub = null;
-            let expensesUnsub = null;
-            let chatUnsub = null;
-            let favUnsub = null;
-            let membersUnsub = null;
+            let itemsUnsub = null, expensesUnsub = null, chatUnsub = null, favUnsub = null, membersUnsub = null;
 
             // --- Computed ---
-            const formatDate = (d) => {
-                if(!d) return '';
-                return `${d.getMonth()+1}/${d.getDate()}`;
-            };
-
+            const formatDate = (d) => d ? `${d.getMonth()+1}/${d.getDate()}` : '';
             const dayItems = computed(() => {
                 if(!tripDays.value[selectedDayIndex.value]) return [];
                 const target = formatDate(tripDays.value[selectedDayIndex.value]);
-                return allItineraryItems.value
-                    .filter(i => i.dateStr === target)
-                    .sort((a,b) => a.time.localeCompare(b.time));
+                return allItineraryItems.value.filter(i => i.dateStr === target).sort((a,b) => a.time.localeCompare(b.time));
             });
-
             const userBalances = computed(() => {
                 if(!currentTripMembers.value.length) return {};
                 const bal = {};
@@ -645,14 +663,10 @@
                 Object.keys(bal).forEach(k => bal[k] = Math.round(bal[k]));
                 return bal;
             });
-
-            const totalExpenseTwd = computed(() => {
-                return expenses.value.reduce((acc, e) => {
-                    const rate = e.currency === 'TWD' ? 1 : (e.rate || customRates.value[e.currency] || 1);
-                    return acc + (e.amount * rate);
-                }, 0).toFixed(0);
-            });
-
+            const totalExpenseTwd = computed(() => expenses.value.reduce((acc, e) => {
+                const rate = e.currency === 'TWD' ? 1 : (e.rate || customRates.value[e.currency] || 1);
+                return acc + (e.amount * rate);
+            }, 0).toFixed(0));
             const sortedMessages = computed(() => [...chatMessages.value].sort((a,b) => (a.timestamp?.seconds || 0) - (b.timestamp?.seconds || 0)));
 
             // --- Methods ---
@@ -664,10 +678,24 @@
             };
 
             const saveProfile = async () => {
-                if(!user.value) return;
-                await setDoc(doc(db, 'users', user.value.uid), tempProfile.value, { merge: true });
-                userProfile.value = { ...tempProfile.value };
-                editingProfile.value = false;
+                if(!user.value || !tempProfile.value.name) {
+                    alert("請輸入暱稱");
+                    return;
+                }
+                if(isProcessing.value) return;
+                isProcessing.value = true;
+
+                try {
+                    await setDoc(doc(db, 'users', user.value.uid), tempProfile.value, { merge: true });
+                    userProfile.value = { ...tempProfile.value };
+                    editingProfile.value = false;
+                    showForceProfileModal.value = false; // Close force modal
+                } catch(e) {
+                    console.error("Save Profile Error", e);
+                    alert("儲存失敗：請檢查 Firebase 權限。\n錯誤訊息: " + e.message);
+                } finally {
+                    isProcessing.value = false;
+                }
             };
 
             const handleAvatarUpload = (e) => {
@@ -698,7 +726,6 @@
                 const m = currentTripMembers.value.find(u => u.uid === uid);
                 return m ? m.name : '未知';
             };
-            
             const getUserAvatar = (uid) => {
                 const m = currentTripMembers.value.find(u => u.uid === uid);
                 return m && m.avatar ? m.avatar : 'https://cdn-icons-png.flaticon.com/512/847/847969.png';
@@ -706,7 +733,13 @@
 
             // 2. Trip Logic
             const createTrip = async () => {
-                if(!newTripName.value) return;
+                if(!newTripName.value) {
+                    alert("請輸入旅程名稱");
+                    return;
+                }
+                if(isProcessing.value) return;
+                isProcessing.value = true;
+
                 try {
                     const tripRef = await addDoc(collection(db, 'trips'), {
                         name: newTripName.value,
@@ -720,7 +753,13 @@
                     });
                     showCreateTripModal.value = false;
                     newTripName.value = '';
-                } catch(e) { console.error(e); alert("建立行程失敗：權限不足或網路錯誤"); }
+                    alert("行程建立成功！");
+                } catch(e) { 
+                    console.error("Create Trip Error", e); 
+                    alert("建立失敗：請檢查 Firebase 權限設定 (Security Rules)。\n錯誤代碼: " + e.code); 
+                } finally {
+                    isProcessing.value = false;
+                }
             };
 
             const joinTrip = async () => {
@@ -731,9 +770,7 @@
                     if(tripSnap.exists()) {
                         const data = tripSnap.data();
                         if(!data.members.includes(user.value.uid)) {
-                            await updateDoc(tripRef, {
-                                members: [...data.members, user.value.uid]
-                            });
+                            await updateDoc(tripRef, { members: [...data.members, user.value.uid] });
                             await setDoc(doc(db, `users/${user.value.uid}/trips`, joinCode.value), { 
                                 role: 'member', joinedAt: serverTimestamp() 
                             });
@@ -764,283 +801,104 @@
                 if(membersUnsub) membersUnsub();
             };
 
+            // Fix for Rename Trip
+            const openTripSettings = () => {
+                tempTripName.value = currentTrip.value.name;
+                showTripSettings.value = true;
+            };
+
             const updateTripName = async () => {
-                await updateDoc(doc(db, 'trips', currentTripId.value), { name: currentTrip.name });
-                showTripSettings.value = false;
+                if (!tempTripName.value) { alert("請輸入名稱"); return; }
+                try {
+                    await updateDoc(doc(db, 'trips', currentTripId.value), { name: tempTripName.value });
+                    currentTrip.value.name = tempTripName.value; // Optimistic update
+                    showTripSettings.value = false;
+                } catch(e) { alert("更新失敗"); }
             };
 
             const loadTripData = (tid) => {
-                // Members
                 membersUnsub = onSnapshot(doc(db, 'trips', tid), async (snap) => {
                     if(snap.exists()) {
                         const mIds = snap.data().members;
-                        // Fetch user profiles (simplified, redundant requests in loop but ok for demo)
                         const promises = mIds.map(uid => getDoc(doc(db, 'users', uid)));
                         const uSnaps = await Promise.all(promises);
                         currentTripMembers.value = uSnaps.map(s => s.exists() ? {uid: s.id, ...s.data()} : {uid: s.id, name: '未知'});
                     }
-                }, (error) => { console.error("Members Listener Error", error); });
-
-                // Itinerary - load ALL items then filter locally
+                });
                 itemsUnsub = onSnapshot(collection(db, `trips/${tid}/itinerary`), (snap) => {
                     allItineraryItems.value = snap.docs.map(d => ({id: d.id, ...d.data()}));
-                    refreshWeather(); // Try refresh weather on item change
-                }, (error) => { console.error("Itinerary Listener Error", error); });
-                
+                    refreshWeather();
+                });
                 expensesUnsub = onSnapshot(collection(db, `trips/${tid}/expenses`), (snap) => expenses.value = snap.docs.map(d => ({id: d.id, ...d.data()})));
                 chatUnsub = onSnapshot(collection(db, `trips/${tid}/chat`), (snap) => chatMessages.value = snap.docs.map(d => ({id: d.id, ...d.data()})));
                 favUnsub = onSnapshot(collection(db, `users/${user.value.uid}/favorites`), (snap) => favorites.value = snap.docs.map(d => ({id: d.id, ...d.data()})));
             };
 
-            // 3. Itinerary Features
-            const addDay = () => {
-                const last = tripDays.value[tripDays.value.length-1];
-                tripDays.value.push(new Date(last.getTime()+86400000));
-            };
-
-            const openAddItemModal = () => {
-                newItem.value = { time: '09:00', title: '', searchQuery: '', transport: 'walking', notes: '' };
-                locationSuggestions.value = [];
-                showAddItemModal.value = true;
-            };
-
+            // 3. Features (Simplified for brevity as they are working)
+            const addDay = () => { const last = tripDays.value[tripDays.value.length-1]; tripDays.value.push(new Date(last.getTime()+86400000)); };
+            const openAddItemModal = () => { newItem.value = { time: '09:00', title: '', searchQuery: '', transport: 'walking', notes: '' }; locationSuggestions.value = []; showAddItemModal.value = true; };
             const searchLocation = async (q) => {
                 if(!q) return;
                 try {
-                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&addressdetails=1&limit=5`, {
-                        headers: { "User-Agent": "TravelBuddyApp/1.0" }
-                    });
+                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&addressdetails=1&limit=5`, { headers: { "User-Agent": "TravelBuddyApp/1.0" } });
                     locationSuggestions.value = await res.json();
                 } catch(e) { alert("搜尋失敗，請檢查網路"); }
             };
-
-            const selectLocation = (loc) => {
-                newItem.value.searchQuery = loc.display_name; // Full address
-                newItem.value.title = loc.name || loc.display_name.split(',')[0]; // Short name
-                newItem.value.locationLat = loc.lat;
-                newItem.value.locationLng = loc.lon;
-                locationSuggestions.value = [];
-            };
-
-            const addItem = async () => {
-                if(!newItem.value.title) return;
-                await addDoc(collection(db, `trips/${currentTripId.value}/itinerary`), {
-                    ...newItem.value,
-                    dateStr: formatDate(tripDays.value[selectedDayIndex.value]),
-                    locationName: newItem.value.searchQuery
-                });
-                showAddItemModal.value = false;
-            };
-
+            const selectLocation = (loc) => { newItem.value.searchQuery = loc.display_name; newItem.value.title = loc.name || loc.display_name.split(',')[0]; newItem.value.locationLat = loc.lat; newItem.value.locationLng = loc.lon; locationSuggestions.value = []; };
+            const addItem = async () => { if(!newItem.value.title) return; await addDoc(collection(db, `trips/${currentTripId.value}/itinerary`), { ...newItem.value, dateStr: formatDate(tripDays.value[selectedDayIndex.value]), locationName: newItem.value.searchQuery }); showAddItemModal.value = false; };
             const deleteItem = async (id) => await deleteDoc(doc(db, `trips/${currentTripId.value}/itinerary`, id));
-
-            const getTransportIcon = (type) => {
-                const map = { 'car': 'fa-solid fa-car', 'train': 'fa-solid fa-train-subway', 'walking': 'fa-solid fa-person-walking' };
-                return map[type] || '';
-            };
-
-            // 4. Map
-            let map;
-            const initMap = () => {
-                nextTick(() => {
-                    if(!map && document.getElementById('map')) {
-                        map = L.map('map').setView([25.0330, 121.5654], 13);
-                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: 'OSM' }).addTo(map);
-                    } else if (map) {
-                        map.invalidateSize(); // Fix gray area if map was hidden
-                    }
-                    
-                    // Add Pins
-                    dayItems.value.forEach(item => {
-                        if(item.locationLat) {
-                            L.marker([item.locationLat, item.locationLng]).addTo(map)
-                                .bindPopup(`<b>${item.title}</b><br>${item.time}`);
-                        }
-                    });
-                });
-            };
-
-            const mapSearchQuery = ref('');
-            const searchMapLocation = async () => {
-                await searchLocation(mapSearchQuery.value);
-                if(locationSuggestions.value.length > 0) {
-                    const loc = locationSuggestions.value[0];
-                    map.setView([loc.lat, loc.lon], 16);
-                    L.marker([loc.lat, loc.lon]).addTo(map).bindPopup(loc.display_name).openPopup();
-                }
-            };
+            const getTransportIcon = (type) => ({ 'car': 'fa-solid fa-car', 'train': 'fa-solid fa-train-subway', 'walking': 'fa-solid fa-person-walking' }[type] || '');
             
-            const openMapTo = (item) => {
-                currentTab.value = 'map';
-                initMap();
-                setTimeout(() => {
-                    if(item.locationLat && map) {
-                         map.setView([item.locationLat, item.locationLng], 16);
-                         L.marker([item.locationLat, item.locationLng]).addTo(map).bindPopup(item.title || item.name).openPopup();
-                    }
-                }, 500);
-            };
+            // Map
+            let map;
+            const initMap = () => { nextTick(() => { if(!map && document.getElementById('map')) { map = L.map('map').setView([25.0330, 121.5654], 13); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: 'OSM' }).addTo(map); } else if (map) { map.invalidateSize(); } dayItems.value.forEach(item => { if(item.locationLat) { L.marker([item.locationLat, item.locationLng]).addTo(map).bindPopup(`<b>${item.title}</b><br>${item.time}`); } }); }); };
+            const mapSearchQuery = ref('');
+            const searchMapLocation = async () => { await searchLocation(mapSearchQuery.value); if(locationSuggestions.value.length > 0) { const loc = locationSuggestions.value[0]; map.setView([loc.lat, loc.lon], 16); L.marker([loc.lat, loc.lon]).addTo(map).bindPopup(loc.display_name).openPopup(); } };
+            const openMapTo = (item) => { currentTab.value = 'map'; initMap(); setTimeout(() => { if(item.locationLat && map) { map.setView([item.locationLat, item.locationLng], 16); L.marker([item.locationLat, item.locationLng]).addTo(map).bindPopup(item.title || item.name).openPopup(); } }, 500); };
 
-            // 5. Calculator & Money
-            const openCalculator = () => {
-                showCalculator.value = true;
-                calcDisplay.value = '0';
-                calcFormula.value = '';
-            };
-            const calcAppend = (char) => {
-                if(calcDisplay.value === '0' && !['+','-','*','/'].includes(char)) calcDisplay.value = '';
-                calcDisplay.value += char;
-            };
+            // Calc & Money
+            const openCalculator = () => { showCalculator.value = true; calcDisplay.value = '0'; calcFormula.value = ''; };
+            const calcAppend = (char) => { if(calcDisplay.value === '0' && !['+','-','*','/'].includes(char)) calcDisplay.value = ''; calcDisplay.value += char; };
             const calcBackspace = () => calcDisplay.value = calcDisplay.value.slice(0, -1) || '0';
             const calcClear = () => { calcDisplay.value = '0'; calcFormula.value = ''; };
-            const calcEqual = () => {
-                try {
-                    calcFormula.value = calcDisplay.value + ' =';
-                    // Safe eval alternative
-                    calcDisplay.value = Function('"use strict";return (' + calcDisplay.value + ')')().toString();
-                } catch(e) { calcDisplay.value = 'Error'; }
-            };
-            const confirmCalc = () => {
-                newExpense.value.amount = calcDisplay.value;
-                showCalculator.value = false;
-            };
-            
-            const addExpense = async () => {
-                if(!newExpense.value.amount || !newExpense.value.payer) return;
-                await addDoc(collection(db, `trips/${currentTripId.value}/expenses`), {
-                    ...newExpense.value,
-                    rate: customRates.value[newExpense.value.currency],
-                    timestamp: serverTimestamp()
-                });
-                newExpense.value.amount = '';
-                newExpense.value.desc = '';
-            };
+            const calcEqual = () => { try { calcFormula.value = calcDisplay.value + ' ='; calcDisplay.value = Function('"use strict";return (' + calcDisplay.value + ')')().toString(); } catch(e) { calcDisplay.value = 'Error'; } };
+            const confirmCalc = () => { newExpense.value.amount = calcDisplay.value; showCalculator.value = false; };
+            const addExpense = async () => { if(!newExpense.value.amount || !newExpense.value.payer) return; await addDoc(collection(db, `trips/${currentTripId.value}/expenses`), { ...newExpense.value, rate: customRates.value[newExpense.value.currency], timestamp: serverTimestamp() }); newExpense.value.amount = ''; newExpense.value.desc = ''; };
             const deleteExpense = async (id) => await deleteDoc(doc(db, `trips/${currentTripId.value}/expenses`, id));
 
-            // 6. Chat (Media)
-            const handleChatImage = (e) => {
-                const file = e.target.files[0];
-                if(file) {
-                    const reader = new FileReader();
-                    reader.onload = async (evt) => {
-                        // Compress heavily
-                        const img = new Image();
-                        img.onload = async () => {
-                            const cvs = document.createElement('canvas');
-                            const ctx = cvs.getContext('2d');
-                            let w = img.width, h = img.height;
-                            if(w > 600) { h *= 600/w; w=600; }
-                            cvs.width=w; cvs.height=h;
-                            ctx.drawImage(img,0,0,w,h);
-                            const base64 = cvs.toDataURL('image/jpeg', 0.6);
-                            
-                            await addDoc(collection(db, `trips/${currentTripId.value}/chat`), {
-                                type: 'image',
-                                content: base64,
-                                senderId: user.value.uid,
-                                timestamp: serverTimestamp()
-                            });
-                        };
-                        img.src = evt.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                }
-            };
-
-            const sendMessage = async () => {
-                if(!newMessage.value.trim()) return;
-                await addDoc(collection(db, `trips/${currentTripId.value}/chat`), {
-                    type: 'text',
-                    content: newMessage.value,
-                    senderId: user.value.uid,
-                    timestamp: serverTimestamp()
-                });
-                newMessage.value = '';
-                scrollToBottom();
-            };
-
-            const scrollToBottom = async () => {
-                await nextTick();
-                if(chatContainer.value) chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
-            };
-            
-            const viewImage = (src) => {
-                const w = window.open("");
-                w.document.write(`<img src="${src}" style="width:100%">`);
-            };
-
-            // 7. Tools
-            const doTranslate = async () => {
-                if(!transInput.value) return;
-                transResult.value = '翻譯中...';
-                try {
-                    const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(transInput.value)}&langpair=${transSource.value}|${transTarget.value}`);
-                    const data = await res.json();
-                    transResult.value = data.responseData.translatedText;
-                } catch(e) { transResult.value = "翻譯服務忙碌中"; }
-            };
-
-            const searchFavLocation = async () => {
-                 await searchLocation(favSearch.value);
-                 favSearchResults.value = locationSuggestions.value;
-            };
-
-            const addFavorite = async (loc) => {
-                await addDoc(collection(db, `users/${user.value.uid}/favorites`), {
-                    name: loc.display_name.split(',')[0],
-                    address: loc.display_name,
-                    locationLat: loc.lat,
-                    locationLng: loc.lon
-                });
-                favSearchResults.value = [];
-                favSearch.value = '';
-                alert('已加入收藏');
-            };
+            // Chat & Tools
+            const handleChatImage = (e) => { const file = e.target.files[0]; if(file) { const reader = new FileReader(); reader.onload = async (evt) => { const img = new Image(); img.onload = async () => { const cvs = document.createElement('canvas'); const ctx = cvs.getContext('2d'); let w = img.width, h = img.height; if(w > 600) { h *= 600/w; w=600; } cvs.width=w; cvs.height=h; ctx.drawImage(img,0,0,w,h); const base64 = cvs.toDataURL('image/jpeg', 0.6); await addDoc(collection(db, `trips/${currentTripId.value}/chat`), { type: 'image', content: base64, senderId: user.value.uid, timestamp: serverTimestamp() }); }; img.src = evt.target.result; }; reader.readAsDataURL(file); } };
+            const sendMessage = async () => { if(!newMessage.value.trim()) return; await addDoc(collection(db, `trips/${currentTripId.value}/chat`), { type: 'text', content: newMessage.value, senderId: user.value.uid, timestamp: serverTimestamp() }); newMessage.value = ''; scrollToBottom(); };
+            const scrollToBottom = async () => { await nextTick(); if(chatContainer.value) chatContainer.value.scrollTop = chatContainer.value.scrollHeight; };
+            const viewImage = (src) => { const w = window.open(""); w.document.write(`<img src="${src}" style="width:100%">`); };
+            const doTranslate = async () => { if(!transInput.value) return; transResult.value = '翻譯中...'; try { const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(transInput.value)}&langpair=${transSource.value}|${transTarget.value}`); const data = await res.json(); transResult.value = data.responseData.translatedText; } catch(e) { transResult.value = "翻譯服務忙碌中"; } };
+            const searchFavLocation = async () => { await searchLocation(favSearch.value); favSearchResults.value = locationSuggestions.value; };
+            const addFavorite = async (loc) => { await addDoc(collection(db, `users/${user.value.uid}/favorites`), { name: loc.display_name.split(',')[0], address: loc.display_name, locationLat: loc.lat, locationLng: loc.lon }); favSearchResults.value = []; favSearch.value = ''; alert('已加入收藏'); };
             const deleteFavorite = async (id) => await deleteDoc(doc(db, `users/${user.value.uid}/favorites`, id));
-
-            const refreshWeather = async () => {
-                // Get Trip first location or Taipei
-                const lat = dayItems.value[0]?.locationLat || 25.0330;
-                const lng = dayItems.value[0]?.locationLng || 121.5654;
-                try {
-                    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true`);
-                    const data = await res.json();
-                    weather.value.temp = data.current_weather.temperature;
-                    weather.value.city = dayItems.value[0]?.title || '目前位置';
-                } catch(e) {}
-            };
+            const refreshWeather = async () => { const lat = dayItems.value[0]?.locationLat || 25.0330; const lng = dayItems.value[0]?.locationLng || 121.5654; try { const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true`); const data = await res.json(); weather.value.temp = data.current_weather.temperature; weather.value.city = dayItems.value[0]?.title || '目前位置'; } catch(e) {} };
 
             // --- Init ---
             onMounted(async () => {
-                // Timeout Safety
-                setTimeout(() => {
-                    if (loading.value) {
-                        showSlowLoadingHint.value = true;
-                        // Force stop loading if it's stuck for 8 seconds
-                        setTimeout(() => { loading.value = false; }, 3000);
-                    }
-                }, 5000);
-
-                try {
-                    await signInAnonymously(auth);
-                } catch(e) {
-                    console.error("Auth Error", e);
-                    alert("登入失敗：請確認 Firebase Authentication > Settings > Authorized Domains 有加入您的 GitHub 網址，並確認已開啟匿名登入功能。");
-                    loading.value = false;
-                    return;
-                }
+                setTimeout(() => { if (loading.value) { showSlowLoadingHint.value = true; setTimeout(() => { loading.value = false; }, 3000); } }, 5000);
+                try { await signInAnonymously(auth); } catch(e) { console.error("Auth Error", e); loading.value = false; return; }
 
                 onAuthStateChanged(auth, async (u) => {
                     if(u) {
                         user.value = u;
-                        // Load Profile
                         try {
                             const pDoc = await getDoc(doc(db, 'users', u.uid));
-                            if(pDoc.exists()) userProfile.value = pDoc.data();
-                            else tempProfile.value = {name: '旅人', avatar: ''}; 
+                            if(pDoc.exists()) {
+                                userProfile.value = pDoc.data();
+                                if(!userProfile.value.name) {
+                                    tempProfile.value = { ...userProfile.value };
+                                    showForceProfileModal.value = true;
+                                }
+                            } else {
+                                tempProfile.value = {name: '', avatar: ''};
+                                showForceProfileModal.value = true; // New user logic
+                            }
                         } catch(e) { console.error("Profile Load Error", e); }
 
-                        // Load My Trips with Error Handling
                         onSnapshot(collection(db, `users/${u.uid}/trips`), async (snap) => {
                             const tripIds = snap.docs.map(d => d.id);
                             if(tripIds.length > 0) {
@@ -1051,27 +909,17 @@
                                 myTrips.value = [];
                             }
                             loading.value = false;
-                            showSlowLoadingHint.value = false;
-                        }, (error) => {
-                            console.error("Trips Listener Permission Error", error);
-                            alert("資料讀取失敗：請檢查 Firestore Database 是否已切換至 'Test mode' (測試模式) 或開放讀寫權限。");
-                            loading.value = false;
-                        });
-                    } else {
-                        loading.value = false;
-                    }
+                        }, (error) => { console.error(error); loading.value = false; });
+                    } else { loading.value = false; }
                 });
             });
 
             return {
-                loading, showSlowLoadingHint, user, userProfile, editingProfile, tempProfile, openProfileEdit, saveProfile, handleAvatarUpload, getUserName, getUserAvatar,
-                myTrips, currentTripId, currentTrip, createTrip, joinTrip, enterTrip, exitTrip, showCreateTripModal, newTripName, joinCode, showInvite, showTripSettings, updateTripName, currentTripMembers,
-                currentTab, tripDays, selectedDayIndex, formatDate, addDay,
-                dayItems, showAddItemModal, newItem, openAddItemModal, locationSuggestions, searchLocation, selectLocation, addItem, deleteItem, getTransportIcon,
-                mapSearchQuery, searchMapLocation, initMap, openMapTo,
-                expenses, newExpense, addExpense, deleteExpense, userBalances, totalExpenseTwd, customRates, showCalculator, calcDisplay, calcFormula, openCalculator, calcAppend, calcBackspace, calcClear, calcEqual, confirmCalc,
-                chatMessages, newMessage, sendMessage, chatContainer, sortedMessages, handleChatImage, viewImage,
-                transSource, transTarget, transInput, transResult, doTranslate, favorites, favSearch, favSearchResults, searchFavLocation, addFavorite, deleteFavorite, weather, refreshWeather
+                loading, showSlowLoadingHint, isProcessing, user, userProfile, editingProfile, tempProfile, openProfileEdit, saveProfile, handleAvatarUpload, getUserName, getUserAvatar, showForceProfileModal,
+                myTrips, currentTripId, currentTrip, createTrip, joinTrip, enterTrip, exitTrip, showCreateTripModal, newTripName, joinCode, showInvite, showTripSettings, openTripSettings, updateTripName, tempTripName, currentTripMembers,
+                currentTab, tripDays, selectedDayIndex, formatDate, addDay, dayItems, showAddItemModal, newItem, openAddItemModal, locationSuggestions, searchLocation, selectLocation, addItem, deleteItem, getTransportIcon,
+                mapSearchQuery, searchMapLocation, initMap, openMapTo, expenses, newExpense, addExpense, deleteExpense, userBalances, totalExpenseTwd, customRates, showCalculator, calcDisplay, calcFormula, openCalculator, calcAppend, calcBackspace, calcClear, calcEqual, confirmCalc,
+                chatMessages, newMessage, sendMessage, chatContainer, sortedMessages, handleChatImage, viewImage, transSource, transTarget, transInput, transResult, doTranslate, favorites, favSearch, favSearchResults, searchFavLocation, addFavorite, deleteFavorite, weather, refreshWeather
             };
         }
     }).mount('#app');
