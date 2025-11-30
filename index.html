@@ -49,10 +49,18 @@
         .calc-btn-op { @apply bg-[#D4A373] text-white border-[#B08968] shadow-[0_2px_0_#B08968]; }
         .calc-btn-action { @apply bg-[#A98467] text-white border-[#8B6B52] shadow-[0_2px_0_#8B6B52]; }
         .custom-input { @apply w-full bg-white border-2 border-[#E6DDC3] rounded-xl p-3 text-coffee font-bold outline-none focus:border-[#D4A373] transition-colors; }
+        
+        /* Transport Icon Selection */
         .transport-opt { @apply w-10 h-10 rounded-full flex items-center justify-center border-2 border-transparent text-gray-400 transition-all; }
         .transport-opt.active { @apply bg-[#D4A373] text-white border-[#B08968] shadow-sm; }
-        .nav-btn { @apply flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-bold text-gray-400 transition-colors h-full pt-2 pb-1; }
-        .nav-btn.active { @apply text-coffee; }
+
+        /* Bottom Nav Button Alignment */
+        .nav-btn {
+            @apply flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-bold text-gray-400 transition-colors h-full pt-2 pb-1;
+        }
+        .nav-btn.active {
+            @apply text-coffee;
+        }
     </style>
 
     <!-- Firebase SDKs -->
@@ -148,7 +156,6 @@
                 const calcMode = ref('foreign'); 
                 const calculatorTarget = ref(null);
                 const newItemText = ref('');
-                const newSpotText = ref('');
                 const joinIdInput = ref('');
                 let map = null;
                 let modalMap = null;
@@ -191,10 +198,6 @@
                     };
                     localStorage.setItem('travel_buddy_profile', JSON.stringify(userProfile.value));
                     showProfileModal.value = false;
-                    // Update people list if new trip
-                    if(people.value.length === 1 && people.value[0] === '我') {
-                        people.value[0] = userProfile.value.name;
-                    }
                 };
 
                 const saveTripToLocal = (id, title) => {
@@ -291,7 +294,7 @@
                     const initialData = { days: [{activities:[]},{activities:[]}], people: [userProfile.value.name], expenses: [], savedSpots: [], exchangeRate: rate, targetCurrency: wizardData.value.currency.toUpperCase(), targetLang: wizardData.value.lang, title: tripTitle.value, checklist: [...DEFAULT_CHECKLIST], createdAt: Date.now() };
                     saveTripToLocal(newId, tripTitle.value); await set(dbRef(db, 'trips/' + newId), initialData); loadTrip(newId);
                 };
-                const deleteLocalTrip = (idx) => { if(confirm("確定從我的列表移除？(不會刪除雲端資料)")) { savedTrips.value.splice(idx, 1); localStorage.setItem('mySavedTrips', JSON.stringify(savedTrips.value)); } };
+                const deleteLocalTrip = (idx) => { if(confirm("確定移除？")) { savedTrips.value.splice(idx, 1); localStorage.setItem('mySavedTrips', JSON.stringify(savedTrips.value)); } };
                 const performTranslation = async () => { if (!translateText.value) return; isTranslating.value = true; translatedResult.value = ''; try { const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(translateText.value)}&langpair=zh-TW|${targetLang.value}`); const data = await res.json(); translatedResult.value = data.responseData ? data.responseData.translatedText : "翻譯失敗"; } catch (e) { translatedResult.value = "連線錯誤"; } finally { isTranslating.value = false; } };
                 const processImage = (file, cb) => { if(!file)return; const r=new FileReader(); r.onload=(e)=>{const i=new Image();i.onload=()=>{const c=document.createElement('canvas');const ctx=c.getContext('2d');const s=Math.min(1,800/i.width);c.width=i.width*s;c.height=i.height*s;ctx.drawImage(i,0,0,c.width,c.height);cb(c.toDataURL('image/jpeg',0.7));};i.src=e.target.result;};r.readAsDataURL(file); };
                 const handleChatImageUpload=(e)=>processImage(e.target.files[0],(b)=>chatImage.value=b);
@@ -331,7 +334,8 @@
                 const removePerson = (i)=>{people.value.splice(i,1);saveToCloud();};
                 const resetData = ()=>{if(confirm('清空？')){days.value=[{activities:[]}];expenses.value=[];saveToCloud();}};
                 const updateTripSettings = ()=>{saveToCloud();showSettings.value=false;};
-                const shareLink = ()=>navigator.clipboard.writeText(window.location.href).then(()=>alert('Copied!'));
+                const shareLink = ()=>navigator.clipboard.writeText(window.location.href).then(()=>alert('已複製連結！\n\n這是邀請連結，朋友點擊後會加入此行程。如果要分享 App 讓他們建立自己的行程，請複製瀏覽器網址列 (去掉 ?id=...)'));
+                const shareAppLink = () => navigator.clipboard.writeText(window.location.origin + window.location.pathname).then(() => alert("App 下載連結已複製！"));
                 const saveFlight = ()=>saveToCloud();
                 const searchFlight = ()=>{ if(flightInfo.value.code) window.open(`https://www.google.com/search?q=${flightInfo.value.code}+航班`, '_blank'); };
                 const addDay = ()=>{days.value.push({activities:[]});currentDayIndex.value=days.value.length-1;saveToCloud();};
@@ -350,7 +354,7 @@
                 
                 watch(() => formActivity.value.transport, () => { if(formActivity.value.lat && formActivity.value.lng) estimateTime(formActivity.value.lat, formActivity.value.lng); });
                 
-                // Collection Logic
+                // Collection Logic with Profile
                 const searchSpotCollection = async () => {
                     if (!collectionSearchInput.value) return;
                     try {
@@ -413,7 +417,7 @@
                     appendCalc, clearCalc, backspaceCalc, updateExchangeRate,
                     openCalculatorForExpense, openCalculatorNormal, applyCalculatorResult,
                     searchSpotCollection, addSpotFromSearchResult, addSpotDirectly, deleteSpot,
-                    userProfile, showProfileModal, tempProfileName, tempProfileAvatar, handleProfileAvatarUpload, saveProfile
+                    userProfile, showProfileModal, tempProfileName, tempProfileAvatar, handleProfileAvatarUpload, saveProfile, shareAppLink
                 };
             }
         }).mount('#app');
@@ -433,10 +437,27 @@
 
         <!-- 1. Landing -->
         <div v-if="pageState === 'landing'" class="h-full flex flex-col p-6 overflow-y-auto bg-milk">
-            <div class="mt-8 mb-6 text-center"><h1 class="text-4xl font-bold text-coffee mb-1">Travel Buddy</h1><p class="text-latte font-bold text-sm tracking-widest">V30</p></div>
-            <div class="bg-white/50 p-4 rounded-2xl mb-6 flex items-center gap-3 border border-[#EBE5D9]"><img :src="userProfile.avatar" class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"><div><p class="text-xs text-gray-400">Current User</p><p class="font-bold text-coffee text-lg">{{ userProfile.name }}</p></div><button @click="showProfileModal=true" class="ml-auto text-xs bg-white px-3 py-1 rounded-full text-gray-400 border border-gray-200">編輯</button></div>
+            <div class="mt-8 mb-6 text-center">
+                <h1 class="text-4xl font-bold text-coffee mb-1">Travel Buddy</h1>
+                <p class="text-latte font-bold text-sm tracking-widest">V30</p>
+            </div>
+            
+            <!-- User Profile Summary -->
+            <div class="bg-white/50 p-4 rounded-2xl mb-6 flex items-center gap-3 border border-[#EBE5D9]">
+                <img :src="userProfile.avatar" class="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm">
+                <div class="flex-1">
+                    <p class="text-xs text-gray-400">Current User</p>
+                    <p class="font-bold text-coffee text-lg">{{ userProfile.name }}</p>
+                </div>
+                <button @click="showProfileModal=true" class="text-xs bg-white px-3 py-1 rounded-full text-gray-400 border border-gray-200">編輯</button>
+            </div>
+
             <button @click="startWizard" class="bg-coffee text-white p-5 rounded-2xl shadow-xl flex items-center justify-between mb-6 group active:scale-95 transition flex-shrink-0"><div class="flex items-center gap-4"><div class="bg-white/10 w-12 h-12 rounded-full flex items-center justify-center text-2xl">✈️</div><div class="text-left"><h3 class="font-bold text-lg">建立新行程</h3></div></div><i class="fa-solid fa-arrow-right"></i></button>
+            
             <div class="bg-white p-2 rounded-2xl border border-stone-100 flex gap-2 mb-8 shadow-sm flex-shrink-0"><input v-model="joinIdInput" placeholder="輸入行程 ID..." class="flex-1 bg-transparent p-3 outline-none font-bold text-coffee"><button @click="joinTrip" class="bg-latte text-white px-4 rounded-xl font-bold">加入</button></div>
+            
+            <button @click="shareAppLink" class="w-full py-3 border-2 border-dashed border-[#EBE5D9] text-gray-400 rounded-2xl mb-8 font-bold text-sm flex items-center justify-center gap-2"><i class="fa-solid fa-share-nodes"></i> 複製 App 下載連結給朋友</button>
+
             <h3 class="font-bold text-gray-400 text-sm mb-3 px-2">我的行程</h3>
             <div class="space-y-3 pb-10"><div v-for="(trip, idx) in savedTrips" :key="trip.id" class="bg-white p-4 rounded-2xl border border-stone-100 shadow-sm flex justify-between items-center"><div @click="loadTrip(trip.id)" class="flex-1 cursor-pointer"><h4 class="font-bold text-coffee text-lg">{{ trip.title }}</h4></div><button @click="deleteLocalTrip(idx)" class="w-8 h-8 flex items-center justify-center text-gray-300"><i class="fa-solid fa-trash"></i></button></div></div>
         </div>
