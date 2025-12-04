@@ -388,7 +388,7 @@
     <div id="customerModal" class="modal-overlay hidden" onclick="closeCustomerSelect(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center mb-4 border-b pb-2">
-                <h3 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-users text-blue-500"></i> 選擇客戶</h3>
+                <h3 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-users text-blue-500"></i> 選擇客戶 (<span id="customerModalCollector"></span>)</h3>
                 <button onclick="closeCustomerSelect(null)" class="text-gray-400 p-2 bg-gray-100 rounded-full w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <input type="text" id="customerSearch" onkeyup="renderCustomerSelect()" placeholder="搜尋地址..." class="w-full p-3 bg-gray-50 border rounded-xl mb-3 outline-none focus:border-blue-400">
@@ -607,7 +607,14 @@
             
             if(!addr || isNaN(amt)) { alert("請填寫地址和金額"); return; }
 
-            const data = { address: addr, amount: amt, floor: floor, category: cat };
+            // Add 'collector' field to isolate customers per person
+            const data = { 
+                address: addr, 
+                amount: amt, 
+                floor: floor, 
+                category: cat,
+                collector: window.appState.currentCollector // Auto-assign to current tab
+            };
             const editId = window.appState.editingCustomerId;
 
             try {
@@ -632,21 +639,28 @@
 
         window.importFavoritesToPending = async function() {
             if(!currentUser) return;
-            const customers = window.appState.customers;
-            if(customers.length === 0) { alert("常用客戶名單是空的，請先新增"); return; }
+            // Filter customers to only import current collector's list
+            const current = window.appState.currentCollector;
+            const customers = window.appState.customers.filter(c => 
+                (c.collector === current) || 
+                (!c.collector && current === '子晴') // Legacy fallback
+            );
+
+            if(customers.length === 0) { alert(`沒有 ${current} 的常用客戶資料`); return; }
             
-            if(confirm(`確定要將 ${customers.length} 個客戶全部加入待收清單嗎？`)) {
+            if(confirm(`確定要將 ${customers.length} 個客戶加入待收清單嗎？`)) {
                 try {
                     let count = 0;
                     for (const c of customers) {
                         await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'pending'), {
                             address: c.address, amount: c.amount, floor: c.floor || '', note: '', 
                             type: 'cash', category: c.category || 'stairs',
+                            collector: current, // Important: tag pending item with collector
                             createdAt: serverTimestamp()
                         });
                         count++;
                     }
-                    window.showToast(`已匯入 ${count} 筆待收項目`);
+                    window.showToast(`已匯入 ${count} 筆`);
                     window.toggleView('entry');
                 } catch(e) { console.error(e); window.showToast("匯入部分失敗"); }
             }
@@ -724,6 +738,8 @@
             document.getElementById('listTitleIcon').innerText = icons[name];
 
             renderRecords();
+            renderCustomerSettings(); // Refresh settings list for new collector
+            renderPendingList(); // Refresh pending list for new collector
             updateSummary();
         };
 
@@ -736,11 +752,9 @@
             const btnTank = document.getElementById('btn-cat-tank');
             
             if (btnStairs && btnTank) {
-                // Reset styles
                 btnStairs.className = 'service-btn p-3 rounded-xl bg-orange-50 text-orange-400 font-bold flex justify-center items-center gap-2 shadow-sm';
                 btnTank.className = 'service-btn p-3 rounded-xl bg-cyan-50 text-cyan-400 font-bold flex justify-center items-center gap-2 shadow-sm';
                 
-                // Set active
                 if(cat === 'stairs') {
                     btnStairs.classList.add('active', 'text-orange-700', 'border-orange-200');
                     btnStairs.classList.remove('text-orange-400');
@@ -766,7 +780,11 @@
         window.renderPendingList = function() {
             const list = document.getElementById('pendingList');
             const container = document.getElementById('pendingContainer');
-            const items = window.appState.pending;
+            // Filter pending items by current collector
+            const current = window.appState.currentCollector;
+            const items = window.appState.pending.filter(i => 
+                (i.collector === current) || (!i.collector && current === '子晴')
+            );
             
             if (items.length === 0) { container.classList.add('hidden'); return; }
             container.classList.remove('hidden');
@@ -837,7 +855,6 @@
                 const dateObj = new Date(record.date);
                 const displayDate = `${dateObj.getMonth()+1}/${dateObj.getDate()}`;
                 
-                // Service Tag
                 let sTag = '';
                 if(record.category === 'tank') sTag = `<span class="text-xs font-bold px-2 py-0.5 rounded-full tag-tank flex items-center gap-1">💧 洗水塔</span>`;
                 else sTag = `<span class="text-xs font-bold px-2 py-0.5 rounded-full tag-stairs flex items-center gap-1">🪜 洗樓梯</span>`;
@@ -871,9 +888,15 @@
 
         window.renderCustomerSettings = function() {
             const list = document.getElementById('customerListSettings');
-            const customers = window.appState.customers;
+            // Filter customers by current collector
+            const current = window.appState.currentCollector;
+            const customers = window.appState.customers.filter(c => 
+                (c.collector === current) || 
+                (!c.collector && current === '子晴') // Legacy fallback
+            );
+
             list.innerHTML = '';
-            if(customers.length === 0) { list.innerHTML = `<div class="text-center text-gray-400 text-xs py-2">尚未建立常用客戶</div>`; return; }
+            if(customers.length === 0) { list.innerHTML = `<div class="text-center text-gray-400 text-xs py-2">尚未建立 ${current} 的常用客戶</div>`; return; }
             
             customers.forEach(c => {
                 const div = document.createElement('div');
@@ -896,10 +919,21 @@
         window.renderCustomerSelect = function() {
             const list = document.getElementById('customerSelectList');
             const search = document.getElementById('customerSearch').value.toLowerCase();
-            const customers = window.appState.customers;
+            
+            // Filter customers by current collector
+            const current = window.appState.currentCollector;
+            const customers = window.appState.customers.filter(c => 
+                (c.collector === current) || (!c.collector && current === '子晴')
+            );
+
             list.innerHTML = '';
             const filtered = customers.filter(c => c.address.toLowerCase().includes(search));
+            
             if(filtered.length === 0) { list.innerHTML = `<div class="text-center text-gray-400 py-4">找不到客戶</div>`; return; }
+            
+            // Update modal title to reflect current collector
+            document.getElementById('customerModalCollector').innerText = current;
+
             filtered.forEach(c => {
                 const btn = document.createElement('button');
                 btn.className = 'list-btn w-full p-3 bg-gray-50 border border-gray-100 rounded-xl flex justify-between items-center text-left mb-2 active:bg-blue-50';
@@ -923,9 +957,7 @@
             let totalCashAll = 0, totalTransferAll = 0;
             let totalCashMe = 0, totalTransferMe = 0;
             let breakdown = { '子晴': { cash: 0, transfer: 0 }, '子涵': { cash: 0, transfer: 0 }, '宗敬': { cash: 0, transfer: 0 }, '其他': { cash: 0, transfer: 0 } };
-            // Service Category Breakdown
             let catStats = { 'stairs': 0, 'tank': 0 };
-            
             const current = window.appState.currentCollector;
 
             window.appState.records.forEach(r => {
@@ -943,7 +975,6 @@
                     if (r.type === 'cash') totalCashMe += r.amount; else totalTransferMe += r.amount;
                 }
 
-                // Sum Category
                 const cat = r.category === 'tank' ? 'tank' : 'stairs';
                 catStats[cat] += r.amount;
             });
@@ -959,7 +990,6 @@
             document.getElementById('settleTransfer').innerText = fmt(totalTransferAll);
             document.getElementById('settleTotal').innerText = fmt(grandTotalAll);
 
-            // Render Service Stats
             document.getElementById('categoryBreakdown').innerHTML = `
                 <div class="bg-white p-3 rounded-lg border border-orange-200 text-center">
                     <div class="text-xs text-orange-600 font-bold mb-1">🪜 洗樓梯</div>
@@ -1052,8 +1082,12 @@
 
         window.closeAddCustomerModal = function(e) { if(e && e.target !== e.currentTarget) return; document.getElementById('addCustomerModal').classList.add('hidden'); };
         window.openCustomerSelect = function() {
-             if(window.appState.customers.length === 0) { showToast("請先新增常用客戶"); setTimeout(() => toggleView('settings'), 800); return; }
-            renderCustomerSelect(); document.getElementById('customerModal').classList.remove('hidden');
+             // Logic moved to renderCustomerSelect called inside the modal setup
+             // Just show modal
+             // But we need to check if list is empty to prompt user, but filtered by person now.
+             // Let's just show modal and handle empty state inside render
+            renderCustomerSelect(); 
+            document.getElementById('customerModal').classList.remove('hidden');
         };
         window.closeCustomerSelect = function(e) { if(e && e.target !== e.currentTarget) return; document.getElementById('customerModal').classList.add('hidden'); };
     </script>
