@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#10b981">
+    <meta name="theme-color" content="#c2a992">
     <title>清潔收費小幫手</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -19,7 +19,8 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: #f3f4f6;
-            padding-bottom: calc(80px + env(safe-area-inset-bottom));
+            /* Ensure enough space for fixed bottom nav */
+            padding-bottom: calc(90px + env(safe-area-inset-bottom));
             -webkit-tap-highlight-color: transparent;
             overscroll-behavior-y: none;
         }
@@ -63,7 +64,7 @@
             color: white;
             padding: 12px 24px;
             border-radius: 50px;
-            z-index: 3000;
+            z-index: 9999;
             display: none;
             font-size: 16px;
             font-weight: 500;
@@ -81,7 +82,7 @@
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.5);
-            z-index: 1000;
+            z-index: 3000; /* High z-index but below toast */
             backdrop-filter: blur(2px);
             display: flex;
             align-items: flex-end;
@@ -112,7 +113,7 @@
         
         #loading-overlay {
             position: fixed; inset: 0; background: rgba(255,255,255,0.8);
-            z-index: 4000; display: flex; justify-content: center; align-items: center;
+            z-index: 9999; display: flex; justify-content: center; align-items: center;
             backdrop-filter: blur(4px); transition: opacity 0.3s;
         }
 
@@ -179,7 +180,7 @@
     <div id="toast" class="toast">操作成功</div>
 
     <!-- Header -->
-    <div id="mainHeader" class="bg-[#c2a992] text-white pt-safe sticky top-0 z-50 shadow-lg transition-colors duration-300">
+    <div id="mainHeader" class="bg-[#c2a992] text-white pt-safe sticky top-0 z-20 shadow-lg transition-colors duration-300">
         <div class="px-4 pb-4 pt-2">
             <div class="flex justify-between items-center mb-3">
                 <h1 class="text-xl font-bold flex items-center gap-2 text-white drop-shadow-sm">
@@ -208,7 +209,8 @@
         </div>
     </div>
 
-    <div class="container mx-auto px-4 py-4 max-w-md">
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-4 max-w-md pb-28">
 
         <!-- VIEW: ENTRY FORM -->
         <div id="view-entry">
@@ -271,14 +273,21 @@
 
                     <!-- Month Picker Grid (Inline) -->
                     <div class="bg-gray-50 p-3 rounded-xl border border-gray-200">
-                        <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider flex justify-between">
-                            <span><i class="fa-regular fa-calendar-check mr-1"></i> 收費月份 (114年)</span>
-                            <span class="text-xs text-blue-500 font-normal" id="statusHint">請選擇...</span>
-                        </label>
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                <i class="fa-regular fa-calendar-check mr-1"></i> 收費月份
+                            </label>
+                            <div class="flex items-center bg-white rounded-lg border border-gray-300 overflow-hidden shadow-sm">
+                                <button type="button" onclick="changeYear(-1)" class="px-3 py-1 hover:bg-gray-100 text-gray-600 border-r border-gray-200 active:bg-gray-200"><i class="fa-solid fa-chevron-left"></i></button>
+                                <span class="px-3 py-1 text-sm font-bold text-emerald-600 min-w-[60px] text-center bg-emerald-50" id="pickerYearDisplay">114年</span>
+                                <button type="button" onclick="changeYear(1)" class="px-3 py-1 hover:bg-gray-100 text-gray-600 border-l border-gray-200 active:bg-gray-200"><i class="fa-solid fa-chevron-right"></i></button>
+                            </div>
+                        </div>
                         <div class="grid grid-cols-4 gap-2" id="monthPickerGrid">
                             <!-- JS Generated 1-12 -->
                         </div>
                         <input type="hidden" id="selectedMonths" value="">
+                        <div class="text-right mt-1 text-xs text-blue-500 font-medium h-4" id="statusHint"></div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
@@ -297,7 +306,7 @@
 
                     <div>
                         <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">備註</label>
-                        <textarea id="inputNote" rows="1" placeholder="其他..." class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-gray-400 outline-none transition-colors"></textarea>
+                        <textarea id="inputNote" rows="1" placeholder="其他..." class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-gray-400 outline-none h-[54px] transition-colors"></textarea>
                     </div>
 
                     <div class="grid grid-cols-2 gap-2 mt-2">
@@ -341,36 +350,25 @@
         <div id="view-settle" class="hidden">
             <div class="card p-6 bg-white border border-blue-100 shadow-xl">
                 <h2 class="text-xl font-bold text-blue-800 mb-6 flex items-center border-b border-blue-100 pb-3">
-                    <i class="fa-solid fa-money-bill-transfer mr-2"></i> 薪水結算
+                    <i class="fa-solid fa-money-bill-transfer mr-2"></i> <span id="settlePageTitle">薪水結算</span>
                 </h2>
                 
                 <div class="space-y-6">
+                    <!-- Personal Stats -->
                     <div class="grid grid-cols-2 gap-4">
                         <div class="bg-gray-50 p-3 rounded-xl border border-gray-100 text-center">
-                             <div class="text-xs text-gray-500 mb-1">總現金 (所有人)</div>
+                             <div class="text-xs text-gray-500 mb-1">個人手頭現金</div>
                              <div class="font-bold text-gray-800 text-lg" id="settleCash">$0</div>
                         </div>
                         <div class="bg-blue-50 p-3 rounded-xl border border-blue-100 text-center">
-                             <div class="text-xs text-blue-600 mb-1">總匯款 (所有人)</div>
+                             <div class="text-xs text-blue-600 mb-1">個人銀行匯款</div>
                              <div class="font-bold text-blue-700 text-lg" id="settleTransfer">$0</div>
                         </div>
                     </div>
 
-                    <!-- Category Breakdown -->
-                    <div class="bg-orange-50 p-4 rounded-xl border border-orange-100">
-                        <h3 class="text-sm font-bold text-orange-800 mb-3"><i class="fa-solid fa-chart-pie mr-1"></i> 項目統計 (所有人)</h3>
-                        <div class="grid grid-cols-2 gap-3" id="categoryBreakdown">
-                            <!-- Injected by JS -->
-                        </div>
-                    </div>
-
-                    <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
-                        <h3 class="text-sm font-bold text-indigo-800 mb-3"><i class="fa-solid fa-users-viewfinder mr-1"></i> 人員統計 (對帳用)</h3>
-                        <div id="collectorBreakdown" class="space-y-2"></div>
-                    </div>
-
+                    <!-- Total and Salary -->
                     <div class="flex justify-between items-center px-2">
-                        <span class="font-bold text-gray-600">當日總收入</span>
+                        <span class="font-bold text-gray-600">個人總收入</span>
                         <span class="font-bold text-2xl text-emerald-600" id="settleTotal">$0</span>
                     </div>
                     <hr class="border-gray-100">
@@ -386,6 +384,15 @@
                     <div class="bg-gradient-to-br from-emerald-500 to-teal-600 p-5 rounded-xl text-center shadow-lg text-white transform scale-105">
                         <div class="text-sm text-emerald-100 mb-1 font-medium">最後給爸爸的錢</div>
                         <div class="text-4xl font-bold tracking-tight" id="finalToDad">$0</div>
+                        <div class="text-[10px] text-emerald-200 mt-1">個人總收 - 我的薪水</div>
+                    </div>
+
+                    <!-- Others Breakdown (Bottom) -->
+                    <div class="mt-8 pt-4 border-t border-gray-200">
+                        <h3 class="text-sm font-bold text-gray-400 mb-3">其他人員參考資料</h3>
+                        <div id="collectorBreakdown" class="space-y-2"></div>
+                        <!-- Category Stats (Global) -->
+                        <div class="grid grid-cols-2 gap-3 mt-3" id="categoryBreakdown"></div>
                     </div>
                 </div>
             </div>
@@ -430,6 +437,22 @@
             </div>
         </div>
 
+    </div>
+
+    <!-- Bottom Navigation (FIXED POSITION) -->
+    <div class="fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-md border-t border-gray-200 flex justify-around pb-safe pt-2 z-[9999] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]" id="bottomNav">
+        <button onclick="toggleView('entry')" class="flex flex-col items-center w-1/3 py-2 text-emerald-600 transition-colors" id="nav-entry">
+            <div class="text-xl mb-1 relative"><i class="fa-solid fa-pen-to-square"></i></div>
+            <span class="text-[10px] font-bold">記帳</span>
+        </button>
+        <button onclick="toggleView('settle')" class="flex flex-col items-center w-1/3 py-2 text-gray-400 transition-colors" id="nav-settle">
+            <div class="text-xl mb-1"><i class="fa-solid fa-calculator"></i></div>
+            <span class="text-[10px] font-medium">結算</span>
+        </button>
+        <button onclick="toggleView('settings')" class="flex flex-col items-center w-1/3 py-2 text-gray-400 transition-colors" id="nav-settings">
+            <div class="text-xl mb-1"><i class="fa-solid fa-gear"></i></div>
+            <span class="text-[10px] font-medium">設定</span>
+        </button>
     </div>
 
     <!-- CUSTOMER SELECT MODAL -->
@@ -496,9 +519,19 @@
     <div id="monthPickerModal" class="modal-overlay hidden" onclick="closeMonthPickerModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="font-bold text-gray-700">選擇月份 (114年)</h3>
+                <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                    選擇月份 (<span id="modalYearDisplay">114年</span>)
+                </h3>
                 <button onclick="closeMonthPickerModal(null)" class="text-gray-400"><i class="fa-solid fa-times"></i></button>
             </div>
+            
+            <!-- Year Switcher inside Modal -->
+            <div class="flex items-center justify-center bg-gray-50 rounded-lg p-2 mb-4">
+                <button onclick="changeModalYear(-1)" class="p-2 text-gray-500 hover:bg-gray-200 rounded-lg"><i class="fa-solid fa-chevron-left"></i></button>
+                <span class="mx-4 font-bold text-lg text-emerald-600" id="modalYearDisplaySpan">114年</span>
+                <button onclick="changeModalYear(1)" class="p-2 text-gray-500 hover:bg-gray-200 rounded-lg"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+
             <div class="grid grid-cols-4 gap-3 mb-4" id="modalMonthGrid"></div>
             <button onclick="applyModalMonths()" class="w-full btn-primary py-3 rounded-xl font-bold">確定</button>
         </div>
@@ -778,7 +811,18 @@
 
     <script>
         // --- UI Logic ---
-        window.appState = { records: [], customers: [], pending: [], currentCollector: '子晴', editingCustomerId: null, currentServiceCategory: 'stairs', currentPendingAction: null, selectedMonthsSet: new Set(), currentBaseAmount: 0 };
+        window.appState = { 
+            records: [], customers: [], pending: [], 
+            currentCollector: '子晴', 
+            editingCustomerId: null, 
+            currentServiceCategory: 'stairs', 
+            currentPendingAction: null, 
+            selectedMonthsSet: new Set(), 
+            currentBaseAmount: 0,
+            pickerYear: 114, 
+            modalPickerYear: 114,
+            pendingMonthTargetId: null
+        };
 
         window.onload = function() {
             const today = new Date();
@@ -796,7 +840,15 @@
         };
 
         // --- Month Picker Logic ---
+        window.changeYear = function(delta) {
+            window.appState.pickerYear += delta;
+            window.renderMonthPicker();
+            const addr = document.getElementById('inputAddress').value;
+            if(addr) window.checkPaidStatus(addr);
+        };
+
         window.renderMonthPicker = function() {
+            document.getElementById('pickerYearDisplay').innerText = `${window.appState.pickerYear}年`;
             const container = document.getElementById('monthPickerGrid');
             container.innerHTML = '';
             for(let i=1; i<=12; i++) {
@@ -808,22 +860,30 @@
                 btn.onclick = () => window.toggleMonth(i);
                 container.appendChild(btn);
             }
+            window.appState.selectedMonthsSet.forEach(key => {
+                const [y, m] = key.split('-').map(Number);
+                if(y === window.appState.pickerYear) {
+                    const btn = document.getElementById(`mbtn-${m}`);
+                    if(btn) btn.classList.add('selected');
+                }
+            });
         };
 
         window.toggleMonth = function(m) {
             const btn = document.getElementById(`mbtn-${m}`);
-            if(btn.classList.contains('paid')) return; // Cannot toggle paid
+            if(btn.classList.contains('paid')) return;
 
-            if(window.appState.selectedMonthsSet.has(m)) {
-                window.appState.selectedMonthsSet.delete(m);
+            const key = `${window.appState.pickerYear}-${m}`;
+
+            if(window.appState.selectedMonthsSet.has(key)) {
+                window.appState.selectedMonthsSet.delete(key);
                 btn.classList.remove('selected');
             } else {
-                window.appState.selectedMonthsSet.add(m);
+                window.appState.selectedMonthsSet.add(key);
                 btn.classList.add('selected');
             }
             window.updateSelectedMonthsInput();
             
-            // Auto Update Amount
             const count = window.appState.selectedMonthsSet.size;
             if(window.appState.currentBaseAmount > 0 && count > 0) {
                 const total = window.appState.currentBaseAmount * count;
@@ -832,9 +892,21 @@
         };
 
         window.updateSelectedMonthsInput = function() {
-            const sorted = Array.from(window.appState.selectedMonthsSet).sort((a,b) => a-b);
-            const str = sorted.length > 0 ? `114年 ${sorted.join(',')}月` : '';
-            document.getElementById('selectedMonths').value = str;
+            const groups = {};
+            window.appState.selectedMonthsSet.forEach(key => {
+                const [y, m] = key.split('-').map(Number);
+                if(!groups[y]) groups[y] = [];
+                groups[y].push(m);
+            });
+
+            const parts = [];
+            Object.keys(groups).sort().forEach(y => {
+                const months = groups[y].sort((a,b)=>a-b).join(',');
+                parts.push(`${y}年 ${months}月`);
+            });
+
+            document.getElementById('selectedMonths').value = parts.join(', ');
+            document.getElementById('statusHint').innerText = parts.join(', ') || '請選擇...';
         };
 
         window.resetMonthPicker = function() {
@@ -846,7 +918,6 @@
             window.appState.currentBaseAmount = 0;
         };
 
-        // Debounce for input check
         let checkTimeout;
         window.debounceCheckPaidStatus = function(address) {
             clearTimeout(checkTimeout);
@@ -858,42 +929,50 @@
         window.checkPaidStatus = function(address) {
             if(!address) return;
             
-            // Reset Paid status
             document.querySelectorAll('.month-btn').forEach(b => b.classList.remove('paid'));
             
-            // 1. Check History for Paid Months
             const records = window.appState.records.filter(r => r.address === address);
+            const paidSet = new Set();
+
+            const regex = /(\d+)年\s*([0-9,]+)/g;
+
             records.forEach(r => {
-                if(r.months && r.months.includes('114年')) {
-                    const parts = r.months.match(/114年\s*([0-9,]+)/);
-                    if(parts && parts[1]) {
-                        const paidMonths = parts[1].split(',').map(Number);
-                        paidMonths.forEach(m => {
-                            const btn = document.getElementById(`mbtn-${m}`);
-                            if(btn) btn.classList.add('paid');
-                            if(window.appState.selectedMonthsSet.has(m)) {
-                                window.appState.selectedMonthsSet.delete(m);
-                                if(btn) btn.classList.remove('selected');
-                            }
-                        });
+                if(r.months) {
+                    let match;
+                    while ((match = regex.exec(r.months)) !== null) {
+                        const y = parseInt(match[1]);
+                        const ms = match[2].split(',').map(Number);
+                        ms.forEach(m => paidSet.add(`${y}-${m}`));
                     }
                 }
             });
+
+            const currentPickerYear = window.appState.pickerYear;
+            
+            for(let m=1; m<=12; m++) {
+                const key = `${currentPickerYear}-${m}`;
+                if(paidSet.has(key)) {
+                    const btn = document.getElementById(`mbtn-${m}`);
+                    if(btn) btn.classList.add('paid');
+                    
+                    if(window.appState.selectedMonthsSet.has(key)) {
+                        window.appState.selectedMonthsSet.delete(key);
+                        if(btn) btn.classList.remove('selected');
+                    }
+                }
+            }
+
             window.updateSelectedMonthsInput();
 
-            // 2. Check Customer List for Base Amount
             const cust = window.appState.customers.find(c => c.address === address);
             if(cust) {
                 window.appState.currentBaseAmount = cust.amount;
-                // If nothing selected, maybe set default? No, wait for user click.
                 if(cust.floor) document.getElementById('inputFloor').value = cust.floor;
                 if(cust.category) window.setServiceCategory(cust.category);
             } else {
                 window.appState.currentBaseAmount = 0;
             }
         };
-
-        // --- Other UI Logic ---
 
         window.setCollector = function(name) {
             window.appState.currentCollector = name;
@@ -913,7 +992,7 @@
             document.getElementById(tabs[name]).classList.add(activeClasses[name]);
             document.getElementById(tabs[name]).classList.remove('text-gray-400');
 
-            document.getElementById('mainHeader').className = `${themeColors[name]} text-white pt-safe sticky top-0 z-50 shadow-lg transition-colors duration-300`;
+            document.getElementById('mainHeader').className = `${themeColors[name]} text-white pt-safe sticky top-0 z-20 shadow-lg transition-colors duration-300`;
             document.getElementById('addBtn').className = `w-full btn-primary py-4 rounded-xl text-lg font-bold shadow-lg shadow-gray-300 flex justify-center items-center gap-2 transition-all active:scale-95 ${btnColors[name]}`;
             document.getElementById('quickSelectBtn').className = `${qsColors[name]} text-white text-sm px-4 py-2 rounded-lg shadow active:scale-95 flex items-center transition-all`;
             
@@ -922,6 +1001,7 @@
 
             document.getElementById('listTitleName').innerText = name;
             document.getElementById('listTitleIcon').innerText = icons[name];
+            document.getElementById('settlePageTitle').innerText = `${name} 的薪水結算`;
 
             renderRecords();
             renderCustomerSettings();
@@ -997,7 +1077,6 @@
                     </div>
                     <div class="space-y-2">
                         <div class="flex gap-2">
-                            <!-- Clickable Month Input -->
                             <input id="${monthsId}" value="${item.months || ''}" readonly onclick="openPendingMonthPicker('${item.id}', '${item.months||''}')" placeholder="選擇月份" class="bg-blue-50 border border-blue-200 rounded p-2 text-sm w-1/2 text-center text-blue-700 font-bold cursor-pointer">
                             <input id="${floorId}" value="${item.floor || ''}" placeholder="樓層/戶號" class="bg-gray-50 border rounded p-2 text-sm w-1/2 text-center font-medium">
                         </div>
@@ -1021,27 +1100,52 @@
         // --- PENDING MONTH PICKER ---
         window.openPendingMonthPicker = function(itemId, currentStr) {
             window.appState.pendingMonthTargetId = itemId;
-            // Parse current string to select buttons
+            window.appState.modalPickerYear = 114; 
+            
+            window.appState.tempModalSet = new Set();
+            const regex = /(\d+)年\s*([0-9,]+)/g;
+            let match;
+            while ((match = regex.exec(currentStr)) !== null) {
+                const y = parseInt(match[1]);
+                const ms = match[2].split(',').map(Number);
+                ms.forEach(m => window.appState.tempModalSet.add(`${y}-${m}`));
+            }
+
+            renderModalMonthGrid();
+            document.getElementById('monthPickerModal').classList.remove('hidden');
+        };
+
+        window.changeModalYear = function(delta) {
+            window.appState.modalPickerYear += delta;
+            renderModalMonthGrid();
+        };
+
+        function renderModalMonthGrid() {
+            const y = window.appState.modalPickerYear;
+            document.getElementById('modalYearDisplay').innerText = `${y}年`;
+            document.getElementById('modalYearDisplaySpan').innerText = `${y}年`;
             const grid = document.getElementById('modalMonthGrid');
             grid.innerHTML = '';
             
-            let selected = new Set();
-            if(currentStr && currentStr.includes('114年')) {
-                const parts = currentStr.match(/114年\s*([0-9,]+)/);
-                if(parts && parts[1]) selected = new Set(parts[1].split(',').map(Number));
-            }
-
             for(let i=1; i<=12; i++) {
+                const key = `${y}-${i}`;
                 const btn = document.createElement('button');
-                btn.className = `month-btn ${selected.has(i) ? 'selected' : ''} p-2 rounded text-center`;
+                const isSelected = window.appState.tempModalSet.has(key);
+                
+                btn.className = `month-btn ${isSelected ? 'selected' : ''} p-2 rounded text-center`;
                 btn.innerText = `${i}月`;
                 btn.onclick = function() {
-                    this.classList.toggle('selected');
+                    if(window.appState.tempModalSet.has(key)) {
+                        window.appState.tempModalSet.delete(key);
+                        this.classList.remove('selected');
+                    } else {
+                        window.appState.tempModalSet.add(key);
+                        this.classList.add('selected');
+                    }
                 };
                 grid.appendChild(btn);
             }
-            document.getElementById('monthPickerModal').classList.remove('hidden');
-        };
+        }
 
         window.closeMonthPickerModal = function(e) {
             if(e && e.target !== e.currentTarget) return;
@@ -1049,41 +1153,41 @@
         };
 
         window.applyModalMonths = function() {
-            const btns = document.querySelectorAll('#modalMonthGrid .selected');
-            const months = Array.from(btns).map(b => parseInt(b.innerText)).sort((a,b)=>a-b);
-            const str = months.length > 0 ? `114年 ${months.join(',')}月` : '';
+            const groups = {};
+            window.appState.tempModalSet.forEach(key => {
+                const [y, m] = key.split('-').map(Number);
+                if(!groups[y]) groups[y] = [];
+                groups[y].push(m);
+            });
+            const parts = [];
+            Object.keys(groups).sort().forEach(y => {
+                const months = groups[y].sort((a,b)=>a-b).join(',');
+                parts.push(`${y}年 ${months}月`);
+            });
             
             const targetId = window.appState.pendingMonthTargetId;
             if(targetId) {
-                document.getElementById(`p-months-${targetId}`).value = str;
+                document.getElementById(`p-months-${targetId}`).value = parts.join(', ');
             }
             closeMonthPickerModal(null);
         };
 
         // --- NEW MODAL LOGIC ---
         window.openConfirmCollectionModal = function(id, amount, address, category) {
-            // Get current values from the inputs
             const floor = document.getElementById(`p-floor-${id}`).value;
             const months = document.getElementById(`p-months-${id}`).value;
             const note = document.getElementById(`p-note-${id}`).value;
             const type = document.getElementById(`p-type-${id}`).value;
 
-            // Store in state
-            window.appState.currentPendingAction = {
-                id, amount, address, category, floor, months, note, type
-            };
-
-            // Populate Modal
+            window.appState.currentPendingAction = { id, amount, address, category, floor, months, note, type };
             document.getElementById('confirmModalAddress').innerText = address;
-            document.getElementById('confirmModalMonths').value = months; // Editable in confirm modal too
+            document.getElementById('confirmModalMonths').value = months; 
             document.getElementById('confirmModalAmount').innerText = `$${amount}`;
             
-            // Set Date to Today or Global Input Date
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('confirmModalDate').value = today;
 
             document.getElementById('confirmCollectionModal').classList.remove('hidden');
-            
             document.getElementById('confirmCollectionBtn').onclick = doConfirmCollection;
         };
 
@@ -1097,10 +1201,9 @@
             if(!action) return;
 
             const date = document.getElementById('confirmModalDate').value;
-            const months = document.getElementById('confirmModalMonths').value; // Get potentially edited month
+            const months = document.getElementById('confirmModalMonths').value; 
             if(!date) { alert("請選擇日期"); return; }
 
-            // Call main logic
             window.completePending(action.id, {
                 date: date,
                 amount: action.amount,
@@ -1115,7 +1218,6 @@
             closeConfirmCollectionModal(null);
         };
 
-        // --- History Logic ---
         window.openHistory = function(address) {
             const list = document.getElementById('historyList');
             const title = document.getElementById('historyTitle');
@@ -1153,7 +1255,6 @@
             document.getElementById('historyModal').classList.add('hidden');
         };
 
-        // --- Records & Selects ---
         window.renderRecords = function() {
             const list = document.getElementById('recordList');
             const records = window.appState.records.filter(r => {
@@ -1252,12 +1353,18 @@
             list.innerHTML = '';
             const filtered = customers.filter(c => c.address.toLowerCase().includes(search));
             
-            if(filtered.length === 0) { list.innerHTML = `<div class="text-center text-gray-400 py-4">找不到客戶</div>`; return; }
-            
             document.getElementById('customerModalCollector').innerText = current;
 
+            if(filtered.length === 0 && search.length > 0) { 
+                const btn = document.createElement('button');
+                btn.className = 'w-full p-4 bg-blue-50 text-blue-600 rounded-xl font-bold flex items-center justify-center border border-blue-200 active:bg-blue-100';
+                btn.onclick = () => selectCustomer(search, '', '', 'stairs'); 
+                btn.innerHTML = `<i class="fa-solid fa-plus mr-2"></i> 直接填寫：${search}`;
+                list.appendChild(btn);
+                return; 
+            }
+
             filtered.forEach(c => {
-                // Find Last Record
                 const lastRec = window.appState.records.find(r => r.address === c.address);
                 let lastInfo = '尚無紀錄';
                 if(lastRec) {
@@ -1285,7 +1392,7 @@
             document.getElementById('inputFloor').value = floor || '';
             document.getElementById('inputAmount').value = amount || '';
             if(category) window.setServiceCategory(category);
-            window.checkPaidStatus(addr); // Trigger month checker
+            window.checkPaidStatus(addr); 
             closeCustomerSelect(null);
             showToast("已填入資料");
         };
@@ -1323,17 +1430,18 @@
             document.getElementById('headerCashTotal').innerText = fmt(totalCashMe);
             document.getElementById('headerTransferTotal').innerText = fmt(totalTransferMe);
             document.getElementById('headerGrandTotal').innerText = fmt(grandTotalMe);
-            document.getElementById('settleCash').innerText = fmt(totalCashAll);
-            document.getElementById('settleTransfer').innerText = fmt(totalTransferAll);
-            document.getElementById('settleTotal').innerText = fmt(grandTotalAll);
+            
+            document.getElementById('settleCash').innerText = fmt(totalCashMe);
+            document.getElementById('settleTransfer').innerText = fmt(totalTransferMe);
+            document.getElementById('settleTotal').innerText = fmt(grandTotalMe);
 
             document.getElementById('categoryBreakdown').innerHTML = `
                 <div class="bg-white p-3 rounded-lg border border-orange-200 text-center">
-                    <div class="text-xs text-orange-600 font-bold mb-1">🪜 洗樓梯</div>
+                    <div class="text-xs text-orange-600 font-bold mb-1">🪜 洗樓梯 (全部)</div>
                     <div class="text-xl font-bold text-gray-800">${fmt(catStats.stairs)}</div>
                 </div>
                 <div class="bg-white p-3 rounded-lg border border-cyan-200 text-center">
-                    <div class="text-xs text-cyan-600 font-bold mb-1">💧 洗水塔</div>
+                    <div class="text-xs text-cyan-600 font-bold mb-1">💧 洗水塔 (全部)</div>
                     <div class="text-xl font-bold text-gray-800">${fmt(catStats.tank)}</div>
                 </div>
             `;
@@ -1419,8 +1527,9 @@
 
         window.closeAddCustomerModal = function(e) { if(e && e.target !== e.currentTarget) return; document.getElementById('addCustomerModal').classList.add('hidden'); };
         window.openCustomerSelect = function() {
-             if(window.appState.customers.length === 0) { showToast("請先新增常用客戶"); setTimeout(() => toggleView('settings'), 800); return; }
-            renderCustomerSelect(); document.getElementById('customerModal').classList.remove('hidden');
+            // Show modal directly, logic moved inside render
+            renderCustomerSelect(); 
+            document.getElementById('customerModal').classList.remove('hidden');
         };
         window.closeCustomerSelect = function(e) { if(e && e.target !== e.currentTarget) return; document.getElementById('customerModal').classList.add('hidden'); };
     </script>
