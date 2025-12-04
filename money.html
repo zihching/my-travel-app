@@ -150,8 +150,8 @@
                     <span id="headerTitleIcon"><i class="fa-solid fa-mug-hot"></i></span> 
                     <span id="headerTitleText">收費小幫手</span>
                 </h1>
-                <div class="text-xs font-medium bg-white/20 px-2 py-1 rounded backdrop-blur-sm shadow-sm">
-                    <span id="headerDate"></span>
+                <div class="text-xs font-medium bg-white/20 px-2 py-1 rounded backdrop-blur-sm shadow-sm flex items-center gap-1">
+                    <i class="fa-solid fa-cloud text-[10px]"></i> <span id="headerDate"></span>
                 </div>
             </div>
             
@@ -218,7 +218,7 @@
                                 💧 洗水塔
                             </button>
                         </div>
-                        <!-- HIDDEN INPUT ADDED HERE -->
+                        <!-- HIDDEN INPUT -->
                         <input type="hidden" id="inputServiceType" value="stairs">
                     </div>
 
@@ -367,7 +367,8 @@
                 <h2 class="text-lg font-bold text-gray-700 mb-4">資料備份與工具</h2>
                 <div class="space-y-3">
                     <div class="p-4 bg-emerald-50 border border-emerald-100 rounded-xl text-emerald-800 text-sm">
-                        <i class="fa-solid fa-check-circle mr-2"></i> 您的資料已安全儲存於雲端資料庫。
+                        <i class="fa-solid fa-check-circle mr-2"></i> 資料庫狀態: 
+                        <span class="font-bold text-emerald-600">已連線 (公共區域)</span>
                         <div class="text-xs text-emerald-600 mt-1 opacity-75">ID: <span id="userIdDisplay">...</span></div>
                     </div>
                     <button onclick="exportData()" class="w-full p-4 bg-white border border-gray-200 rounded-xl text-left active:bg-gray-50 flex justify-between items-center shadow-sm">
@@ -501,16 +502,17 @@
                 currentUser = user;
                 const uidDisp = document.getElementById('userIdDisplay');
                 if(uidDisp) uidDisp.innerText = `...${user.uid.slice(-4)}`;
-                setupListeners(user.uid);
+                setupListeners(); // Changed: No user.uid
                 if(loader) loader.style.display = 'none';
             }
         });
 
-        // --- 4. Listeners ---
-        function setupListeners(userId) {
-            const recordsRef = collection(db, 'artifacts', APP_ID, 'users', userId, 'records');
-            const customersRef = collection(db, 'artifacts', APP_ID, 'users', userId, 'customers');
-            const pendingRef = collection(db, 'artifacts', APP_ID, 'users', userId, 'pending');
+        // --- 4. Listeners (Public Path) ---
+        function setupListeners() {
+            // UPDATED PATH: Shared 'public' data
+            const recordsRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'records');
+            const customersRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'customers');
+            const pendingRef = collection(db, 'artifacts', APP_ID, 'public', 'data', 'pending');
 
             const qRec = query(recordsRef, orderBy('date', 'desc')); 
             onSnapshot(qRec, (snapshot) => {
@@ -543,13 +545,13 @@
             });
         }
 
-        // --- 5. Functions ---
+        // --- 5. Functions (Public Path) ---
         window.addRecord = async function() {
             if(!currentUser) { window.showToast("尚未連線"); return; }
             const newRecord = getFormData();
             if (!newRecord) return;
             try {
-                await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'records'), newRecord);
+                await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'records'), newRecord);
                 clearFormData();
                 window.showToast("✅ 已收款");
             } catch (e) { console.error(e); window.showToast("❌ 儲存失敗"); }
@@ -560,7 +562,7 @@
             const newItem = getFormData();
             if (!newItem) return;
             try {
-                await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'pending'), newItem);
+                await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'pending'), newItem);
                 clearFormData();
                 window.showToast("📋 已加入清單");
             } catch (e) { console.error(e); window.showToast("❌ 加入失敗"); }
@@ -575,8 +577,8 @@
                 createdAt: serverTimestamp()
             };
             try {
-                await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'records'), record);
-                await deleteDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'pending', docId));
+                await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'records'), record);
+                await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'pending', docId));
                 window.showToast("✅ 完成收款");
             } catch(e) { console.error(e); window.showToast("操作失敗"); }
         };
@@ -584,7 +586,7 @@
         window.deleteRecord = async function(docId) {
             if(!currentUser) return;
             if(confirm("確定刪除此紀錄？")) {
-                await deleteDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'records', docId));
+                await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'records', docId));
                 window.showToast("🗑️ 已刪除");
             }
         };
@@ -592,7 +594,7 @@
         window.deletePending = async function(docId) {
             if(!currentUser) return;
             if(confirm("從清單移除？")) {
-                await deleteDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'pending', docId));
+                await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'pending', docId));
             }
         };
 
@@ -610,11 +612,11 @@
 
             try {
                 if (editId) {
-                    await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'customers', editId), data);
+                    await updateDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'customers', editId), data);
                     window.showToast("已更新客戶");
                 } else {
                     data.createdAt = serverTimestamp();
-                    await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'customers'), data);
+                    await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'customers'), data);
                     window.showToast("已新增客戶");
                 }
                 window.closeAddCustomerModal(null);
@@ -624,7 +626,7 @@
         window.deleteCustomer = async function(docId) {
             if(!currentUser) return;
             if(confirm("從常用名單移除？")) {
-                await deleteDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'customers', docId));
+                await deleteDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'customers', docId));
             }
         };
 
@@ -637,7 +639,7 @@
                 try {
                     let count = 0;
                     for (const c of customers) {
-                        await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'pending'), {
+                        await addDoc(collection(db, 'artifacts', APP_ID, 'public', 'data', 'pending'), {
                             address: c.address, amount: c.amount, floor: c.floor || '', note: '', 
                             type: 'cash', category: c.category || 'stairs',
                             createdAt: serverTimestamp()
