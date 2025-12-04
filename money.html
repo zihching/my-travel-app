@@ -45,6 +45,10 @@
         .tag-cash { background-color: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
         .tag-transfer { background-color: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
 
+        /* Service Tags */
+        .tag-stairs { background-color: #ffedd5; color: #9a3412; border: 1px solid #fed7aa; } /* Orange */
+        .tag-tank { background-color: #cffafe; color: #155e75; border: 1px solid #a5f3fc; } /* Cyan */
+
         /* Person Tags */
         .tag-zih-cing { background-color: #f5ebe0; color: #795548; border: 1px solid #e6dbd0; } 
         .tag-zih-han { background-color: #ffe4e6; color: #be185d; border: 1px solid #fda4af; } 
@@ -118,6 +122,12 @@
         .collector-tab.active-zih-han { background-color: #ff99ac; color: white; box-shadow: 0 2px 5px rgba(255, 153, 172, 0.4); }
         .collector-tab.active-zong-jing { background-color: #38bdf8; color: white; box-shadow: 0 2px 5px rgba(56, 189, 248, 0.4); }
         
+        /* Service Toggle Styles */
+        .service-btn { transition: all 0.2s; border: 2px solid transparent; opacity: 0.6; filter: grayscale(0.5); }
+        .service-btn.active { opacity: 1; filter: grayscale(0); border-color: currentColor; transform: scale(1.02); }
+        .service-btn.active i { animation: bounce 0.5s; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+
         #mainHeader { transition: background-color 0.3s ease; }
     </style>
 </head>
@@ -195,6 +205,21 @@
                 <div class="space-y-4">
                     <div class="hidden">
                         <input type="date" id="inputDate">
+                    </div>
+
+                    <!-- Service Category Toggle -->
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">服務項目</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button type="button" onclick="setServiceCategory('stairs')" id="btn-cat-stairs" class="service-btn active p-3 rounded-xl bg-orange-50 text-orange-700 font-bold flex justify-center items-center gap-2 shadow-sm">
+                                🪜 洗樓梯
+                            </button>
+                            <button type="button" onclick="setServiceCategory('tank')" id="btn-cat-tank" class="service-btn p-3 rounded-xl bg-cyan-50 text-cyan-700 font-bold flex justify-center items-center gap-2 shadow-sm">
+                                💧 洗水塔
+                            </button>
+                        </div>
+                        <!-- HIDDEN INPUT ADDED HERE -->
+                        <input type="hidden" id="inputServiceType" value="stairs">
                     </div>
 
                     <div class="flex gap-3">
@@ -283,8 +308,16 @@
                         </div>
                     </div>
 
+                    <!-- Category Breakdown -->
+                    <div class="bg-orange-50 p-4 rounded-xl border border-orange-100">
+                        <h3 class="text-sm font-bold text-orange-800 mb-3"><i class="fa-solid fa-chart-pie mr-1"></i> 項目統計 (所有人)</h3>
+                        <div class="grid grid-cols-2 gap-3" id="categoryBreakdown">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+
                     <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
-                        <h3 class="text-sm font-bold text-indigo-800 mb-3"><i class="fa-solid fa-users-viewfinder mr-1"></i> 分類統計 (對帳用)</h3>
+                        <h3 class="text-sm font-bold text-indigo-800 mb-3"><i class="fa-solid fa-users-viewfinder mr-1"></i> 人員統計 (對帳用)</h3>
                         <div id="collectorBreakdown" class="space-y-2"></div>
                     </div>
 
@@ -372,6 +405,16 @@
                 <button onclick="closeAddCustomerModal(null)" class="text-gray-400 p-2 bg-gray-100 rounded-full w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="space-y-3">
+                <!-- Add Category Selection to Customer -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1">預設項目</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" onclick="setEditCustCategory('stairs')" id="edit-cat-stairs" class="p-2 rounded border text-sm font-bold bg-orange-100 text-orange-800 border-orange-200">🪜 洗樓梯</button>
+                        <button type="button" onclick="setEditCustCategory('tank')" id="edit-cat-tank" class="p-2 rounded border text-sm font-bold bg-gray-50 text-gray-400 border-gray-200">💧 洗水塔</button>
+                    </div>
+                    <input type="hidden" id="editCustCategory" value="stairs">
+                </div>
+
                 <div>
                     <label class="block text-xs font-bold text-gray-500 mb-1">地址 / 名稱 (必填)</label>
                     <input type="text" id="newCustAddr" placeholder="例如：錦州街" class="w-full p-3 bg-gray-50 border rounded-xl outline-none focus:border-green-500 text-lg">
@@ -444,7 +487,10 @@
         const initAuth = async () => {
             if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                 try { await signInWithCustomToken(auth, __initial_auth_token); } 
-                catch (e) { console.error("Custom token auth failed", e); await signInAnonymously(auth); }
+                catch (e) { 
+                    console.log("Custom token mismatch, falling back to anon."); 
+                    await signInAnonymously(auth); 
+                }
             } else { await signInAnonymously(auth); }
         };
         initAuth();
@@ -520,11 +566,11 @@
             } catch (e) { console.error(e); window.showToast("❌ 加入失敗"); }
         };
 
-        window.completePending = async function(docId, amount, address, floor, note, type) {
+        window.completePending = async function(docId, amount, address, floor, note, type, category) {
             if(!currentUser) return;
             const record = {
                 date: document.getElementById('inputDate').value,
-                address, amount, floor, note, type,
+                address, amount, floor, note, type, category,
                 collector: window.appState.currentCollector,
                 createdAt: serverTimestamp()
             };
@@ -555,18 +601,18 @@
             const addr = document.getElementById('newCustAddr').value.trim();
             const amt = parseInt(document.getElementById('newCustAmt').value);
             const floor = document.getElementById('newCustFloor').value.trim();
+            const cat = document.getElementById('editCustCategory').value; // Get category
+            
             if(!addr || isNaN(amt)) { alert("請填寫地址和金額"); return; }
 
-            const data = { address: addr, amount: amt, floor: floor };
+            const data = { address: addr, amount: amt, floor: floor, category: cat };
             const editId = window.appState.editingCustomerId;
 
             try {
                 if (editId) {
-                    // Update existing
                     await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'customers', editId), data);
                     window.showToast("已更新客戶");
                 } else {
-                    // Create new
                     data.createdAt = serverTimestamp();
                     await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'customers'), data);
                     window.showToast("已新增客戶");
@@ -592,7 +638,8 @@
                     let count = 0;
                     for (const c of customers) {
                         await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'pending'), {
-                            address: c.address, amount: c.amount, floor: c.floor || '', note: '', type: 'cash',
+                            address: c.address, amount: c.amount, floor: c.floor || '', note: '', 
+                            type: 'cash', category: c.category || 'stairs',
                             createdAt: serverTimestamp()
                         });
                         count++;
@@ -609,13 +656,15 @@
             const floor = document.getElementById('inputFloor').value.trim();
             const amount = parseInt(document.getElementById('inputAmount').value);
             const type = document.getElementById('inputType').value;
+            const categoryElement = document.getElementById('inputServiceType');
+            const category = categoryElement ? categoryElement.value : 'stairs'; // Safely get value
             const collector = window.appState.currentCollector; 
             const note = document.getElementById('inputNote').value.trim();
 
             if (!address) { window.showToast("⚠️ 請輸入地址！"); document.getElementById('inputAddress').focus(); return null; }
             if (isNaN(amount)) { window.showToast("⚠️ 請輸入金額！"); document.getElementById('inputAmount').focus(); return null; }
 
-            return { date: dateInput, address, floor, amount, type, collector, note, createdAt: serverTimestamp() };
+            return { date: dateInput, address, floor, amount, type, category, collector, note, createdAt: serverTimestamp() };
         }
 
         function clearFormData() {
@@ -628,7 +677,7 @@
 
     <script>
         // --- UI Logic ---
-        window.appState = { records: [], customers: [], pending: [], currentCollector: '子晴', editingCustomerId: null };
+        window.appState = { records: [], customers: [], pending: [], currentCollector: '子晴', editingCustomerId: null, currentServiceCategory: 'stairs' };
 
         window.onload = function() {
             const today = new Date();
@@ -636,6 +685,11 @@
             document.getElementById('headerDate').innerText = `${today.getMonth() + 1}/${today.getDate()} (週${['日','一','二','三','四','五','六'][today.getDay()]})`;
             const savedSalary = localStorage.getItem('cleaning_app_salary');
             if(savedSalary) document.getElementById('mySalary').value = savedSalary;
+            
+            // Ensure elements exist before calling
+            if(document.getElementById('inputServiceType')) {
+                window.setServiceCategory('stairs');
+            }
             window.setCollector('子晴');
         };
 
@@ -671,6 +725,42 @@
             updateSummary();
         };
 
+        window.setServiceCategory = function(cat) {
+            window.appState.currentServiceCategory = cat;
+            const input = document.getElementById('inputServiceType');
+            if(input) input.value = cat;
+            
+            const btnStairs = document.getElementById('btn-cat-stairs');
+            const btnTank = document.getElementById('btn-cat-tank');
+            
+            if (btnStairs && btnTank) {
+                // Reset styles
+                btnStairs.className = 'service-btn p-3 rounded-xl bg-orange-50 text-orange-400 font-bold flex justify-center items-center gap-2 shadow-sm';
+                btnTank.className = 'service-btn p-3 rounded-xl bg-cyan-50 text-cyan-400 font-bold flex justify-center items-center gap-2 shadow-sm';
+                
+                // Set active
+                if(cat === 'stairs') {
+                    btnStairs.classList.add('active', 'text-orange-700', 'border-orange-200');
+                    btnStairs.classList.remove('text-orange-400');
+                } else {
+                    btnTank.classList.add('active', 'text-cyan-700', 'border-cyan-200');
+                    btnTank.classList.remove('text-cyan-400');
+                }
+            }
+        };
+
+        window.setEditCustCategory = function(cat) {
+            document.getElementById('editCustCategory').value = cat;
+            const s = document.getElementById('edit-cat-stairs');
+            const t = document.getElementById('edit-cat-tank');
+            
+            s.className = 'p-2 rounded border text-sm font-bold bg-gray-50 text-gray-400 border-gray-200';
+            t.className = 'p-2 rounded border text-sm font-bold bg-gray-50 text-gray-400 border-gray-200';
+            
+            if(cat === 'stairs') s.className = 'p-2 rounded border text-sm font-bold bg-orange-100 text-orange-800 border-orange-200';
+            else t.className = 'p-2 rounded border text-sm font-bold bg-cyan-100 text-cyan-800 border-cyan-200';
+        };
+
         window.renderPendingList = function() {
             const list = document.getElementById('pendingList');
             const container = document.getElementById('pendingContainer');
@@ -685,13 +775,17 @@
                 const floorId = `p-floor-${item.id}`;
                 const noteId = `p-note-${item.id}`;
                 const typeId = `p-type-${item.id}`;
+                const catIcon = item.category === 'tank' ? '<span class="text-cyan-600">💧</span>' : '<span class="text-orange-600">🪜</span>';
 
                 const div = document.createElement('div');
                 div.className = 'bg-white p-3 rounded-xl border border-gray-200 shadow-sm relative';
                 div.innerHTML = `
                     <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <div class="font-bold text-lg text-gray-800">${item.address}</div>
+                        <div class="flex items-center gap-2">
+                            <div class="text-xl">${catIcon}</div>
+                            <div>
+                                <div class="font-bold text-lg text-gray-800">${item.address}</div>
+                            </div>
                         </div>
                         <div class="font-bold text-emerald-600 text-lg">$${item.amount}</div>
                     </div>
@@ -702,7 +796,7 @@
                         </select>
                         <input id="${floorId}" value="${item.floor || ''}" placeholder="樓層" class="bg-gray-50 border rounded p-2 text-sm w-16 text-center font-medium">
                         <input id="${noteId}" value="${item.note || ''}" placeholder="備註..." class="bg-gray-50 border rounded p-2 text-sm flex-1">
-                        <button onclick="triggerComplete('${item.id}', ${item.amount}, '${item.address}')" class="bg-green-500 text-white w-10 h-10 rounded-full shadow flex items-center justify-center active:scale-90 transition-transform">
+                        <button onclick="triggerComplete('${item.id}', ${item.amount}, '${item.address}', '${item.category || 'stairs'}')" class="bg-green-500 text-white w-10 h-10 rounded-full shadow flex items-center justify-center active:scale-90 transition-transform">
                             <i class="fa-solid fa-check"></i>
                         </button>
                     </div>
@@ -712,11 +806,11 @@
             });
         };
 
-        window.triggerComplete = function(id, amount, address) {
+        window.triggerComplete = function(id, amount, address, category) {
             const floor = document.getElementById(`p-floor-${id}`).value;
             const note = document.getElementById(`p-note-${id}`).value;
             const type = document.getElementById(`p-type-${id}`).value;
-            window.completePending(id, amount, address, floor, note, type);
+            window.completePending(id, amount, address, floor, note, type, category);
         };
 
         window.renderRecords = function() {
@@ -740,6 +834,11 @@
                 let noteHtml = record.note ? `<div class="text-sm mt-2 p-2 rounded-lg border border-gray-100 bg-gray-50 text-gray-600 flex items-center gap-2"><i class="fa-regular fa-comment-dots"></i> <span>${record.note}</span></div>` : '';
                 const dateObj = new Date(record.date);
                 const displayDate = `${dateObj.getMonth()+1}/${dateObj.getDate()}`;
+                
+                // Service Tag
+                let sTag = '';
+                if(record.category === 'tank') sTag = `<span class="text-xs font-bold px-2 py-0.5 rounded-full tag-tank flex items-center gap-1">💧 洗水塔</span>`;
+                else sTag = `<span class="text-xs font-bold px-2 py-0.5 rounded-full tag-stairs flex items-center gap-1">🪜 洗樓梯</span>`;
 
                 const item = document.createElement('div');
                 item.className = 'card p-4 relative border-l-4 ' + (isCash ? 'border-gray-400' : 'border-gray-300');
@@ -748,6 +847,7 @@
                         <div class="flex-1 mr-2">
                             <div class="flex items-center gap-2 mb-1 flex-wrap">
                                 <span class="text-xs font-bold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">${displayDate}</span>
+                                ${sTag}
                                 <span class="text-xs font-bold px-2 py-0.5 rounded-full ${tagClass} flex items-center gap-1">
                                     ${isCash ? '<i class="fa-solid fa-coins text-[10px]"></i>' : '<i class="fa-solid fa-building-columns text-[10px]"></i>'} ${tagText}
                                 </span>
@@ -776,14 +876,14 @@
             customers.forEach(c => {
                 const div = document.createElement('div');
                 div.className = 'flex justify-between items-center p-3 bg-white rounded-lg border border-gray-100 mb-2 shadow-sm';
-                // Pass properties explicitly to avoid quoting issues
+                const catIcon = c.category === 'tank' ? '💧' : '🪜';
                 div.innerHTML = `
                     <div class="text-sm">
-                        <div class="font-bold text-gray-800">${c.address} <span class="text-gray-400 text-xs font-normal">${c.floor || '不固定'}</span></div>
+                        <div class="font-bold text-gray-800"><span class="mr-1">${catIcon}</span> ${c.address} <span class="text-gray-400 text-xs font-normal">${c.floor || '不固定'}</span></div>
                         <div class="text-emerald-600 font-bold">$${c.amount}</div>
                     </div>
                     <div class="flex">
-                        <button onclick="openEditCustomerModal('${c.id}', '${c.address}', ${c.amount}, '${c.floor || ''}')" class="text-gray-400 hover:text-blue-500 px-2 py-2"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="openEditCustomerModal('${c.id}', '${c.address}', ${c.amount}, '${c.floor || ''}', '${c.category || 'stairs'}')" class="text-gray-400 hover:text-blue-500 px-2 py-2"><i class="fa-solid fa-pen"></i></button>
                         <button onclick="deleteCustomer('${c.id}')" class="text-gray-300 hover:text-red-500 px-2 py-2"><i class="fa-solid fa-trash-can"></i></button>
                     </div>
                 `;
@@ -801,16 +901,18 @@
             filtered.forEach(c => {
                 const btn = document.createElement('button');
                 btn.className = 'list-btn w-full p-3 bg-gray-50 border border-gray-100 rounded-xl flex justify-between items-center text-left mb-2 active:bg-blue-50';
-                btn.onclick = () => selectCustomer(c.address, c.floor, c.amount);
-                btn.innerHTML = `<div><div class="font-bold text-gray-800 text-lg">${c.address} <span class="text-sm font-normal text-gray-500">${c.floor || ''}</span></div></div><div class="font-bold text-emerald-600">$${c.amount}</div>`;
+                btn.onclick = () => selectCustomer(c.address, c.floor, c.amount, c.category);
+                const catIcon = c.category === 'tank' ? '💧' : '🪜';
+                btn.innerHTML = `<div><div class="font-bold text-gray-800 text-lg"><span class="mr-1">${catIcon}</span>${c.address} <span class="text-sm font-normal text-gray-500">${c.floor || ''}</span></div></div><div class="font-bold text-emerald-600">$${c.amount}</div>`;
                 list.appendChild(btn);
             });
         };
 
-        window.selectCustomer = function(addr, floor, amount) {
+        window.selectCustomer = function(addr, floor, amount, category) {
             document.getElementById('inputAddress').value = addr;
             document.getElementById('inputFloor').value = floor || '';
             document.getElementById('inputAmount').value = amount || '';
+            if(category) window.setServiceCategory(category);
             closeCustomerSelect(null);
             showToast("已填入資料");
         };
@@ -819,6 +921,9 @@
             let totalCashAll = 0, totalTransferAll = 0;
             let totalCashMe = 0, totalTransferMe = 0;
             let breakdown = { '子晴': { cash: 0, transfer: 0 }, '子涵': { cash: 0, transfer: 0 }, '宗敬': { cash: 0, transfer: 0 }, '其他': { cash: 0, transfer: 0 } };
+            // Service Category Breakdown
+            let catStats = { 'stairs': 0, 'tank': 0 };
+            
             const current = window.appState.currentCollector;
 
             window.appState.records.forEach(r => {
@@ -835,6 +940,10 @@
                 if (col === current) {
                     if (r.type === 'cash') totalCashMe += r.amount; else totalTransferMe += r.amount;
                 }
+
+                // Sum Category
+                const cat = r.category === 'tank' ? 'tank' : 'stairs';
+                catStats[cat] += r.amount;
             });
             
             const grandTotalAll = totalCashAll + totalTransferAll;
@@ -847,6 +956,18 @@
             document.getElementById('settleCash').innerText = fmt(totalCashAll);
             document.getElementById('settleTransfer').innerText = fmt(totalTransferAll);
             document.getElementById('settleTotal').innerText = fmt(grandTotalAll);
+
+            // Render Service Stats
+            document.getElementById('categoryBreakdown').innerHTML = `
+                <div class="bg-white p-3 rounded-lg border border-orange-200 text-center">
+                    <div class="text-xs text-orange-600 font-bold mb-1">🪜 洗樓梯</div>
+                    <div class="text-xl font-bold text-gray-800">${fmt(catStats.stairs)}</div>
+                </div>
+                <div class="bg-white p-3 rounded-lg border border-cyan-200 text-center">
+                    <div class="text-xs text-cyan-600 font-bold mb-1">💧 洗水塔</div>
+                    <div class="text-xl font-bold text-gray-800">${fmt(catStats.tank)}</div>
+                </div>
+            `;
 
             const bdDiv = document.getElementById('collectorBreakdown');
             bdDiv.innerHTML = '';
@@ -913,15 +1034,17 @@
             document.getElementById('newCustAmt').value = ''; 
             document.getElementById('newCustFloor').value = '';
             document.getElementById('addCustomerModal').classList.remove('hidden'); 
+            window.setEditCustCategory('stairs'); // Default
             setTimeout(() => document.getElementById('newCustAddr').focus(), 100);
         };
         
-        window.openEditCustomerModal = function(id, addr, amt, floor) {
+        window.openEditCustomerModal = function(id, addr, amt, floor, cat) {
             window.appState.editingCustomerId = id;
             document.getElementById('customerModalTitle').innerHTML = '<i class="fa-solid fa-pen-to-square text-blue-600"></i> 編輯常用客戶';
             document.getElementById('newCustAddr').value = addr;
             document.getElementById('newCustAmt').value = amt;
             document.getElementById('newCustFloor').value = floor;
+            window.setEditCustCategory(cat || 'stairs');
             document.getElementById('addCustomerModal').classList.remove('hidden');
         };
 
