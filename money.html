@@ -128,6 +128,42 @@
         .service-btn.active i { animation: bounce 0.5s; }
         @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
 
+        /* Month Picker Grid */
+        .month-btn {
+            border: 2px solid #e5e7eb;
+            background: white;
+            color: #9ca3af;
+            padding: 10px 4px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.15s;
+            position: relative;
+        }
+        .month-btn.selected {
+            background: #3b82f6; /* Blue for current selection */
+            color: white;
+            border-color: #2563eb;
+            transform: scale(1.05);
+            box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
+            z-index: 10;
+        }
+        .month-btn.paid {
+            background: #d1fae5; /* Green for already paid */
+            color: #065f46;
+            border-color: #34d399;
+            cursor: not-allowed;
+        }
+        .month-btn.paid::after {
+            content: '✓ 已收';
+            position: absolute;
+            bottom: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 9px;
+            line-height: 1;
+        }
+
         #mainHeader { transition: background-color 0.3s ease; }
     </style>
 </head>
@@ -190,7 +226,7 @@
                 </button>
             </div>
 
-            <!-- ADD FORM / PENDING INPUT -->
+            <!-- ADD FORM -->
             <div class="card p-5 border-t-4 border-[#e6dbd0] transition-colors duration-300" id="entryCard">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-lg font-bold text-gray-800 flex items-center">
@@ -224,7 +260,8 @@
                     <div class="flex gap-3">
                         <div class="flex-1">
                             <label class="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">地址 / 客戶</label>
-                            <input type="text" id="inputAddress" placeholder="例如：中正路100號" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-lg focus:border-gray-400 outline-none transition-colors">
+                            <!-- On Input, trigger paid status check -->
+                            <input type="text" id="inputAddress" oninput="debounceCheckPaidStatus(this.value)" placeholder="例如：中正路100號" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-lg focus:border-gray-400 outline-none transition-colors">
                         </div>
                         <div class="w-24">
                             <label class="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">樓層/戶號</label>
@@ -232,32 +269,35 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">月份</label>
-                            <input type="text" id="inputMonths" placeholder="3-4月" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-lg text-center focus:border-gray-400 outline-none transition-colors">
+                    <!-- Month Picker Grid (Inline) -->
+                    <div class="bg-gray-50 p-3 rounded-xl border border-gray-200">
+                        <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider flex justify-between">
+                            <span><i class="fa-regular fa-calendar-check mr-1"></i> 收費月份 (114年)</span>
+                            <span class="text-xs text-blue-500 font-normal" id="statusHint">請選擇...</span>
+                        </label>
+                        <div class="grid grid-cols-4 gap-2" id="monthPickerGrid">
+                            <!-- JS Generated 1-12 -->
                         </div>
+                        <input type="hidden" id="selectedMonths" value="">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">金額</label>
                             <input type="number" id="inputAmount" placeholder="$" inputmode="decimal" pattern="[0-9]*" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-xl font-bold text-gray-700 focus:border-gray-400 outline-none transition-colors">
                         </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">方式</label>
+                            <select id="inputType" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-lg h-[54px] focus:border-gray-400 outline-none transition-colors">
+                                <option value="cash">💵 現金</option>
+                                <option value="transfer">🏦 匯款</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <!-- Type & Note -->
                     <div>
-                        <div class="grid grid-cols-2 gap-3 mb-2">
-                            <div>
-                                <label class="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">方式</label>
-                                <select id="inputType" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-lg h-[54px] focus:border-gray-400 outline-none transition-colors">
-                                    <option value="cash">💵 現金</option>
-                                    <option value="transfer">🏦 匯款</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">備註</label>
-                                <textarea id="inputNote" rows="1" placeholder="其他..." class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-gray-400 outline-none h-[54px] transition-colors"></textarea>
-                            </div>
-                        </div>
+                        <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">備註</label>
+                        <textarea id="inputNote" rows="1" placeholder="其他..." class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-gray-400 outline-none transition-colors"></textarea>
                     </div>
 
                     <div class="grid grid-cols-2 gap-2 mt-2">
@@ -416,6 +456,54 @@
         </div>
     </div>
 
+    <!-- CONFIRM COLLECTION MODAL (FOR PENDING) -->
+    <div id="confirmCollectionModal" class="modal-overlay hidden" onclick="closeConfirmCollectionModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h3 class="text-lg font-bold text-emerald-600"><i class="fa-solid fa-circle-check"></i> 確認收款日期</h3>
+                <button onclick="closeConfirmCollectionModal(null)" class="text-gray-400 p-2 bg-gray-100 rounded-full w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <div class="text-sm text-gray-500">項目</div>
+                    <div class="font-bold text-gray-800 text-lg" id="confirmModalAddress"></div>
+                    <!-- Editable Month in Modal -->
+                    <div class="mt-2">
+                        <label class="text-xs text-gray-400">收費月份</label>
+                        <input type="text" id="confirmModalMonths" class="w-full p-2 border rounded font-bold text-blue-600 bg-white">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1">收款日期 (預設為今天)</label>
+                    <input type="date" id="confirmModalDate" class="w-full p-3 bg-white border-2 border-emerald-100 rounded-xl text-lg font-bold text-gray-700 outline-none focus:border-emerald-400">
+                </div>
+
+                <div class="text-center">
+                    <span class="text-xs text-gray-400">金額</span>
+                    <div class="text-2xl font-bold text-emerald-600" id="confirmModalAmount"></div>
+                </div>
+
+                <button id="confirmCollectionBtn" class="w-full py-4 bg-emerald-500 text-white rounded-xl text-xl font-bold shadow-lg shadow-emerald-200 active:scale-95 transition-all">
+                    確認收款
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MONTH PICKER MODAL (FOR PENDING EDIT) -->
+    <div id="monthPickerModal" class="modal-overlay hidden" onclick="closeMonthPickerModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-gray-700">選擇月份 (114年)</h3>
+                <button onclick="closeMonthPickerModal(null)" class="text-gray-400"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <div class="grid grid-cols-4 gap-3 mb-4" id="modalMonthGrid"></div>
+            <button onclick="applyModalMonths()" class="w-full btn-primary py-3 rounded-xl font-bold">確定</button>
+        </div>
+    </div>
+
     <!-- ADD/EDIT CUSTOMER MODAL -->
     <div id="addCustomerModal" class="modal-overlay hidden" onclick="closeAddCustomerModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
@@ -523,6 +611,9 @@
                 window.appState.records = recs;
                 window.renderRecords();
                 window.updateSummary();
+                // Check paid status if current entry address exists
+                const addr = document.getElementById('inputAddress').value;
+                if(addr) window.checkPaidStatus(addr);
             });
 
             const qCust = query(customersRef, orderBy('createdAt', 'desc'));
@@ -563,11 +654,10 @@
             } catch (e) { console.error(e); window.showToast("❌ 加入失敗"); }
         };
 
-        window.completePending = async function(docId, amount, address, floor, months, note, type, category) {
+        window.completePending = async function(docId, data) {
             if(!currentUser) return;
             const record = {
-                date: document.getElementById('inputDate').value,
-                address, amount, floor, months, note, type, category,
+                ...data,
                 collector: window.appState.currentCollector,
                 createdAt: serverTimestamp()
             };
@@ -663,13 +753,13 @@
             const dateInput = document.getElementById('inputDate').value;
             const address = document.getElementById('inputAddress').value.trim();
             const floor = document.getElementById('inputFloor').value.trim();
-            const months = document.getElementById('inputMonths').value.trim();
             const amount = parseInt(document.getElementById('inputAmount').value);
             const type = document.getElementById('inputType').value;
             const categoryElement = document.getElementById('inputServiceType');
             const category = categoryElement ? categoryElement.value : 'stairs';
             const collector = window.appState.currentCollector; 
             const note = document.getElementById('inputNote').value.trim();
+            const months = document.getElementById('selectedMonths').value; // Get from hidden field
 
             if (!address) { window.showToast("⚠️ 請輸入地址！"); document.getElementById('inputAddress').focus(); return null; }
             if (isNaN(amount)) { window.showToast("⚠️ 請輸入金額！"); document.getElementById('inputAmount').focus(); return null; }
@@ -680,19 +770,20 @@
         function clearFormData() {
             document.getElementById('inputAddress').value = '';
             document.getElementById('inputFloor').value = '';
-            document.getElementById('inputMonths').value = '';
             document.getElementById('inputAmount').value = '';
             document.getElementById('inputNote').value = '';
+            window.resetMonthPicker();
         }
     </script>
 
     <script>
         // --- UI Logic ---
-        window.appState = { records: [], customers: [], pending: [], currentCollector: '子晴', editingCustomerId: null, currentServiceCategory: 'stairs' };
+        window.appState = { records: [], customers: [], pending: [], currentCollector: '子晴', editingCustomerId: null, currentServiceCategory: 'stairs', currentPendingAction: null, selectedMonthsSet: new Set(), currentBaseAmount: 0 };
 
         window.onload = function() {
             const today = new Date();
-            document.getElementById('inputDate').value = today.toISOString().split('T')[0];
+            const dateStr = today.toISOString().split('T')[0];
+            document.getElementById('inputDate').value = dateStr;
             document.getElementById('headerDate').innerText = `${today.getMonth() + 1}/${today.getDate()} (週${['日','一','二','三','四','五','六'][today.getDay()]})`;
             const savedSalary = localStorage.getItem('cleaning_app_salary');
             if(savedSalary) document.getElementById('mySalary').value = savedSalary;
@@ -701,7 +792,108 @@
                 window.setServiceCategory('stairs');
             }
             window.setCollector('子晴');
+            window.renderMonthPicker();
         };
+
+        // --- Month Picker Logic ---
+        window.renderMonthPicker = function() {
+            const container = document.getElementById('monthPickerGrid');
+            container.innerHTML = '';
+            for(let i=1; i<=12; i++) {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.id = `mbtn-${i}`;
+                btn.className = 'month-btn';
+                btn.innerText = `${i}月`;
+                btn.onclick = () => window.toggleMonth(i);
+                container.appendChild(btn);
+            }
+        };
+
+        window.toggleMonth = function(m) {
+            const btn = document.getElementById(`mbtn-${m}`);
+            if(btn.classList.contains('paid')) return; // Cannot toggle paid
+
+            if(window.appState.selectedMonthsSet.has(m)) {
+                window.appState.selectedMonthsSet.delete(m);
+                btn.classList.remove('selected');
+            } else {
+                window.appState.selectedMonthsSet.add(m);
+                btn.classList.add('selected');
+            }
+            window.updateSelectedMonthsInput();
+            
+            // Auto Update Amount
+            const count = window.appState.selectedMonthsSet.size;
+            if(window.appState.currentBaseAmount > 0 && count > 0) {
+                const total = window.appState.currentBaseAmount * count;
+                document.getElementById('inputAmount').value = total;
+            }
+        };
+
+        window.updateSelectedMonthsInput = function() {
+            const sorted = Array.from(window.appState.selectedMonthsSet).sort((a,b) => a-b);
+            const str = sorted.length > 0 ? `114年 ${sorted.join(',')}月` : '';
+            document.getElementById('selectedMonths').value = str;
+        };
+
+        window.resetMonthPicker = function() {
+            window.appState.selectedMonthsSet.clear();
+            document.querySelectorAll('.month-btn').forEach(b => {
+                b.classList.remove('selected', 'paid');
+            });
+            window.updateSelectedMonthsInput();
+            window.appState.currentBaseAmount = 0;
+        };
+
+        // Debounce for input check
+        let checkTimeout;
+        window.debounceCheckPaidStatus = function(address) {
+            clearTimeout(checkTimeout);
+            checkTimeout = setTimeout(() => {
+                window.checkPaidStatus(address);
+            }, 500);
+        };
+
+        window.checkPaidStatus = function(address) {
+            if(!address) return;
+            
+            // Reset Paid status
+            document.querySelectorAll('.month-btn').forEach(b => b.classList.remove('paid'));
+            
+            // 1. Check History for Paid Months
+            const records = window.appState.records.filter(r => r.address === address);
+            records.forEach(r => {
+                if(r.months && r.months.includes('114年')) {
+                    const parts = r.months.match(/114年\s*([0-9,]+)/);
+                    if(parts && parts[1]) {
+                        const paidMonths = parts[1].split(',').map(Number);
+                        paidMonths.forEach(m => {
+                            const btn = document.getElementById(`mbtn-${m}`);
+                            if(btn) btn.classList.add('paid');
+                            if(window.appState.selectedMonthsSet.has(m)) {
+                                window.appState.selectedMonthsSet.delete(m);
+                                if(btn) btn.classList.remove('selected');
+                            }
+                        });
+                    }
+                }
+            });
+            window.updateSelectedMonthsInput();
+
+            // 2. Check Customer List for Base Amount
+            const cust = window.appState.customers.find(c => c.address === address);
+            if(cust) {
+                window.appState.currentBaseAmount = cust.amount;
+                // If nothing selected, maybe set default? No, wait for user click.
+                if(cust.floor) document.getElementById('inputFloor').value = cust.floor;
+                if(cust.category) window.setServiceCategory(cust.category);
+            } else {
+                window.appState.currentBaseAmount = 0;
+            }
+        };
+
+        // --- Other UI Logic ---
 
         window.setCollector = function(name) {
             window.appState.currentCollector = name;
@@ -805,7 +997,8 @@
                     </div>
                     <div class="space-y-2">
                         <div class="flex gap-2">
-                            <input id="${monthsId}" value="${item.months || ''}" placeholder="月份" class="bg-gray-50 border rounded p-2 text-sm w-1/2 text-center text-blue-600 font-bold">
+                            <!-- Clickable Month Input -->
+                            <input id="${monthsId}" value="${item.months || ''}" readonly onclick="openPendingMonthPicker('${item.id}', '${item.months||''}')" placeholder="選擇月份" class="bg-blue-50 border border-blue-200 rounded p-2 text-sm w-1/2 text-center text-blue-700 font-bold cursor-pointer">
                             <input id="${floorId}" value="${item.floor || ''}" placeholder="樓層/戶號" class="bg-gray-50 border rounded p-2 text-sm w-1/2 text-center font-medium">
                         </div>
                         <div class="flex gap-2 items-center">
@@ -814,7 +1007,7 @@
                                 <option value="transfer" ${item.type === 'transfer' ? 'selected' : ''}>匯款</option>
                             </select>
                             <input id="${noteId}" value="${item.note || ''}" placeholder="備註..." class="bg-gray-50 border rounded p-2 text-sm flex-1">
-                            <button onclick="triggerComplete('${item.id}', ${item.amount}, '${item.address}', '${item.category || 'stairs'}')" class="bg-green-500 text-white w-10 h-10 rounded-full shadow flex items-center justify-center active:scale-90 transition-transform flex-shrink-0">
+                            <button onclick="openConfirmCollectionModal('${item.id}', ${item.amount}, '${item.address}', '${item.category || 'stairs'}')" class="bg-green-500 text-white w-10 h-10 rounded-full shadow flex items-center justify-center active:scale-90 transition-transform flex-shrink-0">
                                 <i class="fa-solid fa-check"></i>
                             </button>
                         </div>
@@ -825,14 +1018,142 @@
             });
         };
 
-        window.triggerComplete = function(id, amount, address, category) {
+        // --- PENDING MONTH PICKER ---
+        window.openPendingMonthPicker = function(itemId, currentStr) {
+            window.appState.pendingMonthTargetId = itemId;
+            // Parse current string to select buttons
+            const grid = document.getElementById('modalMonthGrid');
+            grid.innerHTML = '';
+            
+            let selected = new Set();
+            if(currentStr && currentStr.includes('114年')) {
+                const parts = currentStr.match(/114年\s*([0-9,]+)/);
+                if(parts && parts[1]) selected = new Set(parts[1].split(',').map(Number));
+            }
+
+            for(let i=1; i<=12; i++) {
+                const btn = document.createElement('button');
+                btn.className = `month-btn ${selected.has(i) ? 'selected' : ''} p-2 rounded text-center`;
+                btn.innerText = `${i}月`;
+                btn.onclick = function() {
+                    this.classList.toggle('selected');
+                };
+                grid.appendChild(btn);
+            }
+            document.getElementById('monthPickerModal').classList.remove('hidden');
+        };
+
+        window.closeMonthPickerModal = function(e) {
+            if(e && e.target !== e.currentTarget) return;
+            document.getElementById('monthPickerModal').classList.add('hidden');
+        };
+
+        window.applyModalMonths = function() {
+            const btns = document.querySelectorAll('#modalMonthGrid .selected');
+            const months = Array.from(btns).map(b => parseInt(b.innerText)).sort((a,b)=>a-b);
+            const str = months.length > 0 ? `114年 ${months.join(',')}月` : '';
+            
+            const targetId = window.appState.pendingMonthTargetId;
+            if(targetId) {
+                document.getElementById(`p-months-${targetId}`).value = str;
+            }
+            closeMonthPickerModal(null);
+        };
+
+        // --- NEW MODAL LOGIC ---
+        window.openConfirmCollectionModal = function(id, amount, address, category) {
+            // Get current values from the inputs
             const floor = document.getElementById(`p-floor-${id}`).value;
             const months = document.getElementById(`p-months-${id}`).value;
             const note = document.getElementById(`p-note-${id}`).value;
             const type = document.getElementById(`p-type-${id}`).value;
-            window.completePending(id, amount, address, floor, months, note, type, category);
+
+            // Store in state
+            window.appState.currentPendingAction = {
+                id, amount, address, category, floor, months, note, type
+            };
+
+            // Populate Modal
+            document.getElementById('confirmModalAddress').innerText = address;
+            document.getElementById('confirmModalMonths').value = months; // Editable in confirm modal too
+            document.getElementById('confirmModalAmount').innerText = `$${amount}`;
+            
+            // Set Date to Today or Global Input Date
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('confirmModalDate').value = today;
+
+            document.getElementById('confirmCollectionModal').classList.remove('hidden');
+            
+            document.getElementById('confirmCollectionBtn').onclick = doConfirmCollection;
         };
 
+        window.closeConfirmCollectionModal = function(e) {
+            if(e && e.target !== e.currentTarget) return;
+            document.getElementById('confirmCollectionModal').classList.add('hidden');
+        };
+
+        window.doConfirmCollection = function() {
+            const action = window.appState.currentPendingAction;
+            if(!action) return;
+
+            const date = document.getElementById('confirmModalDate').value;
+            const months = document.getElementById('confirmModalMonths').value; // Get potentially edited month
+            if(!date) { alert("請選擇日期"); return; }
+
+            // Call main logic
+            window.completePending(action.id, {
+                date: date,
+                amount: action.amount,
+                address: action.address,
+                floor: action.floor,
+                months: months,
+                note: action.note,
+                type: action.type,
+                category: action.category
+            });
+
+            closeConfirmCollectionModal(null);
+        };
+
+        // --- History Logic ---
+        window.openHistory = function(address) {
+            const list = document.getElementById('historyList');
+            const title = document.getElementById('historyTitle');
+            title.innerText = address;
+            list.innerHTML = '';
+            
+            const history = window.appState.records.filter(r => r.address === address);
+            
+            if(history.length === 0) {
+                list.innerHTML = '<div class="text-center text-gray-400 py-10">尚無此地址的紀錄</div>';
+            } else {
+                history.forEach(h => {
+                    const d = new Date(h.date);
+                    const dateStr = `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
+                    const row = document.createElement('div');
+                    row.className = 'p-3 border-b border-gray-100 flex justify-between items-center';
+                    row.innerHTML = `
+                        <div>
+                            <div class="text-sm font-bold text-gray-800">${dateStr} <span class="text-xs text-gray-500">(${h.collector})</span></div>
+                            <div class="text-xs text-blue-500">${h.months || '未填月份'}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-bold text-emerald-600">$${h.amount}</div>
+                            <div class="text-xs text-gray-400">${h.type === 'cash' ? '現金' : '匯款'}</div>
+                        </div>
+                    `;
+                    list.appendChild(row);
+                });
+            }
+            document.getElementById('historyModal').classList.remove('hidden');
+        };
+
+        window.closeHistory = function(e) {
+            if(e && e.target !== e.currentTarget) return;
+            document.getElementById('historyModal').classList.add('hidden');
+        };
+
+        // --- Records & Selects ---
         window.renderRecords = function() {
             const list = document.getElementById('recordList');
             const records = window.appState.records.filter(r => {
@@ -964,46 +1285,9 @@
             document.getElementById('inputFloor').value = floor || '';
             document.getElementById('inputAmount').value = amount || '';
             if(category) window.setServiceCategory(category);
+            window.checkPaidStatus(addr); // Trigger month checker
             closeCustomerSelect(null);
             showToast("已填入資料");
-        };
-
-        // --- History Logic ---
-        window.openHistory = function(address) {
-            const list = document.getElementById('historyList');
-            const title = document.getElementById('historyTitle');
-            title.innerText = address;
-            list.innerHTML = '';
-            
-            const history = window.appState.records.filter(r => r.address === address);
-            
-            if(history.length === 0) {
-                list.innerHTML = '<div class="text-center text-gray-400 py-10">尚無此地址的紀錄</div>';
-            } else {
-                history.forEach(h => {
-                    const d = new Date(h.date);
-                    const dateStr = `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
-                    const row = document.createElement('div');
-                    row.className = 'p-3 border-b border-gray-100 flex justify-between items-center';
-                    row.innerHTML = `
-                        <div>
-                            <div class="text-sm font-bold text-gray-800">${dateStr} <span class="text-xs text-gray-500">(${h.collector})</span></div>
-                            <div class="text-xs text-blue-500">${h.months || '未填月份'}</div>
-                        </div>
-                        <div class="text-right">
-                            <div class="font-bold text-emerald-600">$${h.amount}</div>
-                            <div class="text-xs text-gray-400">${h.type === 'cash' ? '現金' : '匯款'}</div>
-                        </div>
-                    `;
-                    list.appendChild(row);
-                });
-            }
-            document.getElementById('historyModal').classList.remove('hidden');
-        };
-
-        window.closeHistory = function(e) {
-            if(e && e.target !== e.currentTarget) return;
-            document.getElementById('historyModal').classList.add('hidden');
         };
 
         window.updateSummary = function() {
