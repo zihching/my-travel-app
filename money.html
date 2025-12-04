@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#10b981">
+    <title>清潔收費小幫手</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* iOS Safe Area Support */
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+        .pt-safe { padding-top: env(safe-area-inset-top); }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f3f4f6;
+            padding-bottom: calc(80px + env(safe-area-inset-bottom));
+            -webkit-tap-highlight-color: transparent;
+            overscroll-behavior-y: none;
+        }
+        
+        .no-select { user-select: none; -webkit-user-select: none; }
+        input, textarea { user-select: text; -webkit-user-select: text; font-size: 16px !important; }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background-color: #10b981;
+            color: white;
+            transition: transform 0.1s;
+        }
+        .btn-primary:active { background-color: #059669; transform: scale(0.98); }
+        
+        .tag-cash { background-color: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+        .tag-transfer { background-color: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+
+        /* Person Tags */
+        .tag-zih-cing { background-color: #f5ebe0; color: #795548; border: 1px solid #e6dbd0; } 
+        .tag-zih-han { background-color: #ffe4e6; color: #be185d; border: 1px solid #fda4af; } 
+        .tag-zong-jing { background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; } 
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.85);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            z-index: 3000;
+            display: none;
+            font-size: 16px;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            width: max-content;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        .badge-scroll::-webkit-scrollbar { display: none; }
+        .badge-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            backdrop-filter: blur(2px);
+            display: flex;
+            align-items: flex-end;
+        }
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-height: 85vh;
+            border-radius: 20px 20px 0 0;
+            padding: 20px;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease-out;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+        }
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        @media(min-width: 640px) {
+            .modal-overlay { align-items: center; justify-content: center; }
+            .modal-content { width: 90%; max-width: 500px; border-radius: 20px; }
+        }
+        
+        .list-btn:active {
+            background-color: #eff6ff;
+            transform: scale(0.99);
+        }
+        
+        #loading-overlay {
+            position: fixed; inset: 0; background: rgba(255,255,255,0.8);
+            z-index: 4000; display: flex; justify-content: center; align-items: center;
+            backdrop-filter: blur(4px); transition: opacity 0.3s;
+        }
+
+        /* Tabs Styles */
+        .collector-tab { transition: all 0.2s ease; }
+        .collector-tab.active-zih-cing { background-color: #c2a992; color: white; box-shadow: 0 2px 5px rgba(194, 169, 146, 0.4); }
+        .collector-tab.active-zih-han { background-color: #ff99ac; color: white; box-shadow: 0 2px 5px rgba(255, 153, 172, 0.4); }
+        .collector-tab.active-zong-jing { background-color: #38bdf8; color: white; box-shadow: 0 2px 5px rgba(56, 189, 248, 0.4); }
+        
+        #mainHeader { transition: background-color 0.3s ease; }
+    </style>
+</head>
+<body class="no-select">
+
+    <div id="loading-overlay">
+        <div class="text-emerald-600 font-bold flex flex-col items-center">
+            <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-2"></i>
+            <span>連線同步中...</span>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">操作成功</div>
+
+    <!-- Header -->
+    <div id="mainHeader" class="bg-[#c2a992] text-white pt-safe sticky top-0 z-50 shadow-lg transition-colors duration-300">
+        <div class="px-4 pb-4 pt-2">
+            <div class="flex justify-between items-center mb-3">
+                <h1 class="text-xl font-bold flex items-center gap-2 text-white drop-shadow-sm">
+                    <span id="headerTitleIcon"><i class="fa-solid fa-mug-hot"></i></span> 
+                    <span id="headerTitleText">收費小幫手</span>
+                </h1>
+                <div class="text-xs font-medium bg-white/20 px-2 py-1 rounded backdrop-blur-sm shadow-sm">
+                    <span id="headerDate"></span>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3 text-center">
+                <div class="bg-white/10 backdrop-blur-sm rounded-xl p-2 border border-white/20 shadow-sm">
+                    <div class="text-xs text-white mb-1 font-medium opacity-90">個人手頭現金</div>
+                    <div class="text-xl font-bold tracking-wide drop-shadow-sm" id="headerCashTotal">$0</div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-sm rounded-xl p-2 border border-white/20 shadow-sm">
+                    <div class="text-xs text-white mb-1 font-medium opacity-90">個人銀行匯款</div>
+                    <div class="text-xl font-bold tracking-wide drop-shadow-sm" id="headerTransferTotal">$0</div>
+                </div>
+            </div>
+             <div class="mt-2 text-center text-white/90 font-medium">
+                <span class="text-xs opacity-90">個人今日總計: </span>
+                <span id="headerGrandTotal" class="font-bold text-sm drop-shadow-sm">$0</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-4 max-w-md">
+
+        <!-- VIEW: ENTRY FORM -->
+        <div id="view-entry">
+
+            <!-- COLLECTOR TABS -->
+            <div class="flex p-1 bg-gray-100 rounded-xl mb-4 shadow-inner border border-gray-200">
+                <button onclick="setCollector('子晴')" id="tab-zih-cing" class="collector-tab flex-1 py-3 rounded-lg text-sm font-bold text-gray-400 flex items-center justify-center gap-1">
+                    🎠 子晴
+                </button>
+                <button onclick="setCollector('子涵')" id="tab-zih-han" class="collector-tab flex-1 py-3 rounded-lg text-sm font-bold text-gray-400 flex items-center justify-center gap-1">
+                    🌸 子涵
+                </button>
+                <button onclick="setCollector('宗敬')" id="tab-zong-jing" class="collector-tab flex-1 py-3 rounded-lg text-sm font-bold text-gray-400 flex items-center justify-center gap-1">
+                    ☁️ 宗敬
+                </button>
+            </div>
+
+            <!-- ADD FORM / PENDING INPUT -->
+            <div class="card p-5 border-t-4 border-[#e6dbd0] transition-colors duration-300" id="entryCard">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-gray-800 flex items-center">
+                        <i class="fa-solid fa-pen-circle mr-2 opacity-80"></i> 新增
+                    </h2>
+                    <!-- QUICK SELECT BUTTON -->
+                    <button onclick="openCustomerSelect()" class="bg-gray-600 text-white text-sm px-4 py-2 rounded-lg shadow active:scale-95 flex items-center transition-all" id="quickSelectBtn">
+                        <i class="fa-solid fa-folder-open mr-2"></i> 快速選客戶
+                    </button>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="hidden">
+                        <input type="date" id="inputDate">
+                    </div>
+
+                    <div class="flex gap-3">
+                        <div class="flex-1">
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">地址 / 客戶</label>
+                            <input type="text" id="inputAddress" placeholder="例如：中正路100號" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-lg focus:border-gray-400 outline-none transition-colors">
+                        </div>
+                        <div class="w-20">
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">樓層</label>
+                            <input type="text" id="inputFloor" placeholder="5F" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-lg text-center focus:border-gray-400 outline-none transition-colors">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">金額</label>
+                            <input type="number" id="inputAmount" placeholder="$" inputmode="decimal" pattern="[0-9]*" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-xl font-bold text-gray-700 focus:border-gray-400 outline-none transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">方式</label>
+                            <select id="inputType" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-lg h-[54px] focus:border-gray-400 outline-none transition-colors">
+                                <option value="cash">💵 現金</option>
+                                <option value="transfer">🏦 匯款</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">備註</label>
+                        <textarea id="inputNote" rows="1" placeholder="其他備註..." class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-gray-400 outline-none transition-colors"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 mt-2">
+                        <button onclick="addToPending()" class="w-full py-4 rounded-xl text-lg font-bold bg-gray-200 text-gray-600 shadow active:scale-95 transition-all flex justify-center items-center">
+                            <i class="fa-solid fa-list-check mr-2"></i> 加入清單
+                        </button>
+                        <button onclick="addRecord()" class="w-full btn-primary py-4 rounded-xl text-lg font-bold shadow-lg shadow-gray-300 flex justify-center items-center gap-2 transition-all active:scale-95" id="addBtn">
+                            <i class="fa-solid fa-check mr-2"></i> 直接收款
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PENDING LIST -->
+            <div id="pendingContainer" class="hidden mb-6">
+                <div class="flex justify-between items-end mb-3 px-1 mt-6">
+                    <h3 class="font-bold text-gray-700 uppercase text-sm tracking-wider flex items-center gap-1">
+                        <i class="fa-solid fa-clipboard-list text-blue-500"></i> 待收清單 (路線)
+                    </h3>
+                    <span class="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full" id="pendingCount">0</span>
+                </div>
+                <div id="pendingList" class="space-y-2">
+                    <!-- Pending Items injected here -->
+                </div>
+            </div>
+
+            <!-- RECENT HISTORY -->
+            <div class="flex justify-between items-end mt-8 mb-3 px-1">
+                <h3 class="font-bold text-gray-500 uppercase text-sm tracking-wider flex items-center gap-1">
+                    <span id="listTitleIcon">🎠</span> <span id="listTitleName">子晴</span> 的最近紀錄
+                </h3>
+                <span class="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded-full" id="recordCount">0</span>
+            </div>
+
+            <div id="recordList" class="space-y-3 pb-24">
+                <!-- Records injected here -->
+            </div>
+        </div>
+
+        <!-- VIEW: SETTLEMENT -->
+        <div id="view-settle" class="hidden">
+            <div class="card p-6 bg-white border border-blue-100 shadow-xl">
+                <h2 class="text-xl font-bold text-blue-800 mb-6 flex items-center border-b border-blue-100 pb-3">
+                    <i class="fa-solid fa-money-bill-transfer mr-2"></i> 薪水結算
+                </h2>
+                
+                <div class="space-y-6">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gray-50 p-3 rounded-xl border border-gray-100 text-center">
+                             <div class="text-xs text-gray-500 mb-1">總現金 (所有人)</div>
+                             <div class="font-bold text-gray-800 text-lg" id="settleCash">$0</div>
+                        </div>
+                        <div class="bg-blue-50 p-3 rounded-xl border border-blue-100 text-center">
+                             <div class="text-xs text-blue-600 mb-1">總匯款 (所有人)</div>
+                             <div class="font-bold text-blue-700 text-lg" id="settleTransfer">$0</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                        <h3 class="text-sm font-bold text-indigo-800 mb-3"><i class="fa-solid fa-users-viewfinder mr-1"></i> 分類統計 (對帳用)</h3>
+                        <div id="collectorBreakdown" class="space-y-2"></div>
+                    </div>
+
+                    <div class="flex justify-between items-center px-2">
+                        <span class="font-bold text-gray-600">當日總收入</span>
+                        <span class="font-bold text-2xl text-emerald-600" id="settleTotal">$0</span>
+                    </div>
+                    <hr class="border-gray-100">
+                    <div class="bg-yellow-50 p-4 rounded-xl border border-yellow-200 shadow-sm">
+                        <label class="block text-sm font-bold text-yellow-800 mb-2">
+                            <i class="fa-solid fa-user-tag mr-1"></i> 我的薪水
+                        </label>
+                        <div class="flex items-center bg-white rounded-lg px-3 border border-yellow-200">
+                            <span class="text-xl mr-2 text-gray-400">$</span>
+                            <input type="number" id="mySalary" value="0" inputmode="decimal" pattern="[0-9]*" oninput="calculateSettlement()" class="w-full py-3 text-2xl font-bold text-gray-800 text-right outline-none">
+                        </div>
+                    </div>
+                    <div class="bg-gradient-to-br from-emerald-500 to-teal-600 p-5 rounded-xl text-center shadow-lg text-white transform scale-105">
+                        <div class="text-sm text-emerald-100 mb-1 font-medium">最後給爸爸的錢</div>
+                        <div class="text-4xl font-bold tracking-tight" id="finalToDad">$0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: SETTINGS & CUSTOMERS -->
+        <div id="view-settings" class="hidden">
+             <div class="card p-5 border-l-4 border-blue-500 mb-4">
+                <h2 class="text-lg font-bold text-gray-800 mb-3 flex items-center">
+                    <i class="fa-solid fa-address-book text-blue-500 mr-2"></i> 常用客戶 / 路線管理
+                </h2>
+                <p class="text-xs text-gray-500 mb-4">建立後，記帳時可直接選擇，不用打字。</p>
+                
+                <div class="grid grid-cols-2 gap-2 mb-3">
+                    <button onclick="openAddCustomerModal()" class="py-2.5 bg-blue-600 text-white rounded-lg text-sm font-bold shadow active:bg-blue-700">
+                        <i class="fa-solid fa-plus mr-1"></i> 新增常用客戶
+                    </button>
+                    <button onclick="importFavoritesToPending()" class="py-2.5 bg-emerald-500 text-white rounded-lg text-sm font-bold shadow active:bg-emerald-600">
+                        <i class="fa-solid fa-route mr-1"></i> 匯入今日路線
+                    </button>
+                </div>
+                
+                <div id="customerListSettings" class="space-y-2 max-h-60 overflow-y-auto pr-1 bg-gray-50 p-2 rounded-xl"></div>
+             </div>
+
+             <div class="card p-5">
+                <h2 class="text-lg font-bold text-gray-700 mb-4">資料備份與工具</h2>
+                <div class="space-y-3">
+                    <div class="p-4 bg-emerald-50 border border-emerald-100 rounded-xl text-emerald-800 text-sm">
+                        <i class="fa-solid fa-check-circle mr-2"></i> 您的資料已安全儲存於雲端資料庫。
+                        <div class="text-xs text-emerald-600 mt-1 opacity-75">ID: <span id="userIdDisplay">...</span></div>
+                    </div>
+                    <button onclick="exportData()" class="w-full p-4 bg-white border border-gray-200 rounded-xl text-left active:bg-gray-50 flex justify-between items-center shadow-sm">
+                        <span class="font-medium text-gray-700"><i class="fa-solid fa-download mr-3 text-blue-500 w-5"></i> 下載備份 (JSON)</span>
+                        <i class="fa-solid fa-chevron-right text-gray-300"></i>
+                    </button>
+                    <div class="pt-6">
+                         <div class="text-center text-xs text-gray-400">如需重置資料，請聯繫管理員</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- CUSTOMER SELECT MODAL -->
+    <div id="customerModal" class="modal-overlay hidden" onclick="closeCustomerSelect(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h3 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-users text-blue-500"></i> 選擇客戶</h3>
+                <button onclick="closeCustomerSelect(null)" class="text-gray-400 p-2 bg-gray-100 rounded-full w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <input type="text" id="customerSearch" onkeyup="renderCustomerSelect()" placeholder="搜尋地址..." class="w-full p-3 bg-gray-50 border rounded-xl mb-3 outline-none focus:border-blue-400">
+            <div id="customerSelectList" class="space-y-2 pb-4 max-h-[50vh] overflow-y-auto"></div>
+        </div>
+    </div>
+
+    <!-- ADD CUSTOMER MODAL (NEW) -->
+    <div id="addCustomerModal" class="modal-overlay hidden" onclick="closeAddCustomerModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h3 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-user-plus text-green-600"></i> 新增常用客戶</h3>
+                <button onclick="closeAddCustomerModal(null)" class="text-gray-400 p-2 bg-gray-100 rounded-full w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1">地址 / 名稱 (必填)</label>
+                    <input type="text" id="newCustAddr" placeholder="例如：錦州街" class="w-full p-3 bg-gray-50 border rounded-xl outline-none focus:border-green-500 text-lg">
+                </div>
+                <div class="flex gap-2">
+                    <div class="flex-1">
+                        <label class="block text-xs font-bold text-gray-500 mb-1">金額 (必填)</label>
+                        <input type="number" id="newCustAmt" placeholder="16000" inputmode="decimal" class="w-full p-3 bg-gray-50 border rounded-xl outline-none focus:border-green-500 font-bold text-emerald-600 text-lg">
+                    </div>
+                    <div class="w-24">
+                        <label class="block text-xs font-bold text-gray-500 mb-1">樓層</label>
+                        <input type="text" id="newCustFloor" placeholder="1-4F" class="w-full p-3 bg-gray-50 border rounded-xl outline-none focus:border-green-500 text-center text-lg">
+                    </div>
+                </div>
+                <button onclick="saveNewCustomer()" class="w-full py-3 bg-green-600 text-white rounded-xl font-bold mt-2 shadow text-lg">儲存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-md border-t border-gray-200 flex justify-around pb-safe pt-2 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+        <button onclick="toggleView('entry')" class="flex flex-col items-center w-1/3 py-2 text-emerald-600 transition-colors" id="nav-entry">
+            <div class="text-xl mb-1 relative"><i class="fa-solid fa-pen-to-square"></i></div>
+            <span class="text-[10px] font-bold">記帳</span>
+        </button>
+        <button onclick="toggleView('settle')" class="flex flex-col items-center w-1/3 py-2 text-gray-400 transition-colors" id="nav-settle">
+            <div class="text-xl mb-1"><i class="fa-solid fa-calculator"></i></div>
+            <span class="text-[10px] font-medium">結算</span>
+        </button>
+        <button onclick="toggleView('settings')" class="flex flex-col items-center w-1/3 py-2 text-gray-400 transition-colors" id="nav-settings">
+            <div class="text-xl mb-1"><i class="fa-solid fa-gear"></i></div>
+            <span class="text-[10px] font-medium">設定</span>
+        </button>
+    </div>
+
+    <!-- Firebase SDKs and Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, collection, doc, addDoc, deleteDoc, 
+            onSnapshot, query, orderBy, enableIndexedDbPersistence, serverTimestamp 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- 1. Firebase Configuration (已填入您的Key) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDFUGYOobmVxYFQMBYz1iQ4z1HIrdbTi8Q",
+            authDomain: "travel-55c4b.firebaseapp.com",
+            databaseURL: "https://travel-55c4b-default-rtdb.firebaseio.com",
+            projectId: "travel-55c4b",
+            storageBucket: "travel-55c4b.firebasestorage.app",
+            messagingSenderId: "925227625640",
+            appId: "1:925227625640:web:3dc6a2e45735ceb7f8a69d",
+            measurementId: "G-6W8NY3EBZF"
+        };
+
+        // --- 2. Initialize ---
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const APP_ID = 'cleaning-app-v1'; // Logic container ID
+        let currentUser = null;
+
+        // Offline Persistence (Optional but good for mobile)
+        enableIndexedDbPersistence(db).catch((err) => {
+            if (err.code == 'failed-precondition') {
+                console.log("Persistence failed: Multiple tabs open.");
+            } else if (err.code == 'unimplemented') {
+                console.log("Persistence not supported.");
+            }
+        });
+
+        // --- 3. Authentication Flow ---
+        const initAuth = async () => {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                try {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } catch (e) {
+                    console.error("Custom token auth failed", e);
+                    await signInAnonymously(auth);
+                }
+            } else {
+                await signInAnonymously(auth);
+            }
+        };
+        initAuth();
+
+        onAuthStateChanged(auth, (user) => {
+            const loader = document.getElementById('loading-overlay');
+            if (user) {
+                currentUser = user;
+                // Show User ID (last 4 chars)
+                const uidDisp = document.getElementById('userIdDisplay');
+                if(uidDisp) uidDisp.innerText = `...${user.uid.slice(-4)}`;
+                
+                // Start Listening to Data
+                setupListeners(user.uid);
+                
+                // Hide loader
+                if(loader) loader.style.display = 'none';
+            } else {
+                // If signed out, re-signin is handled by initAuth usually, but just in case
+                // we leave the loader or show error.
+            }
+        });
+
+        // --- 4. Firestore Listeners ---
+        function setupListeners(userId) {
+            // Path: artifacts/{appId}/users/{userId}/records
+            const recordsRef = collection(db, 'artifacts', APP_ID, 'users', userId, 'records');
+            const customersRef = collection(db, 'artifacts', APP_ID, 'users', userId, 'customers');
+            const pendingRef = collection(db, 'artifacts', APP_ID, 'users', userId, 'pending');
+
+            // 4.1 Records Listener
+            // Note: Removed compound orderBy to avoid index errors. Sort client-side.
+            const qRec = query(recordsRef, orderBy('date', 'desc')); 
+            
+            onSnapshot(qRec, (snapshot) => {
+                let recs = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                // Client-side sort for secondary ordering (Newest created first for same day)
+                recs.sort((a, b) => {
+                    if (a.date > b.date) return -1;
+                    if (a.date < b.date) return 1;
+                    // Tie-breaker: Created At Descending
+                    const tA = a.createdAt?.seconds || 0;
+                    const tB = b.createdAt?.seconds || 0;
+                    return tB - tA; 
+                });
+
+                window.appState.records = recs;
+                window.renderRecords();
+                window.updateSummary();
+            }, (error) => {
+                console.error("Data listen error:", error);
+                window.showToast("資料同步異常");
+            });
+
+            // 4.2 Customers Listener
+            const qCust = query(customersRef, orderBy('createdAt', 'desc'));
+            onSnapshot(qCust, (snapshot) => {
+                window.appState.customers = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                window.renderCustomerSettings();
+                // If customer select modal is open, refresh it
+                if(!document.getElementById('customerModal').classList.contains('hidden')) {
+                    window.renderCustomerSelect();
+                }
+            });
+
+            // 4.3 Pending Listener
+            const qPending = query(pendingRef, orderBy('createdAt', 'desc'));
+            onSnapshot(qPending, (snapshot) => {
+                window.appState.pending = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                window.renderPendingList();
+            });
+        }
+
+        // --- 5. Expose Functions to Window (for HTML onclick) ---
+        
+        // Add Record
+        window.addRecord = async function() {
+            if(!currentUser) { window.showToast("尚未連線"); return; }
+            
+            const newRecord = getFormData();
+            if (!newRecord) return;
+
+            try {
+                // Add to Cloud
+                await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'records'), newRecord);
+                
+                // Clear UI
+                clearFormData();
+                window.showToast("✅ 已收款");
+            } catch (e) {
+                console.error(e);
+                window.showToast("❌ 儲存失敗");
+            }
+        };
+
+        // Add to Pending
+        window.addToPending = async function() {
+            if(!currentUser) { window.showToast("尚未連線"); return; }
+            
+            const newItem = getFormData();
+            if (!newItem) return;
+
+            try {
+                await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'pending'), newItem);
+                clearFormData();
+                window.showToast("📋 已加入清單");
+            } catch (e) {
+                console.error(e);
+                window.showToast("❌ 加入失敗");
+            }
+        };
+
+        // Complete Pending Item
+        window.completePending = async function(docId, amount, address, floor, note, type) {
+            if(!currentUser) return;
+            
+            // Construct the final record
+            const record = {
+                date: document.getElementById('inputDate').value, // Use current selected date
+                address, amount, floor, note, type,
+                collector: window.appState.currentCollector,
+                createdAt: serverTimestamp()
+            };
+            
+            try {
+                // 1. Add Record
+                await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'records'), record);
+                // 2. Remove from Pending
+                await deleteDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'pending', docId));
+                
+                window.showToast("✅ 完成收款");
+            } catch(e) {
+                console.error(e);
+                window.showToast("操作失敗");
+            }
+        };
+
+        // Delete Record
+        window.deleteRecord = async function(docId) {
+            if(!currentUser) return;
+            if(confirm("確定刪除此紀錄？")) {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'records', docId));
+                    window.showToast("🗑️ 已刪除");
+                } catch(e) {
+                    window.showToast("刪除失敗");
+                }
+            }
+        };
+
+        // Delete Pending Item
+        window.deletePending = async function(docId) {
+            if(!currentUser) return;
+            if(confirm("從清單移除？")) {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'pending', docId));
+                } catch(e) {
+                    window.showToast("刪除失敗");
+                }
+            }
+        };
+
+        // Save New Customer
+        window.saveNewCustomer = async function() {
+            if(!currentUser) return;
+            const addr = document.getElementById('newCustAddr').value.trim();
+            const amt = parseInt(document.getElementById('newCustAmt').value);
+            const floor = document.getElementById('newCustFloor').value.trim();
+
+            if(!addr || isNaN(amt)) { alert("請填寫地址和金額"); return; }
+
+            try {
+                await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'customers'), {
+                    address: addr, amount: amt, floor: floor,
+                    createdAt: serverTimestamp()
+                });
+                window.closeAddCustomerModal(null);
+                window.showToast("已新增客戶");
+            } catch(e) {
+                window.showToast("新增失敗");
+            }
+        };
+
+        // Delete Customer
+        window.deleteCustomer = async function(docId) {
+            if(!currentUser) return;
+            if(confirm("從常用名單移除？")) {
+                await deleteDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'customers', docId));
+            }
+        };
+
+        // Import Favorites to Pending
+        window.importFavoritesToPending = async function() {
+            if(!currentUser) return;
+            const customers = window.appState.customers;
+            
+            if(customers.length === 0) {
+                alert("常用客戶名單是空的，請先新增常用客戶");
+                return;
+            }
+            
+            if(confirm(`確定要將 ${customers.length} 個客戶全部加入待收清單嗎？`)) {
+                try {
+                    let count = 0;
+                    // Batch writes ideally, but loop for simplicity here
+                    for (const c of customers) {
+                        await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'pending'), {
+                            address: c.address,
+                            amount: c.amount,
+                            floor: c.floor || '',
+                            note: '',
+                            type: 'cash', // Default
+                            createdAt: serverTimestamp()
+                        });
+                        count++;
+                    }
+                    window.showToast(`已匯入 ${count} 筆待收項目`);
+                    window.toggleView('entry'); // Go to list
+                } catch(e) {
+                    console.error(e);
+                    window.showToast("匯入部分失敗");
+                }
+            }
+        };
+
+        // Helper: Get Data from Form
+        function getFormData() {
+            const dateInput = document.getElementById('inputDate').value;
+            const address = document.getElementById('inputAddress').value.trim();
+            const floor = document.getElementById('inputFloor').value.trim();
+            const amount = parseInt(document.getElementById('inputAmount').value);
+            const type = document.getElementById('inputType').value;
+            const collector = window.appState.currentCollector; 
+            const note = document.getElementById('inputNote').value.trim();
+
+            if (!address) { window.showToast("⚠️ 請輸入地址！"); document.getElementById('inputAddress').focus(); return null; }
+            if (isNaN(amount)) { window.showToast("⚠️ 請輸入金額！"); document.getElementById('inputAmount').focus(); return null; }
+
+            return {
+                date: dateInput,
+                address, floor, amount, type, collector, note,
+                createdAt: serverTimestamp()
+            };
+        }
+
+        function clearFormData() {
+            document.getElementById('inputAddress').value = '';
+            document.getElementById('inputFloor').value = '';
+            document.getElementById('inputAmount').value = '';
+            document.getElementById('inputNote').value = '';
+        }
+
+    </script>
+
+    <script>
+        // --- UI Logic (Non-Module) ---
+        
+        // Global State container
+        window.appState = {
+            records: [],
+            customers: [],
+            pending: [],
+            currentCollector: '子晴' // Default collector
+        };
+
+        // Initialization
+        window.onload = function() {
+            const today = new Date();
+            document.getElementById('inputDate').value = today.toISOString().split('T')[0];
+            document.getElementById('headerDate').innerText = `${today.getMonth() + 1}/${today.getDate()} (週${['日','一','二','三','四','五','六'][today.getDay()]})`;
+            
+            // Salary is local preference
+            const savedSalary = localStorage.getItem('cleaning_app_salary');
+            if(savedSalary) document.getElementById('mySalary').value = savedSalary;
+            
+            // Initialize with default collector
+            window.setCollector('子晴');
+        };
+
+        // Collector Switching Logic
+        window.setCollector = function(name) {
+            window.appState.currentCollector = name;
+            
+            // Update Tab UI
+            const tabs = { '子晴': 'tab-zih-cing', '子涵': 'tab-zih-han', '宗敬': 'tab-zong-jing' };
+            const activeClasses = { '子晴': 'active-zih-cing', '子涵': 'active-zih-han', '宗敬': 'active-zong-jing' };
+            // Colors: Custard(Amber/Yellow), Pale Pink, Sky Blue
+            // Zih-cing now uses Light Latte/Khaki colors (#c2a992)
+            // Zih-han now uses Macaron Pink colors (#ff99ac)
+            const themeColors = { '子晴': 'bg-[#c2a992]', '子涵': 'bg-[#ff99ac]', '宗敬': 'bg-sky-400' };
+            const btnColors = { '子晴': 'bg-[#c2a992] text-white', '子涵': 'bg-[#ff99ac] text-white', '宗敬': 'bg-sky-400 text-white' };
+            
+            // Reset all tabs
+            Object.values(tabs).forEach(id => {
+                const el = document.getElementById(id);
+                el.classList.remove('active-zih-cing', 'active-zih-han', 'active-zong-jing', 'bg-white', 'text-gray-800');
+                el.classList.add('text-gray-400');
+            });
+            
+            // Activate current tab
+            const activeTab = document.getElementById(tabs[name]);
+            activeTab.classList.add(activeClasses[name]);
+            activeTab.classList.remove('text-gray-400');
+
+            // Update Header Color & Title
+            const header = document.getElementById('mainHeader');
+            header.className = `${themeColors[name]} text-white pt-safe sticky top-0 z-50 shadow-lg transition-colors duration-300`;
+            
+            // Update Button Text & Style
+            document.getElementById('btnCollectorName').innerText = name;
+            const addBtn = document.getElementById('addBtn');
+            addBtn.className = `w-full btn-primary py-4 rounded-xl text-lg font-bold shadow-lg shadow-gray-300 flex justify-center items-center gap-2 transition-all active:scale-95 ${btnColors[name]}`;
+            
+            // Update Quick Select Button Color
+            const qsBtn = document.getElementById('quickSelectBtn');
+            const qsColors = { '子晴': 'bg-[#a38e7a]', '子涵': 'bg-pink-400', '宗敬': 'bg-sky-500' };
+            qsBtn.className = `${qsColors[name]} text-white text-sm px-4 py-2 rounded-lg shadow active:scale-95 flex items-center transition-all`;
+
+            // Update Entry Card Border
+            const cardColors = { '子晴': 'border-[#e6dbd0]', '子涵': 'border-[#ffc1cc]', '宗敬': 'border-sky-300' };
+            const card = document.getElementById('entryCard');
+            // Reset borders
+            card.classList.remove('border-[#e6dbd0]', 'border-[#ffc1cc]', 'border-sky-300', 'border-gray-300');
+            card.classList.add(cardColors[name]);
+
+            // Update List Titles
+            document.getElementById('listTitleName').innerText = name;
+            const icons = { '子晴': '🎠', '子涵': '🌸', '宗敬': '☁️' };
+            document.getElementById('listTitleIcon').innerText = icons[name];
+
+            // Re-render data
+            renderRecords();
+            updateSummary();
+        };
+
+        // Rendering Pending List
+        window.renderPendingList = function() {
+            const list = document.getElementById('pendingList');
+            const container = document.getElementById('pendingContainer');
+            const items = window.appState.pending;
+            
+            if (items.length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+            container.classList.remove('hidden');
+            document.getElementById('pendingCount').innerText = items.length;
+            list.innerHTML = '';
+
+            items.forEach(item => {
+                // Unique IDs for inputs based on doc ID
+                const floorId = `p-floor-${item.id}`;
+                const noteId = `p-note-${item.id}`;
+                const typeId = `p-type-${item.id}`;
+
+                const div = document.createElement('div');
+                div.className = 'bg-white p-3 rounded-xl border border-gray-200 shadow-sm relative';
+                div.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <div class="font-bold text-lg text-gray-800">${item.address}</div>
+                            <div class="text-xs text-gray-400">${item.floor || ''}</div>
+                        </div>
+                        <div class="font-bold text-emerald-600 text-lg">$${item.amount}</div>
+                    </div>
+                    <div class="flex gap-2 items-center">
+                        <select id="${typeId}" class="bg-gray-50 border rounded p-2 text-sm w-20">
+                            <option value="cash" ${item.type === 'cash' ? 'selected' : ''}>現金</option>
+                            <option value="transfer" ${item.type === 'transfer' ? 'selected' : ''}>匯款</option>
+                        </select>
+                        <input id="${floorId}" value="${item.floor || ''}" placeholder="樓層" class="bg-gray-50 border rounded p-2 text-sm w-16">
+                        <input id="${noteId}" value="${item.note || ''}" placeholder="備註..." class="bg-gray-50 border rounded p-2 text-sm flex-1">
+                        <button onclick="triggerComplete('${item.id}', ${item.amount}, '${item.address}')" class="bg-green-500 text-white w-10 h-10 rounded-full shadow flex items-center justify-center active:scale-90 transition-transform">
+                            <i class="fa-solid fa-check"></i>
+                        </button>
+                    </div>
+                    <button onclick="deletePending('${item.id}')" class="absolute top-2 right-2 text-gray-300 hover:text-red-400 p-1"><i class="fa-solid fa-times"></i></button>
+                `;
+                list.appendChild(div);
+            });
+        };
+
+        window.triggerComplete = function(id, amount, address) {
+            const floor = document.getElementById(`p-floor-${id}`).value;
+            const note = document.getElementById(`p-note-${id}`).value;
+            const type = document.getElementById(`p-type-${id}`).value;
+            window.completePending(id, amount, address, floor, note, type);
+        };
+
+        // Rendering Records
+        window.renderRecords = function() {
+            const list = document.getElementById('recordList');
+            // Filter records by current collector
+            const records = window.appState.records.filter(r => {
+                const rCol = r.collector || '子晴'; // Default assumption
+                return rCol === window.appState.currentCollector;
+            });
+            
+            list.innerHTML = '';
+            document.getElementById('recordCount').innerText = records.length;
+
+            if (records.length === 0) {
+                list.innerHTML = `<div class="text-center text-gray-400 py-12 opacity-60"><i class="fa-solid fa-clipboard-list text-4xl mb-3"></i><p>尚無 ${window.appState.currentCollector} 的紀錄</p></div>`;
+                return;
+            }
+
+            records.forEach(record => {
+                const isCash = record.type === 'cash';
+                const tagClass = isCash ? 'tag-cash' : 'tag-transfer';
+                const tagText = isCash ? '現金' : '匯款';
+                
+                let noteHtml = '';
+                if (record.note) {
+                    const isUrgent = record.note.includes('電話') || record.note.includes('致電');
+                    const noteBg = isUrgent ? 'bg-red-50 text-red-700' : 'bg-gray-50 text-gray-600';
+                    const icon = isUrgent ? '<i class="fa-solid fa-phone-volume animate-pulse"></i>' : '<i class="fa-regular fa-comment-dots"></i>';
+                    noteHtml = `<div class="text-sm mt-2 p-2 rounded-lg border border-gray-100 ${noteBg} flex items-center gap-2">${icon} <span>${record.note}</span></div>`;
+                }
+                
+                const dateObj = new Date(record.date);
+                const displayDate = `${dateObj.getMonth()+1}/${dateObj.getDate()}`;
+
+                const item = document.createElement('div');
+                // Use neutral border color since the page color already indicates person
+                item.className = 'card p-4 relative border-l-4 ' + (isCash ? 'border-gray-400' : 'border-gray-300');
+                
+                item.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1 mr-2">
+                            <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                <span class="text-xs font-bold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">${displayDate}</span>
+                                <span class="text-xs font-bold px-2 py-0.5 rounded-full ${tagClass} flex items-center gap-1">
+                                    ${isCash ? '<i class="fa-solid fa-coins text-[10px]"></i>' : '<i class="fa-solid fa-building-columns text-[10px]"></i>'} ${tagText}
+                                </span>
+                            </div>
+                            <div class="text-xl font-bold text-gray-800 leading-tight">
+                                ${record.address} <span class="text-base font-medium text-gray-500 ml-1">${record.floor ? record.floor : ''}</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-2xl font-bold font-mono text-gray-800">$${record.amount.toLocaleString()}</div>
+                        </div>
+                    </div>
+                    ${noteHtml}
+                    <button onclick="deleteRecord('${record.id}')" class="absolute top-2 right-2 text-gray-200 hover:text-red-400 p-2"><i class="fa-solid fa-trash-can"></i></button>
+                `;
+                list.appendChild(item);
+            });
+        };
+
+        // Render Customers Settings
+        window.renderCustomerSettings = function() {
+            const list = document.getElementById('customerListSettings');
+            const customers = window.appState.customers;
+            list.innerHTML = '';
+            if(customers.length === 0) {
+                list.innerHTML = `<div class="text-center text-gray-400 text-xs py-2">尚未建立常用客戶</div>`;
+                return;
+            }
+            customers.forEach(c => {
+                const div = document.createElement('div');
+                div.className = 'flex justify-between items-center p-3 bg-white rounded-lg border border-gray-100 mb-2 shadow-sm';
+                div.innerHTML = `
+                    <div class="text-sm">
+                        <div class="font-bold text-gray-800">${c.address} <span class="text-gray-400 text-xs font-normal">${c.floor || ''}</span></div>
+                        <div class="text-emerald-600 font-bold">$${c.amount}</div>
+                    </div>
+                    <button onclick="deleteCustomer('${c.id}')" class="text-gray-300 hover:text-red-500 px-2 py-2"><i class="fa-solid fa-trash-can"></i></button>
+                `;
+                list.appendChild(div);
+            });
+        };
+
+        // Render Customer Select List
+        window.renderCustomerSelect = function() {
+            const list = document.getElementById('customerSelectList');
+            const search = document.getElementById('customerSearch').value.toLowerCase();
+            const customers = window.appState.customers;
+            list.innerHTML = '';
+            
+            const filtered = customers.filter(c => c.address.toLowerCase().includes(search));
+            
+            if(filtered.length === 0) {
+                list.innerHTML = `<div class="text-center text-gray-400 py-4">找不到客戶</div>`;
+                return;
+            }
+
+            filtered.forEach(c => {
+                const btn = document.createElement('button');
+                btn.className = 'list-btn w-full p-3 bg-gray-50 border border-gray-100 rounded-xl flex justify-between items-center text-left mb-2 active:bg-blue-50';
+                btn.onclick = () => selectCustomer(c.address, c.floor, c.amount);
+                btn.innerHTML = `
+                    <div>
+                        <div class="font-bold text-gray-800 text-lg">${c.address} <span class="text-sm font-normal text-gray-500">${c.floor || ''}</span></div>
+                    </div>
+                    <div class="font-bold text-emerald-600">$${c.amount}</div>
+                `;
+                list.appendChild(btn);
+            });
+        };
+
+        window.selectCustomer = function(addr, floor, amount) {
+            document.getElementById('inputAddress').value = addr;
+            document.getElementById('inputFloor').value = floor || '';
+            document.getElementById('inputAmount').value = amount || '';
+            closeCustomerSelect(null);
+            showToast("已填入資料");
+        };
+
+        // Summary & Settlement
+        window.updateSummary = function() {
+            // General Totals (Settlement View - All data)
+            let totalCashAll = 0, totalTransferAll = 0;
+            // Header Totals (Filtered by Current Collector)
+            let totalCashMe = 0, totalTransferMe = 0;
+            
+            // Breakdown object
+            let breakdown = {
+                '子晴': { cash: 0, transfer: 0 },
+                '子涵': { cash: 0, transfer: 0 },
+                '宗敬': { cash: 0, transfer: 0 },
+                '其他': { cash: 0, transfer: 0 }
+            };
+
+            const current = window.appState.currentCollector;
+
+            window.appState.records.forEach(r => {
+                // Determine collector
+                let col = r.collector;
+                if(!col || (col !== '子晴' && col !== '子涵' && col !== '宗敬')) {
+                    col = '其他';
+                    // Backward Compatibility for old names
+                    if (r.collector === '我') col = '其他'; // or map to 子晴 if desired, but safer to group as Other
+                    if (r.collector === '妹') col = '其他';
+                    if (r.collector === '弟') col = '其他';
+                }
+
+                // Add to Global Totals
+                if (r.type === 'cash') {
+                    totalCashAll += r.amount;
+                    breakdown[col].cash += r.amount;
+                } else {
+                    totalTransferAll += r.amount;
+                    breakdown[col].transfer += r.amount;
+                }
+                
+                // Add to Filtered Header Totals if matches current tab
+                if (col === current) {
+                    if (r.type === 'cash') totalCashMe += r.amount;
+                    else totalTransferMe += r.amount;
+                }
+            });
+            
+            const grandTotalAll = totalCashAll + totalTransferAll;
+            const grandTotalMe = totalCashMe + totalTransferMe;
+            const fmt = (n) => `$${n.toLocaleString()}`;
+
+            // Header Update (Filtered)
+            document.getElementById('headerCashTotal').innerText = fmt(totalCashMe);
+            document.getElementById('headerTransferTotal').innerText = fmt(totalTransferMe);
+            document.getElementById('headerGrandTotal').innerText = fmt(grandTotalMe);
+            
+            // Settlement General (All)
+            document.getElementById('settleCash').innerText = fmt(totalCashAll);
+            document.getElementById('settleTransfer').innerText = fmt(totalTransferAll);
+            document.getElementById('settleTotal').innerText = fmt(grandTotalAll);
+
+            // Render Breakdown
+            const bdDiv = document.getElementById('collectorBreakdown');
+            bdDiv.innerHTML = '';
+            
+            const people = [
+                { id: '子晴', name: '子晴', icon: '🎠', color: 'text-[#795548] bg-[#f5ebe0]' },
+                { id: '子涵', name: '子涵', icon: '🌸', color: 'text-pink-800 bg-[#ffe4e6]' },
+                { id: '宗敬', name: '宗敬', icon: '☁️', color: 'text-sky-800 bg-sky-100' },
+                { id: '其他', name: '其他', icon: '📦', color: 'text-gray-600 bg-gray-100' }
+            ];
+
+            people.forEach(p => {
+                const data = breakdown[p.id];
+                const pTotal = data.cash + data.transfer;
+                if(pTotal > 0) {
+                    const row = document.createElement('div');
+                    row.className = 'flex justify-between items-center text-sm p-2 rounded-lg bg-white border border-gray-100';
+                    row.innerHTML = `
+                        <div class="flex items-center gap-2">
+                            <span class="w-8 h-8 rounded-full flex items-center justify-center ${p.color}">${p.icon}</span>
+                            <span class="font-bold text-gray-700">${p.name}</span>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-bold text-gray-800">$${pTotal.toLocaleString()}</div>
+                            <div class="text-xs text-gray-400">現${data.cash} / 匯${data.transfer}</div>
+                        </div>
+                    `;
+                    bdDiv.appendChild(row);
+                }
+            });
+
+            calculateSettlement();
+        };
+
+        window.calculateSettlement = function() {
+            const salary = parseInt(document.getElementById('mySalary').value) || 0;
+            localStorage.setItem('cleaning_app_salary', salary);
+            const totalStr = document.getElementById('settleTotal').innerText.replace(/[$,]/g, '');
+            const total = parseInt(totalStr) || 0;
+            document.getElementById('finalToDad').innerText = `$${(total - salary).toLocaleString()}`;
+        };
+
+        // UI Helpers
+        window.addTag = function(text) {
+            const el = document.getElementById('inputNote');
+            el.value = el.value ? el.value + `，${text}` : text;
+        };
+        window.toggleView = function(viewName) {
+            ['entry', 'settle', 'settings'].forEach(v => {
+                document.getElementById(`view-${v}`).classList.add('hidden');
+                const btn = document.getElementById(`nav-${v}`);
+                btn.classList.remove('text-emerald-600'); btn.classList.add('text-gray-400');
+                btn.querySelector('span').className = 'text-[10px] font-medium';
+            });
+            document.getElementById(`view-${viewName}`).classList.remove('hidden');
+            const active = document.getElementById(`nav-${viewName}`);
+            active.classList.remove('text-gray-400'); active.classList.add('text-emerald-600');
+            active.querySelector('span').className = 'text-[10px] font-bold';
+            window.scrollTo(0,0);
+        };
+        window.showToast = function(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg; t.style.display = 'block';
+            t.style.opacity = '1'; t.style.transform = 'translate(-50%, 0)';
+            setTimeout(() => { t.style.display = 'none'; }, 2000);
+        };
+        window.exportData = function() {
+            const data = window.appState;
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `雲端收費備份_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+        };
+        
+        // Modal helpers
+        window.openAddCustomerModal = function() {
+            document.getElementById('newCustAddr').value = '';
+            document.getElementById('newCustAmt').value = '';
+            document.getElementById('newCustFloor').value = '';
+            document.getElementById('addCustomerModal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('newCustAddr').focus(), 100);
+        };
+        window.closeAddCustomerModal = function(e) {
+            if(e && e.target !== e.currentTarget) return;
+            document.getElementById('addCustomerModal').classList.add('hidden');
+        };
+        window.openCustomerSelect = function() {
+             if(window.appState.customers.length === 0) {
+                showToast("請先新增常用客戶");
+                setTimeout(() => toggleView('settings'), 800);
+                return;
+            }
+            renderCustomerSelect();
+            document.getElementById('customerModal').classList.remove('hidden');
+        };
+        window.closeCustomerSelect = function(e) {
+            if(e && e.target !== e.currentTarget) return;
+            document.getElementById('customerModal').classList.add('hidden');
+        };
+    </script>
+</body>
+</html>
