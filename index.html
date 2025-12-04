@@ -3,561 +3,576 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Travel Buddy Pro v3.0</title>
+    <title>SideMission v7.3</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-    <!-- Libraries -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Vue 3 -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Pixel Font -->
+    <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
 
-    <!-- Firebase SDK (Version 10.7.1 - Stable) -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc, serverTimestamp, where, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        window.fb = { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc, serverTimestamp, where, getDoc, setDoc };
-    </script>
+    <!-- QR Code Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: { 'milk': '#FFF8E7', 'coffee': '#432818', 'accent': '#BB9457', 'green': '#88B04B', 'red': '#E05D5D' },
-                    fontFamily: { sans: ['Noto Sans TC', 'sans-serif'] }
-                }
-            }
-        }
-    </script>
+    <!-- Firebase Compat -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
     <style>
-        body { background-color: #FFF8E7; color: #432818; -webkit-tap-highlight-color: transparent; }
-        .no-scrollbar::-webkit-scrollbar { display: none; } .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        :root {
+            --color-bg: #FDFBF7;
+            --color-primary: #4A403A;
+            --color-secondary: #C5A880;
+            --color-surface: #FFFFFF;
+        }
+        
+        body { 
+            background-color: var(--color-bg); 
+            color: var(--color-primary); 
+            -webkit-tap-highlight-color: transparent; 
+            font-family: 'Nunito', 'Noto Sans TC', sans-serif; 
+            overflow: hidden; 
+            margin: 0;
+            height: 100dvh;
+        }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .card-shadow { box-shadow: 0 4px 20px rgba(74, 64, 58, 0.05); }
+        .app-shell { max-width: 480px; margin: 0 auto; background: var(--color-bg); height: 100%; position: relative; display: flex; flex-direction: column; }
         #map { height: 100%; width: 100%; z-index: 0; }
-        .app-shell { max-width: 480px; margin: 0 auto; background: #FFF8E7; min-height: 100vh; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
-        .console-box { position: fixed; bottom: 0; left: 0; width: 100%; height: 200px; background: rgba(0,0,0,0.9); color: #0f0; font-family: monospace; font-size: 10px; overflow-y: auto; z-index: 9999; padding: 10px; display: none; }
-        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; }
-        .status-online { background-color: #4CAF50; box-shadow: 0 0 5px #4CAF50; }
-        .status-offline { background-color: #F44336; }
-        .status-connecting { background-color: #FFC107; animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        
+        /* Calc Styles */
+        .calc-key { height: 48px; border-radius: 16px; background-color: #F9F7F5; color: #4A403A; font-weight: 700; font-size: 1.2rem; transition: all 0.1s; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 0 rgba(0,0,0,0.05); }
+        .calc-key:active { background-color: #E8E6E3; transform: translateY(2px); box-shadow: none; }
+        .calc-op { height: 48px; border-radius: 16px; background-color: rgba(197, 168, 128, 0.15); color: #C5A880; font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; }
+        .calc-op:active { background-color: rgba(197, 168, 128, 0.3); }
+
+        /* Modal & Sheet */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(74, 64, 58, 0.4); backdrop-filter: blur(4px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 24px; }
+        .modal-content { background: #fff; border-radius: 24px; width: 100%; max-width: 360px; padding: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); animation: slideUp 0.3s ease-out; max-height: 85vh; overflow-y: auto; }
+        .bottom-sheet { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top-left-radius: 32px; border-top-right-radius: 32px; padding: 24px; z-index: 10000; box-shadow: 0 -10px 40px rgba(0,0,0,0.15); animation: slideUp 0.3s ease-out; max-width: 480px; margin: 0 auto; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        
+        /* Pixel Art Style */
+        .pixel-art { image-rendering: pixelated; }
+
+        /* Loading Overlay */
+        .loading-overlay { position: fixed; inset: 0; background: var(--color-bg); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s; }
+        
+        /* Error Display */
+        #error-box { display: none; position: fixed; top: 0; left: 0; right: 0; padding: 20px; background: #ffe4e6; color: #e11d48; z-index: 20000; font-size: 12px; font-family: monospace; border-bottom: 1px solid #f43f5e; max-height: 50vh; overflow: auto; }
+        
+        #qr-reader { width: 100%; border-radius: 16px; overflow: hidden; }
+        #qr-reader video { object-fit: cover; border-radius: 16px; }
+        
+        [v-cloak] { display: none; }
     </style>
+    <script>
+        tailwind.config = { theme: { extend: { colors: { 'primary': '#4A403A', 'secondary': '#C5A880', 'bg-cream': '#FDFBF7', 'surface': '#FFFFFF' } } } }
+    </script>
 </head>
 <body>
 
-<!-- Debug Console -->
-<div id="debug-console" class="console-box">
-    <div style="border-bottom:1px solid #333; margin-bottom:5px; padding-bottom:5px; display:flex; justify-content:space-between;">
-        <span>系統紀錄 (Debug Log)</span>
-        <button onclick="document.getElementById('debug-console').style.display='none'" style="color:white;">關閉</button>
-    </div>
-    <div id="log-content"></div>
-</div>
+<!-- Error Trap -->
+<div id="error-box"></div>
+<script>
+    window.onerror = function(msg, url, line, col, error) {
+        const box = document.getElementById('error-box');
+        box.style.display = 'block';
+        box.innerHTML += `<strong>Error:</strong> ${msg}<br><small>${url}:${line}</small><br><br>`;
+        console.error("Global Error:", error);
+    };
+</script>
 
-<div id="app" class="app-shell flex flex-col h-screen overflow-hidden">
+<div id="app" class="app-shell" v-cloak>
 
-    <!-- Top Status Bar -->
-    <div class="px-4 pt-4 pb-2 flex justify-between items-center bg-milk z-10">
-        <div class="flex items-center text-xs font-bold text-coffee cursor-pointer" @click="toggleDebug">
-            <span class="status-dot" :class="connectionStatusClass"></span>
-            {{ connectionStatusText }}
-        </div>
-        <div v-if="user" class="text-xs font-bold bg-coffee/10 px-2 py-1 rounded-full text-coffee">
-            {{ userProfile.name || '訪客' }}
-        </div>
+    <!-- Loading -->
+    <div v-if="isLoading" class="loading-overlay">
+        <div class="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4"></div>
+        <p class="text-primary font-bold tracking-widest text-sm">SideMission</p>
+        <p class="text-[10px] text-gray-400 mt-2 animate-pulse">{{ loadingText }}</p>
     </div>
 
-    <!-- MAIN VIEW SWITCHER -->
-    <div class="flex-1 overflow-y-auto no-scrollbar relative">
-        
-        <!-- 1. HOME: Trip List -->
-        <div v-if="!currentTripId" class="p-4 space-y-4">
-            <div class="text-center py-4">
-                <h1 class="text-2xl font-bold text-coffee">Travel Buddy Pro</h1>
-                <p class="text-xs text-gray-500">v3.0 無敵版</p>
-            </div>
+    <!-- Header -->
+    <div class="px-6 pt-6 pb-2 flex justify-between items-center bg-bg-cream z-10 shrink-0">
+        <h1 class="text-xl font-extrabold tracking-tight text-primary">SideMission</h1>
+        <div class="flex items-center gap-2 cursor-pointer" @click="resetApp">
+            <span class="w-2 h-2 rounded-full" :class="isOnline ? 'bg-green-500' : 'bg-gray-400'"></span>
+            <span class="text-[10px] text-gray-400 font-medium">{{ isOnline ? '已同步' : '本機模式' }}</span>
+        </div>
+    </div>
 
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-coffee/5">
-                <h3 class="font-bold text-coffee mb-3">建立新旅程</h3>
-                <input v-model="newTripName" placeholder="輸入旅程名稱 (例: 東京5日遊)" class="w-full bg-gray-50 p-3 rounded-xl mb-3 border border-gray-100 outline-none text-sm">
-                <button @click="createTrip" :disabled="isProcessing" class="w-full bg-coffee text-white py-3 rounded-xl font-bold shadow-md hover:bg-opacity-90 active:scale-95 transition-transform disabled:opacity-50">
-                    {{ isProcessing ? '處理中...' : '+ 建立' }}
-                </button>
+    <!-- 1. HOME VIEW -->
+    <div v-if="!currentTripId" class="flex-1 flex flex-col px-6 pb-6 space-y-6 overflow-y-auto w-full">
+        <!-- Profile -->
+        <div class="flex items-center gap-4 py-2 cursor-pointer group" @click="openProfileEdit">
+            <div class="w-16 h-16 rounded-lg bg-blue-100 overflow-hidden border-2 border-primary relative shrink-0 shadow-sm flex items-center justify-center p-0">
+                <img v-if="userProfile.avatar" :src="userProfile.avatar" class="w-full h-full object-cover pixel-art">
+                <div v-else class="w-full h-full flex items-center justify-center text-gray-300"><i class="fa-solid fa-user"></i></div>
             </div>
-
-            <div class="bg-white p-4 rounded-2xl shadow-sm border border-coffee/5">
-                <h3 class="font-bold text-coffee mb-3">加入旅程</h3>
-                <div class="flex gap-2">
-                    <input v-model="joinCode" placeholder="輸入代碼" class="flex-1 bg-gray-50 p-3 rounded-xl border border-gray-100 outline-none text-sm">
-                    <button @click="joinTrip" class="bg-accent text-white px-4 rounded-xl font-bold">加入</button>
-                </div>
-            </div>
-
             <div>
-                <h3 class="font-bold text-coffee mb-2">我的旅程</h3>
-                <div v-if="myTrips.length === 0" class="text-center text-gray-400 py-8 bg-white/50 rounded-2xl border-2 border-dashed border-gray-200">
-                    沒有行程，先建立一個吧！<br>
-                    <span class="text-xs">(若連線失敗，資料將保存在本機)</span>
-                </div>
-                <div v-else class="space-y-3">
-                    <div v-for="trip in myTrips" :key="trip.id" @click="enterTrip(trip)" class="bg-white p-4 rounded-xl shadow-sm flex justify-between items-center cursor-pointer hover:bg-gray-50 transition">
-                        <span class="font-bold text-coffee">{{ trip.name }}</span>
-                        <i class="fa-solid fa-chevron-right text-gray-300"></i>
-                    </div>
-                </div>
+                <p class="text-xs text-secondary font-bold mb-0.5">ID: {{ user.uid.slice(0,6).toUpperCase() }}</p>
+                <h2 class="text-lg font-bold text-primary">{{ userProfile.name || '未命名島民' }}</h2>
             </div>
         </div>
 
-        <!-- 2. APP: Inside Trip -->
-        <div v-else class="flex flex-col h-full">
-            <!-- App Header -->
-            <div class="px-4 pb-2 flex items-center gap-2 bg-milk z-10 border-b border-gray-100">
-                <button @click="exitTrip" class="w-8 h-8 flex items-center justify-center bg-white rounded-full shadow-sm text-coffee"><i class="fa-solid fa-arrow-left"></i></button>
-                <div class="flex-1 text-center font-bold text-coffee truncate">{{ currentTrip.name }}</div>
-                <button @click="showInvite=true" class="w-8 h-8 flex items-center justify-center bg-accent text-white rounded-full shadow-sm"><i class="fa-solid fa-share-nodes text-xs"></i></button>
+        <!-- Main Buttons -->
+        <div class="grid grid-cols-2 gap-4">
+            <button @click="openCreateModal" class="bg-primary text-white p-5 rounded-2xl shadow-lg flex flex-col items-start justify-between h-28 text-left transition active:scale-95">
+                <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><i class="fa-solid fa-plus text-sm"></i></div>
+                <div><span class="block font-bold text-lg">新任務</span><span class="text-[10px] opacity-70">開啟一段新旅程</span></div>
+            </button>
+            <button @click="openFriendList" class="bg-white p-5 rounded-2xl border border-gray-100 flex flex-col justify-between h-28 shadow-sm active:scale-95 transition">
+                 <div class="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center text-secondary"><i class="fa-solid fa-user-group text-sm"></i></div>
+                 <div class="text-left"><span class="block font-bold text-lg text-primary">島民名冊</span><span class="text-[10px] text-gray-400">好友清單 & 互加</span></div>
+            </button>
+        </div>
+
+        <!-- Secondary Action -->
+        <div class="bg-white p-4 rounded-2xl border border-gray-100 flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400"><i class="fa-solid fa-ticket"></i></div>
+                <div class="flex-1"><div class="text-xs text-gray-400 font-bold">加入隊伍</div><input v-model="joinCode" placeholder="輸入任務代碼" class="bg-transparent text-sm outline-none w-full text-primary font-bold placeholder-gray-300"></div>
+            </div>
+            <button @click="joinTrip" class="w-8 h-8 rounded-full bg-secondary text-white flex items-center justify-center shadow-md active:scale-90 transition"><i class="fa-solid fa-arrow-right text-xs"></i></button>
+        </div>
+
+        <!-- List -->
+        <div>
+            <h3 class="text-sm font-bold text-gray-400 mb-3 ml-1 uppercase tracking-wider">Your Missions</h3>
+            <div v-if="myTrips.length === 0" class="text-center py-10 opacity-40"><p class="text-sm">還沒有任何計畫...</p></div>
+            <div v-else class="space-y-3 pb-8">
+                <div v-for="trip in myTrips" :key="trip.id" @click="enterTrip(trip)" class="bg-white p-4 rounded-2xl card-shadow flex items-center justify-between cursor-pointer transition active:scale-98">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-bg-cream flex items-center justify-center text-xl text-primary font-serif italic border border-gray-100">{{ trip.name.charAt(0) }}</div>
+                        <div><div class="font-bold text-base text-primary">{{ trip.name }}</div><div class="text-xs text-gray-400 mt-0.5"><i class="fa-regular fa-calendar mr-1"></i> {{ trip.startDate }}</div></div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-gray-300 text-xs"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. TRIP VIEW -->
+    <div v-else class="flex flex-col h-full w-full">
+        <!-- Header -->
+        <div class="px-4 py-3 bg-bg-cream z-20 flex items-center justify-between shrink-0">
+            <button @click="exitTrip" class="w-9 h-9 flex items-center justify-center text-primary bg-white rounded-full shadow-sm hover:bg-gray-50 transition border border-gray-100"><i class="fa-solid fa-arrow-left text-sm"></i></button>
+            <h1 class="font-bold text-primary truncate text-base mx-4">{{ currentTrip.name }}</h1>
+            <div class="w-9 h-9"></div>
+        </div>
+
+        <!-- Tabs -->
+        <div v-if="currentTab==='itinerary'" class="bg-bg-cream pb-2 px-4 z-10 flex overflow-x-auto no-scrollbar gap-2 shrink-0 border-b border-gray-100/50">
+            <button v-for="(day, idx) in tripDays" :key="idx" @click="selectedDayIndex=idx" class="flex-shrink-0 px-4 py-2 rounded-full transition-all text-xs font-bold border" :class="selectedDayIndex===idx ? 'bg-primary text-white border-primary shadow-md' : 'bg-white text-gray-400 border-transparent'">Day {{ idx+1 }}</button>
+            <button @click="addDay" class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 text-xs"><i class="fa-solid fa-plus"></i></button>
+        </div>
+
+        <!-- Scroll Content -->
+        <div class="flex-1 overflow-y-auto overflow-x-hidden bg-bg-cream relative pb-32 p-4 space-y-5 w-full" id="scrollContainer">
+            
+            <!-- ITINERARY -->
+            <div v-if="currentTab === 'itinerary'">
+                <div class="bg-white p-4 rounded-2xl card-shadow border border-gray-50 flex justify-between items-center mb-4">
+                     <div><span class="text-[10px] text-secondary font-bold uppercase tracking-wider block mb-1">Location</span><div class="font-bold text-primary">{{ weather.city || '探索中' }}</div></div>
+                     <div class="text-right"><div class="text-2xl font-light text-primary">{{ weather.temp || '--' }}°</div></div>
+                </div>
+                <div class="relative pl-4 space-y-6">
+                    <div class="absolute left-[19px] top-2 bottom-2 w-[1px] bg-gray-200" v-if="dayItems.length > 0"></div>
+                    <div v-if="dayItems.length === 0" class="text-center py-12"><p class="text-sm text-gray-300 font-medium">還是一張白紙呢</p><button @click="openAddItemModal" class="mt-2 text-secondary text-sm font-bold hover:underline">新增行程</button></div>
+                    <div v-for="(item, idx) in dayItems" :key="item.id" class="relative pl-8">
+                        <div class="absolute left-[15px] top-4 w-2 h-2 rounded-full bg-secondary ring-4 ring-bg-cream z-10"></div>
+                        <div class="bg-white rounded-xl p-4 card-shadow">
+                            <div class="flex justify-between items-start mb-1"><span class="text-secondary font-mono text-xs font-bold bg-secondary/10 px-2 py-0.5 rounded">{{ item.time }}</span><button @click="deleteItem(item.id)" class="text-gray-300 hover:text-red-400"><i class="fa-solid fa-xmark"></i></button></div>
+                            <h3 class="font-bold text-primary text-base mb-1">{{ item.title }}</h3>
+                            <div class="flex items-center gap-3 text-xs text-gray-400 mt-2"><span class="flex items-center gap-1"><i :class="getTransportIcon(item.transport || 'walking')"></i> 移動</span><span v-if="item.locationName" class="flex items-center gap-1 cursor-pointer hover:text-secondary" @click="openMapTo(item)"><i class="fa-solid fa-location-dot"></i> 地圖</span></div>
+                            <div v-if="item.notes" class="mt-3 pt-3 border-t border-gray-50 text-xs text-gray-500 leading-relaxed">{{ item.notes }}</div>
+                        </div>
+                    </div>
+                </div>
+                <button @click="openAddItemModal" class="fixed bottom-24 right-4 w-12 h-12 bg-primary text-white rounded-full shadow-lg flex items-center justify-center active:scale-90 transition z-40"><i class="fa-solid fa-plus"></i></button>
             </div>
 
-            <!-- Tabs Content -->
-            <div class="flex-1 overflow-y-auto bg-milk relative">
-                
-                <!-- Itinerary -->
-                <div v-if="currentTab==='itinerary'" class="p-4 space-y-4 pb-20">
-                    <!-- Date Slider -->
-                    <div class="flex overflow-x-auto gap-2 py-1 no-scrollbar">
-                        <button v-for="(day, idx) in tripDays" :key="idx" @click="selectedDayIndex=idx" 
-                            class="flex-shrink-0 px-4 py-2 rounded-xl text-xs font-bold transition-all min-w-[60px]"
-                            :class="selectedDayIndex===idx ? 'bg-coffee text-white shadow-md' : 'bg-white text-gray-400'">
-                            Day {{ idx+1 }}<br><span class="font-normal">{{ formatDate(day) }}</span>
-                        </button>
-                        <button @click="addDay" class="px-3 rounded-xl bg-white border border-dashed border-gray-300 text-gray-400">+</button>
-                    </div>
-
-                    <!-- Items -->
-                    <div v-if="dayItems.length===0" class="text-center py-10 text-gray-400 opacity-50">
-                        <i class="fa-regular fa-map text-3xl mb-2"></i><br>尚無行程
-                    </div>
-                    <div v-for="item in dayItems" :key="item.id" class="flex gap-3 relative group">
-                        <div class="flex flex-col items-center pt-1 w-12 flex-shrink-0">
-                            <span class="text-sm font-bold text-coffee">{{ item.time }}</span>
-                            <div class="h-full w-0.5 bg-gray-200 my-1 rounded"></div>
-                        </div>
-                        <div class="flex-1 bg-white p-3 rounded-xl shadow-sm mb-3 relative overflow-hidden">
-                            <button @click="deleteItem(item.id)" class="absolute top-2 right-2 text-gray-300 hover:text-red-500 p-2"><i class="fa-solid fa-trash"></i></button>
-                            <div class="font-bold text-coffee">{{ item.title }}</div>
-                            <div class="text-xs text-gray-500 mb-1" @click="openMapTo(item)"><i class="fa-solid fa-location-dot text-accent"></i> {{ item.locationName }}</div>
-                            <div v-if="item.notes" class="text-xs bg-gray-50 p-2 rounded text-gray-600">{{ item.notes }}</div>
-                        </div>
-                    </div>
-                    <button @click="showAddItem=true" class="w-full py-3 bg-white border-2 border-dashed border-coffee/20 rounded-xl text-coffee/50 font-bold hover:border-coffee hover:text-coffee transition-colors">+ 新增景點</button>
-                </div>
-
-                <!-- Map -->
-                <div v-show="currentTab==='map'" class="h-full w-full relative">
-                    <div id="map"></div>
-                    <div class="absolute top-2 left-2 right-2 bg-white p-2 rounded-xl shadow-lg flex gap-2 z-[400]">
-                        <input v-model="mapQuery" @keyup.enter="searchMap" placeholder="搜尋地點..." class="flex-1 text-sm outline-none">
-                        <button @click="searchMap" class="text-coffee"><i class="fa-solid fa-search"></i></button>
-                    </div>
-                </div>
-
-                <!-- Money -->
-                <div v-if="currentTab==='money'" class="p-4 space-y-4 pb-20">
-                    <div class="bg-coffee text-milk p-4 rounded-2xl shadow-lg flex justify-between items-end">
-                        <div>
-                            <div class="text-xs opacity-70">總支出</div>
-                            <div class="text-3xl font-bold">${{ totalExpense }}</div>
-                        </div>
-                        <div class="text-xs bg-white/20 px-2 py-1 rounded">TWD</div>
-                    </div>
-                    <div class="bg-white p-3 rounded-xl shadow-sm space-y-2">
-                        <div class="flex gap-2">
-                            <input v-model="newExp.desc" placeholder="項目" class="flex-1 bg-gray-50 p-2 rounded text-sm">
-                            <input v-model="newExp.amount" type="number" placeholder="$" class="w-20 bg-gray-50 p-2 rounded text-sm">
-                        </div>
-                        <button @click="addExpense" class="w-full bg-accent text-white py-2 rounded-lg text-sm font-bold">記一筆</button>
-                    </div>
-                    <div class="space-y-2">
-                        <div v-for="ex in expenses" :key="ex.id" class="bg-white p-3 rounded-xl flex justify-between items-center shadow-sm">
-                            <span class="text-sm font-bold text-coffee">{{ ex.desc }}</span>
-                            <div class="flex items-center gap-2">
-                                <span class="font-bold">${{ ex.amount }}</span>
-                                <button @click="deleteExpense(ex.id)" class="text-gray-300 hover:text-red-500"><i class="fa-solid fa-trash text-xs"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tools -->
-                <div v-if="currentTab==='tools'" class="p-4 space-y-4">
-                    <div class="bg-white p-4 rounded-2xl shadow-sm">
-                        <h3 class="font-bold text-coffee mb-2">翻譯</h3>
-                        <div class="flex gap-2 mb-2"><input v-model="transInput" class="flex-1 bg-gray-50 p-2 rounded text-sm" placeholder="輸入文字"><button @click="doTranslate" class="bg-coffee text-white px-3 rounded text-sm">翻</button></div>
-                        <div v-if="transResult" class="text-sm bg-yellow-50 p-2 rounded text-coffee font-bold">{{ transResult }}</div>
-                    </div>
-                </div>
-
+            <!-- MAP -->
+            <div v-show="currentTab === 'map'" class="h-full w-full absolute inset-0 bg-gray-100 rounded-t-3xl overflow-hidden">
+                <div id="map" class="h-full w-full z-0"></div>
+                <div class="absolute top-4 left-4 right-4 z-[400]"><div class="bg-white/90 backdrop-blur p-2 rounded-xl shadow-sm flex gap-2 border border-gray-100"><input v-model="mapSearchQuery" @keyup.enter="searchMapLocation" placeholder="搜尋地點..." class="flex-1 bg-transparent px-3 text-sm outline-none text-primary"><button @click="searchMapLocation" class="bg-primary text-white w-8 h-8 rounded-lg flex items-center justify-center"><i class="fa-solid fa-search text-xs"></i></button></div></div>
+                <button @click="initMap" class="absolute bottom-28 right-4 z-[400] bg-white w-10 h-10 rounded-full shadow-lg text-primary flex items-center justify-center"><i class="fa-solid fa-crosshairs"></i></button>
             </div>
 
-            <!-- Bottom Nav -->
-            <div class="fixed bottom-0 w-full max-w-[480px] bg-white border-t border-gray-100 flex justify-around py-3 z-50 text-[10px] font-bold text-gray-400">
-                <button @click="currentTab='itinerary'" :class="currentTab==='itinerary'?'text-coffee':''" class="flex flex-col items-center w-1/4"><i class="fa-solid fa-list-ul text-lg mb-1"></i>行程</button>
-                <button @click="currentTab='map'; initMap()" :class="currentTab==='map'?'text-coffee':''" class="flex flex-col items-center w-1/4"><i class="fa-regular fa-map text-lg mb-1"></i>地圖</button>
-                <button @click="currentTab='money'" :class="currentTab==='money'?'text-coffee':''" class="flex flex-col items-center w-1/4"><i class="fa-solid fa-wallet text-lg mb-1"></i>分帳</button>
-                <button @click="currentTab='tools'" :class="currentTab==='tools'?'text-coffee':''" class="flex flex-col items-center w-1/4"><i class="fa-solid fa-toolbox text-lg mb-1"></i>工具</button>
+            <!-- MONEY -->
+            <div v-if="currentTab === 'money'" class="space-y-5">
+                <!-- Rate Checker -->
+                <div class="bg-white rounded-2xl card-shadow overflow-hidden border border-gray-50">
+                    <div class="p-3 bg-gray-50 text-primary flex justify-between items-center cursor-pointer" @click="showRateInfo = !showRateInfo">
+                        <span class="text-xs font-bold"><i class="fa-solid fa-coins mr-1 text-secondary"></i> 匯率查詢</span>
+                        <i class="fa-solid fa-chevron-down text-[10px] text-gray-400 transition-transform" :class="{'rotate-180': showRateInfo}"></i>
+                    </div>
+                    <div v-if="showRateInfo" class="p-3 bg-white flex items-center gap-2 animate-[fade-in_0.2s]">
+                        <input v-model="calcInput" type="number" placeholder="外幣" class="w-20 bg-gray-50 p-2 rounded-lg text-sm font-bold outline-none text-right">
+                        <select v-model="calcCurrency" @change="updateEstimatedRate" class="text-xs font-bold bg-transparent outline-none"><option v-for="c in ['JPY','KRW','USD','EUR','CNY','THB']" :key="c" :value="c">{{c}}</option></select>
+                        <span class="text-gray-300">=</span>
+                        <div class="flex-1 text-right font-bold text-primary">NT$ {{ Math.round((parseFloat(calcInput)||0) * calcRate).toLocaleString() }}</div>
+                    </div>
+                </div>
+
+                <!-- Expense Input -->
+                <div class="bg-white p-4 rounded-2xl card-shadow relative overflow-hidden" id="expenseInputArea">
+                    <div class="flex items-center justify-between mb-3"><span class="text-xs font-bold text-gray-400">新增消費</span><div v-if="expenseHighlight" class="text-xs text-secondary font-bold animate-bounce">已儲存!</div></div>
+                    <div class="flex gap-2 mb-3">
+                        <div class="relative flex-1 flex bg-gray-50 rounded-xl overflow-hidden border border-transparent focus-within:border-secondary transition">
+                            <button @click="openCalculator" class="absolute left-0 top-0 bottom-0 px-3 text-secondary hover:text-primary transition flex items-center justify-center z-10"><i class="fa-solid fa-calculator text-lg"></i></button>
+                            <div class="relative flex-1"><input v-model="newExpense.amount" type="number" placeholder="點擊計算" class="w-full h-full bg-transparent pl-12 pr-2 py-3 text-xl font-bold outline-none text-primary placeholder-gray-300"></div>
+                            <div class="bg-gray-100 flex items-center px-2 border-l border-white"><select v-model="newExpense.currency" @change="updateExpenseRate" class="bg-transparent text-xs font-bold text-primary outline-none cursor-pointer appearance-none pr-4 relative z-10 h-full w-full"><option value="TWD">TWD</option><option value="JPY">JPY</option><option value="KRW">KRW</option><option value="USD">USD</option><option value="EUR">EUR</option><option value="CNY">CNY</option><option value="THB">THB</option></select><i class="fa-solid fa-caret-down absolute right-2 text-[10px] text-gray-400 pointer-events-none z-0"></i></div>
+                        </div>
+                        <select v-model="newExpense.payer" class="bg-gray-50 px-3 rounded-xl text-xs font-bold outline-none text-primary border-r-8 border-transparent w-20"><option disabled value="">誰付?</option><option v-for="m in splitMembers" :key="m" :value="m">{{ m }}</option></select>
+                    </div>
+                    <div v-if="newExpense.currency !== 'TWD'" class="mb-3 bg-secondary/10 p-2 rounded-lg flex justify-between items-center animate-[fade-in_0.2s]"><div class="flex items-center gap-1"><span class="text-[10px] text-secondary font-bold">匯率</span><input v-model="newExpense.rate" type="number" step="0.001" class="w-12 bg-transparent border-b border-secondary/30 text-xs text-primary font-mono outline-none text-center"></div><div class="text-sm font-bold text-primary">≈ NT$ {{ Math.round((parseFloat(newExpense.amount)||0) * (parseFloat(newExpense.rate)||1)).toLocaleString() }}</div></div>
+                    <div class="flex gap-2"><div class="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center shrink-0 relative"><select v-model="newExpense.category" class="w-full h-full opacity-0 absolute cursor-pointer inset-0 z-10"></select><span class="text-lg">{{ getCategoryIcon(newExpense.category) }}</span></div><input v-model="newExpense.desc" placeholder="項目名稱..." class="flex-1 bg-gray-50 px-3 py-2 rounded-xl text-sm outline-none text-primary"><button @click="addExpense" class="w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center shadow-md active:scale-95"><i class="fa-solid fa-check"></i></button></div>
+                </div>
+
+                <!-- Stats -->
+                <div class="bg-white p-4 rounded-2xl card-shadow">
+                    <div class="flex justify-between items-center mb-4"><h3 class="text-sm font-bold text-primary">小金庫</h3><button @click="addSplitMember" class="text-[10px] bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded text-gray-500 transition"><i class="fa-solid fa-user-plus mr-1"></i>島民</button></div>
+                    <div class="flex justify-between items-end border-b border-gray-50 pb-4 mb-3"><div><span class="text-[10px] text-gray-400 block">均分 (AA)</span><span class="text-2xl font-bold text-secondary">${{ averageExpense.toLocaleString() }}</span></div><div class="text-right"><span class="text-[10px] text-gray-400 block">總計</span><span class="text-base font-bold text-primary">${{ totalExpense.toLocaleString() }}</span></div></div>
+                    <div class="flex flex-wrap gap-2"><div v-for="(m, idx) in splitMembers" :key="idx" class="relative group"><span class="bg-gray-50 text-gray-600 text-[10px] font-bold px-2 py-1 rounded border border-gray-100">{{ m }}</span><button v-if="idx > 0" @click="removeSplitMember(idx)" class="absolute -top-1 -right-1 bg-red-400 text-white w-3 h-3 rounded-full flex items-center justify-center text-[8px] opacity-0 group-hover:opacity-100 transition">×</button></div></div>
+                </div>
+
+                <!-- History -->
+                <div class="space-y-2 pb-6">
+                    <h3 class="text-xs font-bold text-gray-400 ml-1">近期紀錄</h3><div v-if="expenses.length === 0" class="text-center text-gray-300 text-xs py-2">- 暫無紀錄 -</div>
+                    <div v-for="exp in expenses" :key="exp.id" class="bg-white px-4 py-3 rounded-xl border border-gray-50 flex justify-between items-center"><div class="flex items-center gap-3"><span class="text-lg">{{ getCategoryIcon(exp.category) }}</span><div><div class="text-sm font-bold text-primary">{{ exp.desc }}</div><div class="text-[10px] text-gray-400">{{ exp.payer || '我' }} 先墊 <span v-if="exp.originalCurrency && exp.originalCurrency !== 'TWD'" class="ml-1 text-gray-300">({{exp.originalAmount}} {{exp.originalCurrency}})</span></div></div></div><div class="flex items-center gap-3"><span class="text-sm font-bold text-primary">${{ parseInt(exp.amount).toLocaleString() }}</span><button @click="deleteExpense(exp.id)" class="text-gray-200 hover:text-red-400"><i class="fa-solid fa-xmark text-xs"></i></button></div></div>
+                </div>
             </div>
+
+            <!-- TOOLS -->
+            <div v-if="currentTab === 'tools'" class="grid grid-cols-1 gap-4">
+                <div class="bg-white p-5 rounded-2xl card-shadow">
+                    <h3 class="font-bold text-primary mb-4 flex items-center gap-2 text-sm"><i class="fa-solid fa-suitcase text-secondary"></i> 行李清單</h3>
+                    <div v-if="checklist.length === 0" class="text-center py-6 border border-dashed border-gray-200 rounded-xl mb-4"><p class="text-xs text-gray-400 mb-3">空蕩蕩的背包...</p><button @click="populateDefaults" class="bg-secondary text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm hover:bg-opacity-90 transition">一鍵放入必備品</button></div>
+                    <div class="flex gap-2 mb-4"><input v-model="newCheckItem" @keyup.enter="addCheckItem" placeholder="還要帶什麼？" class="flex-1 bg-gray-50 px-3 py-2 rounded-lg text-sm outline-none text-primary"><button @click="addCheckItem" class="bg-primary text-white w-9 rounded-lg"><i class="fa-solid fa-plus text-xs"></i></button></div>
+                    <div class="space-y-1"><div v-for="item in checklist" :key="item.id" @click="toggleCheck(item)" class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition group"><div class="w-4 h-4 rounded border border-gray-300 flex items-center justify-center transition" :class="{'bg-green-500 border-green-500': item.checked}"><i class="fa-solid fa-check text-white text-[10px]" v-if="item.checked"></i></div><span :class="{'line-through text-gray-300': item.checked, 'text-primary': !item.checked}" class="flex-1 text-sm transition">{{ item.text }}</span><button @click.stop="deleteCheckItem(item.id)" class="text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition"><i class="fa-solid fa-trash text-xs"></i></button></div></div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl card-shadow"><h3 class="font-bold text-primary mb-3 text-sm"><i class="fa-solid fa-language text-secondary mr-2"></i>即時翻譯</h3><div class="flex gap-2 mb-3"><input v-model="transInput" placeholder="想怎麼說..." class="flex-1 bg-gray-50 p-3 rounded-xl text-sm outline-none"><button @click="doTranslate" class="bg-primary text-white px-4 rounded-xl text-xs font-bold">翻譯</button></div><div v-if="transResult" class="bg-bg-cream p-3 rounded-xl text-primary text-sm border border-secondary/20">{{ transResult }}</div></div>
+            </div>
+        </div>
+
+        <!-- Bottom Nav -->
+        <div class="fixed bottom-0 w-full max-w-[480px] bg-white border-t border-gray-100 flex justify-around py-3 z-50 pb-8 rounded-t-3xl shadow-[0_-5px_20px_rgba(0,0,0,0.03)]">
+            <button @click="currentTab='itinerary'" class="flex flex-col items-center w-1/4 group transition" :class="currentTab==='itinerary'?'text-primary':'text-gray-300 hover:text-gray-400'"><i class="fa-solid fa-book-journal-whills text-xl mb-1 transition-transform group-active:scale-90"></i><span class="text-[10px] font-bold">日誌</span></button>
+            <button @click="currentTab='map'; initMap()" class="flex flex-col items-center w-1/4 group transition" :class="currentTab==='map'?'text-primary':'text-gray-300 hover:text-gray-400'"><i class="fa-solid fa-map-location-dot text-xl mb-1 transition-transform group-active:scale-90"></i><span class="text-[10px] font-bold">地圖</span></button>
+            <button @click="currentTab='money'" class="flex flex-col items-center w-1/4 group transition" :class="currentTab==='money'?'text-primary':'text-gray-300 hover:text-gray-400'"><i class="fa-solid fa-wallet text-xl mb-1 transition-transform group-active:scale-90"></i><span class="text-[10px] font-bold">小金庫</span></button>
+            <button @click="currentTab='tools'" class="flex flex-col items-center w-1/4 group transition" :class="currentTab==='tools'?'text-primary':'text-gray-300 hover:text-gray-400'"><i class="fa-solid fa-suitcase text-xl mb-1 transition-transform group-active:scale-90"></i><span class="text-[10px] font-bold">百寶袋</span></button>
         </div>
     </div>
 
     <!-- Modals -->
-    <div v-if="showAddItem" class="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl w-full max-w-sm p-5 space-y-3">
-            <h3 class="font-bold text-coffee text-lg">新增景點</h3>
-            <input v-model="newItem.time" type="time" class="w-full bg-gray-50 p-2 rounded-lg border">
-            <div class="flex gap-2"><input v-model="newItem.locName" placeholder="搜尋地點" class="flex-1 bg-gray-50 p-2 rounded-lg border"><button @click="searchLoc" class="bg-accent text-white px-3 rounded-lg">搜</button></div>
-            <div v-if="locSuggestions.length" class="max-h-24 overflow-y-auto bg-gray-50 p-1"><div v-for="l in locSuggestions" @click="selectLoc(l)" class="p-1 border-b text-xs truncate">{{l.display_name}}</div></div>
-            <input v-model="newItem.title" placeholder="名稱" class="w-full bg-gray-50 p-2 rounded-lg border">
-            <div class="flex gap-2">
-                <button @click="addItem" class="flex-1 bg-coffee text-white py-2 rounded-lg font-bold">確認</button>
-                <button @click="showAddItem=false" class="flex-1 bg-gray-100 text-gray-500 py-2 rounded-lg">取消</button>
+    <div v-if="showFriendList" class="modal-overlay" @click.self="showFriendList=false">
+        <div class="modal-content h-[80vh] flex flex-col">
+            <div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold text-primary"><i class="fa-solid fa-address-book mr-2"></i>島民名冊</h3><button @click="showFriendList=false" class="text-gray-400"><i class="fa-solid fa-xmark"></i></button></div>
+            <div class="flex-1 overflow-y-auto space-y-3 mb-4">
+                <div v-if="friends.length === 0" class="text-center py-10 text-gray-400 text-sm">還沒有朋友...<br>快去掃描 QR Code 吧！</div>
+                <div v-for="friend in friends" :key="friend.id" class="flex items-center gap-3 bg-gray-50 p-3 rounded-xl border border-gray-100"><img :src="friend.avatar" class="w-10 h-10 rounded-full bg-white object-cover pixel-art border border-gray-200"><div class="flex-1"><div class="font-bold text-primary text-sm">{{ friend.name }}</div><div class="text-[10px] text-gray-400 font-mono">ID: {{ friend.id }}</div></div></div>
+            </div>
+            <div class="flex gap-2 mt-auto"><button @click="openQRScanner('scan')" class="flex-1 bg-primary text-white py-3 rounded-xl font-bold text-sm shadow-md flex items-center justify-center gap-2"><i class="fa-solid fa-camera"></i> 掃描加好友</button><button @click="openQRScanner('my')" class="flex-1 bg-secondary text-white py-3 rounded-xl font-bold text-sm shadow-md flex items-center justify-center gap-2"><i class="fa-solid fa-qrcode"></i> 我的名片</button></div>
+        </div>
+    </div>
+    
+    <div v-if="showQRModal" class="modal-overlay" @click.self="closeQRModal">
+        <div class="modal-content text-center">
+            <div v-if="qrMode === 'my'"><h3 class="text-lg font-bold text-primary mb-2">我的數位護照</h3><p class="text-xs text-gray-400 mb-4">讓朋友掃描此 QR Code</p><div class="flex justify-center mb-4"><div id="qrcode" class="p-2 bg-white border-2 border-secondary rounded-xl"></div></div><div class="font-mono text-lg font-bold text-primary bg-gray-50 p-2 rounded-lg mb-4 tracking-widest">{{ user.uid.slice(0,6).toUpperCase() }}</div><button @click="qrMode='scan'; startScanner()" class="text-sm text-secondary font-bold hover:underline">切換至掃描模式</button></div>
+            <div v-else><h3 class="text-lg font-bold text-primary mb-2">掃描護照</h3><div id="reader" class="w-full h-64 bg-black rounded-xl overflow-hidden mb-4"></div><div class="flex gap-2"><input v-model="manualFriendId" placeholder="或輸入 ID" class="flex-1 bg-gray-50 p-2 rounded-lg text-sm outline-none font-mono uppercase"><button @click="addFriend(manualFriendId)" class="bg-primary text-white px-3 rounded-lg text-xs font-bold">加入</button></div><button @click="qrMode='my'; stopScanner()" class="text-sm text-secondary font-bold hover:underline mt-4 block">返回我的名片</button></div>
+        </div>
+    </div>
+    
+    <div v-if="showPopupCalc" class="modal-overlay" @click.self="showPopupCalc=false">
+        <div class="bottom-sheet">
+            <div class="flex justify-between items-center mb-3 pb-2 border-b border-gray-100"><span class="text-sm font-bold text-primary flex items-center gap-2"><i class="fa-solid fa-calculator text-secondary"></i> 計算機</span><span class="text-xs text-gray-400 font-mono">{{ calcExpression }}</span></div>
+            <div class="flex items-end justify-between mb-4"><select v-model="calcCurrency" @change="updateEstimatedRate" class="text-lg font-bold text-secondary bg-transparent outline-none cursor-pointer"><option v-for="c in ['TWD','JPY','KRW','USD','EUR','CNY','THB']" :key="c" :value="c">{{c}}</option></select><div class="text-3xl font-bold text-primary tracking-wide">{{ calcResultDisplay || '0' }}</div></div>
+            <div v-if="calcCurrency !== 'TWD'" class="mb-4 bg-gray-50 p-2 rounded-xl flex justify-between items-center"><div class="flex items-center gap-1"><span class="text-[10px] text-gray-400">匯率 @</span><input v-model="calcRate" type="number" step="0.001" class="w-16 bg-transparent text-xs font-bold text-primary outline-none border-b border-gray-300 text-center"></div><div class="text-xs font-bold text-gray-500">≈ NT$ {{ Math.round((parseFloat(calcResultDisplay)||0) * calcRate).toLocaleString() }}</div></div>
+            <div class="grid grid-cols-4 gap-3">
+                 <button class="calc-key text-red-300 bg-red-50" @click="clearCalc">C</button><button class="calc-op" @click="appendCalc('/')">÷</button><button class="calc-op" @click="appendCalc('*')">×</button><button class="calc-op" @click="backspaceCalc"><i class="fa-solid fa-delete-left"></i></button>
+                 <button class="calc-key" @click="appendCalc('7')">7</button><button class="calc-key" @click="appendCalc('8')">8</button><button class="calc-key" @click="appendCalc('9')">9</button><button class="calc-op" @click="appendCalc('-')">-</button>
+                 <button class="calc-key" @click="appendCalc('4')">4</button><button class="calc-key" @click="appendCalc('5')">5</button><button class="calc-key" @click="appendCalc('6')">6</button><button class="calc-op" @click="appendCalc('+')">+</button>
+                 <button class="calc-key" @click="appendCalc('1')">1</button><button class="calc-key" @click="appendCalc('2')">2</button><button class="calc-key" @click="appendCalc('3')">3</button>
+                 <button class="calc-key row-span-2 bg-secondary text-white shadow-md active:scale-95 flex flex-col justify-center gap-1" @click="confirmPopupCalc"><i class="fa-solid fa-check"></i><span class="text-[10px]">確認</span></button>
+                 <button class="calc-key col-span-2" @click="appendCalc('0')">0</button><button class="calc-key" @click="appendCalc('.')">.</button>
             </div>
         </div>
     </div>
 
-    <div v-if="showProfileModal" class="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl w-full max-w-sm p-6 text-center">
-            <h3 class="font-bold text-xl text-coffee mb-4">歡迎來到 Travel Buddy</h3>
-            <input v-model="tempName" placeholder="請輸入暱稱" class="w-full bg-gray-50 p-3 rounded-xl mb-4 text-center border-2 border-coffee/20 focus:border-coffee outline-none">
-            <button @click="saveProfile" :disabled="!tempName" class="w-full bg-coffee text-white py-3 rounded-xl font-bold disabled:opacity-50">開始使用</button>
+    <div v-if="editingProfile" class="modal-overlay" @click.self="editingProfile=false">
+        <div class="modal-content text-center">
+            <h3 class="font-bold text-primary mb-4">更新護照</h3>
+            <div class="flex flex-col items-center mb-6">
+                <div class="relative w-24 h-24 mb-3"><img :src="tempProfile.avatar || CHOCOLATE_AVATAR" class="w-full h-full object-cover rounded-full border border-gray-100 pixel-art bg-blue-100"><button @click="triggerFileUpload" class="absolute bottom-0 right-0 bg-primary text-white w-8 h-8 rounded-full border-2 border-white flex items-center justify-center shadow-md"><i class="fa-solid fa-camera text-xs"></i></button><input type="file" ref="fileInput2" @change="handleFileUpload" class="hidden" accept="image/*"></div>
+                <button @click="triggerSheetUpload" class="text-xs text-secondary font-bold hover:text-primary transition flex items-center gap-1 mt-2 mb-3"><i class="fa-solid fa-table-cells"></i> 匯入 8x3 圖集</button><input type="file" ref="sheetInput" @change="handleSheetUpload" class="hidden" accept="image/*">
+                <div class="flex justify-center gap-2 flex-wrap mb-3 max-h-32 overflow-y-auto px-2">
+                    <img v-for="(url, idx) in avatarOptions" :key="idx" :src="url" @click="tempProfile.avatar = url" class="w-10 h-10 object-cover cursor-pointer opacity-60 hover:opacity-100 transition rounded-lg border border-transparent pixel-art bg-blue-50" :class="{'opacity-100 border-secondary ring-2 ring-secondary/20': tempProfile.avatar===url}">
+                </div>
+            </div>
+            <input v-model="tempProfile.name" class="w-full bg-gray-50 p-3 rounded-xl mb-4 text-center outline-none border border-transparent focus:border-secondary text-sm font-bold" placeholder="輸入名字">
+            <button @click="saveProfile" class="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm shadow-md">儲存</button>
         </div>
     </div>
-
-    <div v-if="showInvite" class="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl w-full max-w-sm p-6 text-center">
-            <h3 class="font-bold text-coffee mb-2">旅程代碼</h3>
-            <div class="bg-gray-100 p-4 rounded-xl text-2xl font-mono font-bold select-all mb-4">{{ currentTripId }}</div>
-            <button @click="showInvite=false" class="text-gray-400">關閉</button>
-        </div>
-    </div>
-
+    
+    <div v-if="showForceProfileModal" class="modal-overlay"><div class="modal-content text-center"><h3 class="font-bold text-primary text-lg mb-2">歡迎來到 SideMission</h3><p class="text-xs text-gray-400 mb-4">請建立您的島民檔案</p><div class="flex flex-col items-center mb-6"><div class="relative w-28 h-28 mb-4"><img :src="tempProfile.avatar || CHOCOLATE_AVATAR" class="w-full h-full object-cover rounded-full border border-gray-100 pixel-art bg-[#90CAF9]"><button @click="triggerFileUpload" class="absolute bottom-0 right-0 bg-primary text-white w-9 h-9 rounded-full border-2 border-white flex items-center justify-center shadow-md active:scale-90 transition"><i class="fa-solid fa-camera text-xs"></i></button><input type="file" ref="fileInput1" @change="handleFileUpload" class="hidden" accept="image/*"></div></div><input v-model="tempProfile.name" placeholder="您的名字" class="w-full bg-gray-50 p-4 rounded-2xl mb-6 text-center border border-transparent focus:border-secondary outline-none text-sm font-bold"><button @click="saveProfile" :disabled="!tempProfile.name" class="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm shadow-md">開始旅程</button></div></div>
+    <div v-if="showCreateTripModal" class="modal-overlay" @click.self="showCreateTripModal=false"><div class="modal-content"><h3 class="text-lg font-bold text-primary mb-1">開啟新任務</h3><p class="text-xs text-gray-400 mb-4">準備好要去哪裡冒險了嗎？</p><input v-model="newTripName" placeholder="任務名稱" class="w-full bg-gray-50 p-3 rounded-xl outline-none border border-transparent focus:border-secondary mb-3 text-sm font-bold text-primary"><input v-model="newTripDate" type="date" class="w-full bg-gray-50 p-3 rounded-xl outline-none border border-transparent focus:border-secondary mb-6 text-sm text-gray-500 font-bold"><div class="flex gap-3"><button @click="showCreateTripModal=false" class="flex-1 py-3 bg-gray-100 text-gray-500 rounded-xl text-sm font-bold">取消</button><button @click="createTrip" :disabled="isProcessing" class="flex-1 py-3 bg-primary text-white rounded-xl text-sm font-bold shadow-md">{{ isProcessing?'建立中...':'出發' }}</button></div></div></div>
+    <div v-if="showAddItem" class="modal-overlay" @click.self="showAddItem=false"><div class="modal-content"><h3 class="text-lg font-bold text-primary mb-4">記錄行程</h3><div class="space-y-3"><input v-model="newItem.time" type="time" class="w-full bg-gray-50 p-3 rounded-xl text-sm font-bold text-primary outline-none"><div class="flex gap-2"><input v-model="newItem.searchQuery" placeholder="搜尋地點" class="flex-1 bg-gray-50 p-3 rounded-xl text-sm outline-none"><button @click="searchLocation(newItem.searchQuery)" class="bg-primary text-white w-10 rounded-xl flex items-center justify-center"><i class="fa-solid fa-search text-xs"></i></button></div><div v-if="locationSuggestions.length" class="max-h-32 overflow-y-auto bg-gray-50 rounded-xl border border-gray-100"><div v-for="l in locationSuggestions" @click="selectLocation(l)" class="p-3 border-b border-gray-100 text-xs text-primary hover:bg-white cursor-pointer">{{ l.display_name }}</div></div><input v-model="newItem.title" placeholder="標題" class="w-full bg-gray-50 p-3 rounded-xl text-sm outline-none font-bold"><div class="flex justify-around bg-gray-50 p-2 rounded-xl"><i @click="newItem.transport='car'" class="fa-solid fa-car p-2 rounded-lg cursor-pointer transition text-sm" :class="newItem.transport==='car'? 'bg-white text-primary shadow-sm':'text-gray-300'"></i><i @click="newItem.transport='train'" class="fa-solid fa-train-subway p-2 rounded-lg cursor-pointer transition text-sm" :class="newItem.transport==='train'? 'bg-white text-primary shadow-sm':'text-gray-300'"></i><i @click="newItem.transport='walking'" class="fa-solid fa-person-walking p-2 rounded-lg cursor-pointer transition text-sm" :class="newItem.transport==='walking'? 'bg-white text-primary shadow-sm':'text-gray-300'"></i></div><textarea v-model="newItem.notes" placeholder="備註..." class="w-full bg-gray-50 p-3 rounded-xl h-20 text-sm resize-none outline-none"></textarea><button @click="addItem" class="w-full bg-primary text-white py-3 rounded-xl font-bold shadow-md text-sm">新增</button></div></div></div>
 </div>
 
-<script type="module">
-    const { createApp, ref, computed, onMounted, nextTick, watch } = Vue;
-    // Safe logger
-    const log = (msg, type='info') => {
-        console.log(`[${type}] ${msg}`);
-        const el = document.getElementById('log-content');
-        if(el) el.innerHTML += `<div style="color:${type==='err'?'red':(type==='warn'?'yellow':'#0f0')}">> ${msg}</div>`;
-    };
+<script>
+    const { createApp, ref, computed, onMounted, nextTick } = Vue;
 
-    // Firebase Init (Wrapped in Try-Catch to prevent crash)
-    let db, auth;
-    let isFirebaseReady = false;
-    
-    // --- YOUR CONFIG HERE ---
-    const firebaseConfig = {
-        apiKey: "AIzaSyDFUGYOobmVxYFQMBYz1iQ4z1HIrdbTi8Q",
-        authDomain: "travel-55c4b.firebaseapp.com",
-        projectId: "travel-55c4b",
-        storageBucket: "travel-55c4b.firebasestorage.app",
-        messagingSenderId: "925227625640",
-        appId: "1:925227625640:web:4cc6d501b2e21ab7f8a69d"
-    };
-
-    try {
-        if(window.fb) {
-            const app = window.fb.initializeApp(firebaseConfig);
-            auth = window.fb.getAuth(app);
-            db = window.fb.getFirestore(app);
-            isFirebaseReady = true;
-            log("Firebase initialized");
-        } else {
-            log("Firebase SDK missing", "err");
-        }
-    } catch(e) {
-        log("Firebase Init Failed: " + e.message, "err");
-    }
+    const CHOCOLATE_AVATAR = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiIgc2hhcGUtcmVuZGVyaW5nPSJjcmlzcEVkZ2VzIj48cmVjdCB4PSI2IiB5PSI0IiB3aWR0aD0iMjAiIGhlaWdodD0iMjQiIGZpbGw9ImJsYWNrIi8+PHJlY3QgeD0iNyIgeT0iNSIgd2lkdGg9IjE4IiBoZWlnaHQ9IjEwIiBmaWxsPSIjNUQ0MDM3Ii8+PHJlY3QgeD0iOCIgeT0iNiIgd2lkdGg9IjQiIGhlaWdodD0iNCIgZmlsbD0iIzhENkU2MyIvPjxyZWN0IHg9IjE0IiB5PSI2IiB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjOEQ2RTYzIi8+PHJlY3QgeD0iMjAiIHk9IjYiIHdpZHRoPSI0IiBoZWlnaHQ9IjQiIGZpbGw9IiM4RDZFNjMiLz48cmVjdCB4PSI4IiB5PSIxMiIgd2lkdGg9IjQiIGhlaWdodD0iMiIgZmlsbD0iIzhENkU2MyIvPjxyZWN0IHg9IjE0IiB5PSIxMiIgd2lkdGg9IjQiIGhlaWdodD0iMiIgZmlsbD0iIzhENkU2MyIvPjxyZWN0IHg9IjIwIiB5PSIxMiIgd2lkdGg9IjQiIGhlaWdodD0iMiIgZmlsbD0iIzhENkU2MyIvPjxyZWN0IHg9IjciIHk9IjE2IiB3aWR0aD0iMTgiIGhlaWdodD0iMTEiIGZpbGw9IiNGNDQzMzYiLz48cGF0aCBkPSJNNiAxNCBoMiB2MiBoNCB2LTIgaDQgdjIgaDQgdi0yIGgyIHYyIGg0IHYyIEg2IHoiIGZpbGw9IiNFMEUwRTAiLz48L3N2Zz4=";
+    const DEFAULT_AVATAR = CHOCOLATE_AVATAR;
 
     createApp({
         setup() {
-            // -- State --
-            const mode = ref('offline'); // offline | online
-            const user = ref({ uid: 'local_user', name: '訪客' });
-            const userProfile = ref({ name: '' });
-            const showProfileModal = ref(false);
+            const isLoading = ref(true);
+            const loadingText = ref('正在準備手帳...');
+            const isOnline = ref(false);
             const isProcessing = ref(false);
+            const user = ref({ uid: 'local_user' });
             
-            // Data
+            const userProfile = ref({ name: '訪客', avatar: DEFAULT_AVATAR });
+            const tempProfile = ref({ name: '', avatar: '' });
+            const avatarOptions = ref([DEFAULT_AVATAR]);
+            
             const myTrips = ref([]);
             const currentTripId = ref(null);
             const currentTrip = ref({});
             const tripDays = ref([]);
             const selectedDayIndex = ref(0);
-            
-            // Local Data (LocalStorage Fallback)
-            const localTrips = JSON.parse(localStorage.getItem('tb_trips') || '[]');
-            
-            // UI State
-            const currentTab = ref('itinerary');
-            const showCreateTripModal = ref(false); // Using inline create for simplicity
-            const newTripName = ref('');
-            const joinCode = ref('');
-            const showInvite = ref(false);
-            const showAddItem = ref(false);
-            const newItem = ref({ time: '09:00', title: '', locName: '', lat: null, lng: null, notes: '' });
-            const locSuggestions = ref([]);
-            const tempName = ref('');
-
-            // Sub-features
-            const items = ref([]); // Flat list of all items
+            const allItineraryItems = ref([]);
             const expenses = ref([]);
-            const newExp = ref({ desc: '', amount: '' });
-            const mapQuery = ref('');
+            const checklist = ref([]);
+            const friends = ref([]);
+            
+            // UI
+            const currentTab = ref('itinerary');
+            const showCreateTripModal = ref(false);
+            const showAddItem = ref(false);
+            const showForceProfileModal = ref(false);
+            const editingProfile = ref(false);
+            const showRateInfo = ref(false); 
+            const showPopupCalc = ref(false);
+            const expenseHighlight = ref(false);
+            
+            // Friends & QR
+            const showFriendList = ref(false);
+            const showQRModal = ref(false);
+            const qrMode = ref('my');
+            const manualFriendId = ref('');
+            let html5QrCode = null;
+
+            // Inputs & Calc
+            const newTripName = ref('');
+            const newTripDate = ref(new Date().toISOString().split('T')[0]);
+            const joinCode = ref('');
+            const newItem = ref({ time: '09:00', title: '', searchQuery: '', locName: '', lat: null, lng: null, notes: '', transport: 'walking' });
+            const locationSuggestions = ref([]);
+            const newExpense = ref({ desc: '', amount: '', category: '食', payer: '', currency: 'TWD', rate: 1 });
+            const splitMembers = ref(['我']);
+            const newCheckItem = ref('');
+            const weather = ref({});
+            const mapSearchQuery = ref('');
             const transInput = ref('');
             const transResult = ref('');
+            const calcExpression = ref(''); const calcCurrency = ref('TWD'); const calcRate = ref(1); const calcInput = ref(''); 
+            const fileInput1 = ref(null); const fileInput2 = ref(null); const sheetInput = ref(null);
 
-            // -- Computed --
-            const connectionStatusText = computed(() => mode.value === 'online' ? '已連線' : '離線模式');
-            const connectionStatusClass = computed(() => mode.value === 'online' ? 'status-online' : 'status-offline');
-            const formatDate = (d) => d ? `${d.getMonth()+1}/${d.getDate()}` : '';
+            // Computed
+            const dayItems = computed(() => { if(!tripDays.value.length) return []; const d = formatDate(tripDays.value[selectedDayIndex.value]); return allItineraryItems.value.filter(i => i.dateStr === d).sort((a,b)=>a.time.localeCompare(b.time)); });
+            const calcResultDisplay = computed(() => { try { const safeExpr = calcExpression.value.replace(/[^0-9+\-*/.]/g, ''); if (!safeExpr) return '0'; return eval(safeExpr); } catch (e) { return '0'; } });
+            const totalExpense = computed(() => expenses.value.reduce((a,b)=>a+parseInt(b.amount||0),0));
+            const averageExpense = computed(() => { if (splitMembers.value.length === 0) return 0; return Math.round(totalExpense.value / splitMembers.value.length); });
+
+            // Helpers
+            const getLocal = (k) => JSON.parse(localStorage.getItem(k) || '[]');
+            const setLocal = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+            const formatDate = (d) => { const date = new Date(d); return `${date.getMonth()+1}/${date.getDate()}`; };
+            const getCategoryIcon = (c) => ({'食':'🍔','住':'🏨','行':'🚗','樂':'🎟️','購':'🛍️','公':'💸'}[c] || '🧾');
+            const getTransportIcon = (t) => ({'car':'fa-solid fa-car','train':'fa-solid fa-train-subway','walking':'fa-solid fa-person-walking'}[t]);
+
+            // DB
+            const saveDB = async (path, data, id = null) => { 
+                const docId = id || 'doc_' + Date.now(); const key = `tb_${path.replace(/\//g, '_')}`; const list = getLocal(key); 
+                const payload = { id: docId, ...data }; const idx = list.findIndex(x => x.id === docId); 
+                if (idx >= 0) list[idx] = { ...list[idx], ...data }; else list.push(payload); setLocal(key, list); 
+                if (path.includes('trips')) myTrips.value = list; if (path.includes('itinerary')) allItineraryItems.value = list; 
+                if (path.includes('expenses')) expenses.value = list; if (path.includes('checklist')) checklist.value = list;
+                if (isOnline.value && window.fb_db) try { if (id) await window.fb_db.collection(path.split('/')[0]).doc(id).set(data, { merge: true }); else await window.fb_db.collection(path).add(data); } catch (e) {} 
+                return docId; 
+            };
+            const deleteDB = async (path, id) => { const key = `tb_${path.replace(/\//g, '_')}`; let list = getLocal(key); list = list.filter(x => x.id !== id); setLocal(key, list); if (path.includes('itinerary')) allItineraryItems.value = list; if (path.includes('expenses')) expenses.value = list; if (path.includes('checklist')) checklist.value = list; };
+
+            // Logic
+            const openFriendList = () => { friends.value = getLocal('tb_friends'); showFriendList.value = true; };
+            const addFriend = (id) => { if (!id) return; const newFriend = { id: id, name: '島民 ' + id.slice(0,4), avatar: DEFAULT_AVATAR }; friends.value.push(newFriend); setLocal('tb_friends', friends.value); alert("成功加入好友！"); manualFriendId.value = ''; };
+            const openQRScanner = (mode) => { qrMode.value = mode; showFriendList.value = false; showQRModal.value = true; if (mode === 'my' && window.QRCode) { nextTick(() => { document.getElementById("qrcode").innerHTML = ""; new QRCode(document.getElementById("qrcode"), { text: user.value.uid, width: 180, height: 180 }); }); } };
+            const startScanner = () => { if(window.Html5Qrcode) { nextTick(() => { html5QrCode = new Html5Qrcode("reader"); html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (decodedText) => { stopScanner(); addFriend(decodedText); showQRModal.value = false; showFriendList.value = true; }, (errorMessage) => { }).catch(err => console.log(err)); }); } else { alert("相機功能載入失敗"); } };
+            const stopScanner = () => { if (html5QrCode) { html5QrCode.stop().then(() => { html5QrCode.clear(); }).catch(e=>console.log(e)); } };
+            const closeQRModal = () => { stopScanner(); showQRModal.value = false; };
             
-            const dayItems = computed(() => {
-                if(!tripDays.value[selectedDayIndex.value]) return [];
-                const dStr = formatDate(tripDays.value[selectedDayIndex.value]);
-                return items.value.filter(i => i.dateStr === dStr).sort((a,b) => a.time.localeCompare(b.time));
-            });
-            const totalExpense = computed(() => expenses.value.reduce((a,b) => a + parseInt(b.amount||0), 0));
-
-            // -- Helper: DB Abstraction (The Magic Part) --
-            // Automatically chooses between Firebase and LocalStorage
-            
-            const saveData = (collectionPath, data, docId = null) => {
-                const id = docId || 'doc_' + Date.now();
-                if(mode.value === 'online' && db) {
-                    // Firebase
-                    if(docId) return window.fb.setDoc(window.fb.doc(db, collectionPath, docId), data, {merge:true});
-                    else return window.fb.addDoc(window.fb.collection(db, collectionPath), data);
-                } else {
-                    // LocalStorage Simulation
-                    log(`Saving locally to ${collectionPath}`);
-                    const key = `tb_${collectionPath.replace(/\//g, '_')}`;
-                    const list = JSON.parse(localStorage.getItem(key) || '[]');
-                    const payload = { id, ...data };
-                    // If update
-                    const idx = list.findIndex(x => x.id === id);
-                    if(idx >= 0) list[idx] = { ...list[idx], ...data };
-                    else list.push(payload);
-                    localStorage.setItem(key, JSON.stringify(list));
-                    
-                    // Trigger reactivity manually for local mode
-                    if(collectionPath.includes('trips') && !collectionPath.includes('/')) {
-                        myTrips.value = list;
-                    }
-                    if(currentTripId.value) loadTripData(currentTripId.value);
-                    return Promise.resolve({ id });
-                }
-            };
-
-            // -- Actions --
-            const toggleDebug = () => { document.getElementById('debug-console').style.display = 'block'; };
-            
-            const saveProfile = async () => {
-                if(!tempName.value) return;
-                userProfile.value.name = tempName.value;
-                localStorage.setItem('tb_user_name', tempName.value);
-                
-                if(mode.value === 'online' && user.value.uid !== 'local_user') {
-                    await saveData('users', { name: tempName.value }, user.value.uid);
-                }
-                showProfileModal.value = false;
-            };
-
-            const createTrip = async () => {
-                if(!newTripName.value) return alert("請輸入名稱");
-                isProcessing.value = true;
-                try {
-                    const tripData = {
-                        name: newTripName.value,
-                        startDate: new Date().toISOString(),
-                        members: [user.value.uid]
-                    };
-                    
-                    // 1. Create Trip Doc
-                    let res;
-                    if(mode.value === 'online') {
-                        res = await window.fb.addDoc(window.fb.collection(db, 'trips'), tripData);
-                        // Link to user
-                        await window.fb.setDoc(window.fb.doc(db, `users/${user.value.uid}/trips`, res.id), { role: 'owner' });
-                    } else {
-                        res = await saveData('trips', tripData);
-                        // Local user automatically sees all local trips
-                    }
-                    
-                    newTripName.value = '';
-                    alert("建立成功！");
-                    // Refresh List if local
-                    if(mode.value === 'offline') {
-                        myTrips.value = JSON.parse(localStorage.getItem('tb_trips') || '[]');
-                    }
-                } catch(e) {
-                    log("Create Error: " + e.message, 'err');
-                    alert("建立失敗，請查看紀錄");
-                } finally {
-                    isProcessing.value = false;
-                }
-            };
-
-            const joinTrip = () => {
-                if(!joinCode.value) return;
-                if(mode.value === 'offline') return alert("離線模式無法加入他人行程");
-                // Simplified join logic
-                alert("請確保已開啟 Firebase 匿名登入，並確認對方代碼正確。");
-            };
-
-            const enterTrip = (trip) => {
-                currentTripId.value = trip.id;
-                currentTrip.value = trip;
-                const start = new Date(trip.startDate);
-                tripDays.value = [start, new Date(start.getTime()+86400000), new Date(start.getTime()+172800000)];
-                loadTripData(trip.id);
-            };
-
-            const exitTrip = () => { currentTripId.value = null; };
-
-            const loadTripData = (tid) => {
-                if(mode.value === 'online') {
-                    // Firebase Listeners
-                    window.fb.onSnapshot(window.fb.collection(db, `trips/${tid}/itinerary`), (s) => items.value = s.docs.map(d=>({id:d.id, ...d.data()})));
-                    window.fb.onSnapshot(window.fb.collection(db, `trips/${tid}/expenses`), (s) => expenses.value = s.docs.map(d=>({id:d.id, ...d.data()})));
-                } else {
-                    // Local Load
-                    const k1 = `tb_trips_${tid}_itinerary`;
-                    items.value = JSON.parse(localStorage.getItem(k1) || '[]');
-                    const k2 = `tb_trips_${tid}_expenses`;
-                    expenses.value = JSON.parse(localStorage.getItem(k2) || '[]');
-                }
-            };
-
-            // Itinerary
-            const addDay = () => tripDays.value.push(new Date(tripDays.value[tripDays.value.length-1].getTime()+86400000));
-            const searchLoc = async () => { try{ const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(newItem.value.locName)}`); locSuggestions.value = await r.json(); }catch(e){} };
-            const selectLoc = (l) => { newItem.value.locName = l.display_name.split(',')[0]; newItem.value.lat = l.lat; newItem.value.lng = l.lon; locSuggestions.value = []; };
-            const addItem = async () => {
-                if(!newItem.value.title) return;
-                const data = { ...newItem.value, dateStr: formatDate(tripDays.value[selectedDayIndex.value]), locationName: newItem.value.locName };
-                await saveData(`trips/${currentTripId.value}/itinerary`, data);
-                showAddItem.value = false;
-                newItem.value = { time: '09:00', title: '', locName: '', lat: null, lng: null, notes: '' };
-            };
-            const deleteItem = async (id) => {
-                if(mode.value === 'online') await window.fb.deleteDoc(window.fb.doc(db, `trips/${currentTripId.value}/itinerary`, id));
-                else {
-                    const key = `tb_trips_${currentTripId.value}_itinerary`;
-                    const list = items.value.filter(x => x.id !== id);
-                    localStorage.setItem(key, JSON.stringify(list));
-                    items.value = list;
-                }
-            };
-
-            // Map
+            // Map Logic (Fixed)
             let map;
-            const initMap = () => nextTick(() => {
-                if(!map && document.getElementById('map')) {
-                    map = L.map('map').setView([25.03, 121.56], 13);
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-                } else if(map) map.invalidateSize();
-                // Clear & Draw
-                map.eachLayer(l => { if(l instanceof L.Marker) map.removeLayer(l); });
-                dayItems.value.forEach(i => { if(i.lat) L.marker([i.lat, i.lng]).addTo(map).bindPopup(i.title); });
+            const initMap = () => nextTick(() => { 
+                if(!map && document.getElementById('map')) { 
+                    map = L.map('map').setView([25.03, 121.56], 13); 
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map); 
+                } 
+                setTimeout(()=>{ map?.invalidateSize(); }, 200); 
             });
-            const searchMap = async () => { await searchLoc(); /* Simplified re-use */ }; // For demo
-            const openMapTo = (item) => { currentTab.value = 'map'; initMap(); setTimeout(() => { if(item.lat && map) { map.setView([item.lat, item.lng], 16); L.marker([item.lat, item.lng]).addTo(map).openPopup(); } }, 500); };
-
-            // Money
-            const addExpense = async () => {
-                if(!newExp.value.amount) return;
-                await saveData(`trips/${currentTripId.value}/expenses`, { ...newExp.value, timestamp: Date.now() });
-                newExp.value = { desc: '', amount: '' };
+            
+            const searchMapLocation = async () => { 
+                if(!mapSearchQuery.value) return;
+                try{ 
+                    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${mapSearchQuery.value}`); 
+                    const data = await r.json();
+                    if(data.length > 0) { 
+                        const l = data[0]; 
+                        if (map) {
+                            map.setView([l.lat, l.lon], 16); 
+                            L.marker([l.lat, l.lon]).addTo(map).bindPopup(l.display_name).openPopup();
+                        }
+                    } 
+                }catch(e){} 
             };
-            const deleteExpense = async (id) => {
-                 if(mode.value === 'online') await window.fb.deleteDoc(window.fb.doc(db, `trips/${currentTripId.value}/expenses`, id));
-                 else {
-                     const key = `tb_trips_${currentTripId.value}_expenses`;
-                     const list = expenses.value.filter(x => x.id !== id);
-                     localStorage.setItem(key, JSON.stringify(list));
-                     expenses.value = list;
-                 }
-            };
-
-            // Tools
-            const doTranslate = async () => { try{ const r = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(transInput.value)}&langpair=zh-TW|en`); const d = await r.json(); transResult.value = d.responseData.translatedText; }catch(e){ transResult.value = "Error"; } };
-
-            // --- Init Logic ---
-            onMounted(async () => {
-                log("App Mounted");
-                
-                // 1. Load Local Name
-                const localName = localStorage.getItem('tb_user_name');
-                if(localName) userProfile.value.name = localName;
-                else showProfileModal.value = true;
-
-                // 2. Load Local Trips immediately (so user sees something)
-                if(localTrips.length > 0) myTrips.value = localTrips;
-
-                // 3. Try Firebase
-                if(isFirebaseReady) {
-                    log("Attempting Firebase Connection...");
-                    try {
-                        // Race condition: if it takes > 3s, assume offline
-                        const authPromise = window.fb.signInAnonymously(auth);
-                        const timeout = new Promise((_, reject) => setTimeout(() => reject('timeout'), 3000));
-                        
-                        await Promise.race([authPromise, timeout]);
-                        log("Auth Success!");
-                        mode.value = 'online';
-                        
-                        // Setup Listeners
-                        window.fb.onAuthStateChanged(auth, (u) => {
-                            if(u) {
-                                user.value = u;
-                                log("User UID: " + u.uid);
-                                // Load Cloud Trips
-                                window.fb.onSnapshot(window.fb.collection(db, `users/${u.uid}/trips`), async (snap) => {
-                                    const ids = snap.docs.map(d => d.id);
-                                    if(ids.length) {
-                                        const p = ids.map(id => window.fb.getDoc(window.fb.doc(db, 'trips', id)));
-                                        const r = await Promise.all(p);
-                                        myTrips.value = r.filter(x=>x.exists()).map(x=>({id:x.id, ...x.data()}));
-                                    }
-                                }, (err) => {
-                                    log("Read Fail (Perms?): " + err.code, 'err');
-                                    // Fallback to local mode silently if perms fail
-                                    mode.value = 'offline';
-                                });
-                            }
-                        });
-
-                    } catch(e) {
-                        log("Connection Failed/Timeout: " + e, 'warn');
-                        mode.value = 'offline';
+            
+            const openMapTo = (i) => { 
+                currentTab.value='map'; 
+                initMap(); 
+                setTimeout(() => { 
+                    if(i.lat) {
+                        map.setView([i.lat, i.lng], 16); 
+                        L.marker([i.lat, i.lng]).addTo(map).bindPopup(i.title).openPopup(); 
                     }
-                } else {
-                    mode.value = 'offline';
-                }
+                }, 500); 
+            };
+
+            // Slicer & Files
+            const triggerSheetUpload = () => { sheetInput.value?.click(); };
+            const handleSheetUpload = (event) => {
+                const file = event.target.files[0]; if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const cols = 8; const rows = 3;
+                        const cellWidth = img.width / cols; const cellHeight = img.height / rows;
+                        const newAvatars = [];
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = cellWidth; canvas.height = cellHeight;
+                        for (let y = 0; y < rows; y++) {
+                            for (let x = 0; x < cols; x++) {
+                                ctx.clearRect(0, 0, cellWidth, cellHeight);
+                                ctx.drawImage(img, x * cellWidth, y * cellHeight, cellWidth, cellHeight, 0, 0, cellWidth, cellHeight);
+                                newAvatars.push(canvas.toDataURL('image/png'));
+                            }
+                        }
+                        avatarOptions.value = newAvatars;
+                        setLocal('tb_pixel_sheet', newAvatars);
+                        tempProfile.value.avatar = newAvatars[0];
+                        alert(`切片成功！`);
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            };
+            const triggerFileUpload = () => { if (showForceProfileModal.value) fileInput1.value?.click(); else if (editingProfile.value) fileInput2.value?.click(); };
+            const handleFileUpload = (event) => { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (e) => { const img = new Image(); img.onload = () => { const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d'); canvas.width = img.width; canvas.height = img.height; ctx.drawImage(img, 0, 0); tempProfile.value.avatar = canvas.toDataURL('image/jpeg'); }; img.src = e.target.result; }; reader.readAsDataURL(file); };
+            const saveProfile = () => { const profileData = { name: tempProfile.value.name, avatar: tempProfile.value.avatar }; localStorage.setItem('tb_profile', JSON.stringify(profileData)); userProfile.value = { ...profileData }; editingProfile.value = false; showForceProfileModal.value = false; };
+            const openProfileEdit = () => { tempProfile.value = { ...userProfile.value }; const savedSheet = getLocal('tb_pixel_sheet'); if (savedSheet && savedSheet.length > 0) { avatarOptions.value = savedSheet; } editingProfile.value = true; };
+            const resetApp = () => location.reload();
+            const openCreateModal = () => showCreateTripModal.value = true;
+            const openAddItemModal = () => { showAddItem.value = true; newItem.value = { time: '09:00', title: '', searchQuery: '', locName: '', transport: 'walking' }; locationSuggestions.value = []; };
+            const searchLocation = async (q) => { try{ const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}`); locationSuggestions.value = await r.json(); }catch(e){} };
+            const selectLocation = (l) => { newItem.value.searchQuery = l.display_name; newItem.value.locName = l.display_name.split(',')[0]; newItem.value.lat = l.lat; newItem.value.lng = l.lon; locationSuggestions.value = []; };
+            const populateDefaults = () => { const defaults = ["護照 🛂", "機票/登機證 🎫", "網卡/Wifi機 📶", "錢包 (外幣/信用卡) 💴", "行動電源 🔋", "充電線/轉接頭 🔌"]; defaults.forEach(txt => { if(!checklist.value.some(i => i.text === txt)) saveDB(`trips/${currentTripId.value}/checklist`, { text: txt, checked: false }); }); };
+            const createTrip = async () => { if (!newTripName.value) return alert("請輸入名稱"); isProcessing.value = true; const tid = await saveDB('trips', { name: newTripName.value, startDate: newTripDate.value, members: [user.value.uid], splitMembers: ['我'], createdAt: new Date().toISOString() }); const defaults = ["護照 🛂", "機票/登機證 🎫", "網卡/Wifi機 📶", "錢包 (外幣/信用卡) 💴", "行動電源 🔋"]; defaults.forEach(txt => saveDB(`trips/${tid}/checklist`, { text: txt, checked: false })); showCreateTripModal.value = false; newTripName.value = ''; isProcessing.value = false; };
+            const enterTrip = (t) => { currentTripId.value = t.id; currentTrip.value = t; splitMembers.value = t.splitMembers || ['我']; const start = new Date(t.startDate); tripDays.value = [start, new Date(start.getTime()+86400000), new Date(start.getTime()+172800000)]; const p = `trips/${t.id}`; allItineraryItems.value = getLocal(`tb_${p}_itinerary`); expenses.value = getLocal(`tb_${p}_expenses`); checklist.value = getLocal(`tb_${p}_checklist`); };
+            const exitTrip = () => currentTripId.value = null;
+            const addItem = async () => { if (!newItem.value.title) return alert("請輸入名稱"); await saveDB(`trips/${currentTripId.value}/itinerary`, { ...newItem.value, dateStr: formatDate(tripDays.value[selectedDayIndex.value]) }); showAddItem.value = false; };
+            const deleteItem = (id) => deleteDB(`trips/${currentTripId.value}/itinerary`, id);
+            const addSplitMember = () => { const name = prompt("請輸入島民名字："); if(name && !splitMembers.value.includes(name)) { splitMembers.value.push(name); saveDB('trips', { splitMembers: splitMembers.value }, currentTripId.value); } };
+            const removeSplitMember = (idx) => { if(confirm("確定讓這位島民離開嗎？")) { splitMembers.value.splice(idx, 1); saveDB('trips', { splitMembers: splitMembers.value }, currentTripId.value); } };
+            const deleteExpense = (id) => deleteDB(`trips/${currentTripId.value}/expenses`, id);
+            const addDay = () => { if (tripDays.value.length > 0) { const lastDate = tripDays.value[tripDays.value.length - 1]; const nextDate = new Date(lastDate); nextDate.setDate(lastDate.getDate() + 1); tripDays.value.push(nextDate); } };
+            const joinTrip = () => { if (!joinCode.value) return; alert('加入旅程功能開發中：' + joinCode.value); joinCode.value = ''; };
+            const addCheckItem = () => { if(newCheckItem.value) saveDB(`trips/${currentTripId.value}/checklist`, {text:newCheckItem.value, checked:false}); newCheckItem.value=''; };
+            const deleteCheckItem = (id) => deleteDB(`trips/${currentTripId.value}/checklist`, id);
+            const toggleCheck = (i) => saveDB(`trips/${currentTripId.value}/checklist`, {checked:!i.checked}, i.id);
+            const doTranslate = async () => { try { const r=await fetch(`https://api.mymemory.translated.net/get?q=${transInput.value}&langpair=zh-TW|en`); const d=await r.json(); transResult.value=d.responseData.translatedText; }catch(e){ transResult.value='Error'; } };
+            const openCalculator = () => { calcExpression.value = newExpense.value.amount ? String(newExpense.value.amount) : ''; calcCurrency.value = newExpense.value.currency || 'TWD'; calcRate.value = newExpense.value.rate || 1; showPopupCalc.value = true; };
+            const confirmPopupCalc = () => { const res = parseFloat(calcResultDisplay.value); if (!isNaN(res)) { newExpense.value.amount = res; newExpense.value.currency = calcCurrency.value; newExpense.value.rate = calcRate.value; } showPopupCalc.value = false; clearCalc(); };
+            const appendCalc = (char) => { const lastChar = calcExpression.value.slice(-1); if (['+','-','*','/','.'].includes(char) && ['+','-','*','/','.'].includes(lastChar)) { calcExpression.value = calcExpression.value.slice(0, -1) + char; return; } calcExpression.value += char; };
+            const backspaceCalc = () => { calcExpression.value = calcExpression.value.slice(0, -1); };
+            const clearCalc = () => { calcExpression.value = ''; };
+            const updateEstimatedRate = () => { const defaultRates = { 'TWD':1, 'JPY': 0.21, 'KRW': 0.024, 'USD': 32.5, 'EUR': 35.0, 'CNY': 4.5, 'THB': 0.9 }; calcRate.value = defaultRates[calcCurrency.value] || 1; };
+            const updateExpenseRate = () => { const defaultRates = { 'TWD':1, 'JPY': 0.21, 'KRW': 0.024, 'USD': 32.5, 'EUR': 35.0, 'CNY': 4.5, 'THB': 0.9 }; newExpense.value.rate = defaultRates[newExpense.value.currency] || 1; };
+            const addExpense = () => { if(newExpense.value.amount) { if (!newExpense.value.payer) newExpense.value.payer = '我'; let finalAmount = parseInt(newExpense.value.amount); let originalAmount = null; let originalCurrency = null; if (newExpense.value.currency !== 'TWD') { originalAmount = finalAmount; originalCurrency = newExpense.value.currency; finalAmount = Math.round(finalAmount * (parseFloat(newExpense.value.rate) || 1)); } const expenseData = { desc: newExpense.value.desc, amount: finalAmount, category: newExpense.value.category, payer: newExpense.value.payer, originalAmount: originalAmount, originalCurrency: originalCurrency }; saveDB(`trips/${currentTripId.value}/expenses`, expenseData); newExpense.value.amount=''; newExpense.value.desc=''; expenseHighlight.value = true; setTimeout(() => expenseHighlight.value = false, 800); } };
+
+            onMounted(async () => {
+                const storedSheet = getLocal('tb_pixel_sheet');
+                if (storedSheet && storedSheet.length > 0) { avatarOptions.value = storedSheet; }
+                const storedProfile = localStorage.getItem('tb_profile');
+                let storedUid = localStorage.getItem('tb_uid');
+                if (!storedUid) { storedUid = 'ID' + Math.floor(Math.random()*1000000); localStorage.setItem('tb_uid', storedUid); }
+                user.value.uid = storedUid;
+                if (storedProfile) { userProfile.value = JSON.parse(storedProfile); } else { showForceProfileModal.value = true; }
+                myTrips.value = getLocal('tb_trips');
+                friends.value = getLocal('tb_friends');
+                try {
+                    if (window.firebase) {
+                        const fbConfig = {
+                            apiKey: "AIzaSyDFUGYOobmVxYFQMBYz1iQ4z1HIrdbTi8Q",
+                            authDomain: "travel-55c4b.firebaseapp.com",
+                            databaseURL: "https://travel-55c4b-default-rtdb.firebaseio.com",
+                            projectId: "travel-55c4b",
+                            storageBucket: "travel-55c4b.firebasestorage.app",
+                            messagingSenderId: "925227625640",
+                            appId: "1:925227625640:web:bdc242cbddf8e1d6f8a69d",
+                            measurementId: "G-K1B4N26V1T"
+                        };
+                        firebase.initializeApp(fbConfig);
+                        window.fb_db = firebase.firestore();
+                        await firebase.auth().signInAnonymously();
+                        isOnline.value = true;
+                        loadingText.value = '同步完成！';
+                        window.fb_db.collection('trips').onSnapshot((s) => { const cloudTrips = s.docs.map(d=>({id:d.id, ...d.data()})); if(cloudTrips.length) { myTrips.value = cloudTrips; setLocal('tb_trips', cloudTrips); } });
+                    }
+                } catch(e) { console.log("Offline mode"); }
+                setTimeout(() => { isLoading.value = false; }, 1500);
             });
 
             return {
-                mode, connectionStatusText, connectionStatusClass, toggleDebug,
-                user, userProfile, showProfileModal, tempName, saveProfile, isProcessing,
-                myTrips, currentTripId, currentTrip, createTrip, joinTrip, enterTrip, exitTrip, joinCode, newTripName, showInvite,
-                currentTab, tripDays, selectedDayIndex, formatDate, addDay, dayItems, showAddItem, newItem, locSuggestions, searchLoc, selectLoc, addItem, deleteItem,
-                initMap, mapQuery, searchMap, openMapTo,
-                expenses, newExp, addExpense, deleteExpense, totalExpense,
-                transInput, transResult, doTranslate
+                isLoading, loadingText, isOnline, isProcessing, resetApp,
+                user, userProfile, showForceProfileModal, tempProfile, saveProfile, openProfileEdit, editingProfile, avatarOptions, CHOCOLATE_AVATAR,
+                fileInput1, fileInput2, sheetInput, triggerFileUpload, handleFileUpload, triggerSheetUpload, handleSheetUpload,
+                myTrips, currentTripId, currentTrip, createTrip, enterTrip, exitTrip, showCreateTripModal, newTripName, newTripDate, openCreateModal,
+                currentTab, tripDays, selectedDayIndex, formatDate, addDay, dayItems, showAddItem, newItem, openAddItemModal, locationSuggestions, searchLocation, selectLocation, addItem, deleteItem, getTransportIcon,
+                mapSearchQuery, searchMapLocation, initMap, openMapTo,
+                expenses, newExpense, addExpense, deleteExpense, totalExpense, splitMembers, addSplitMember, removeSplitMember, averageExpense,
+                showRateInfo, showPopupCalc, openCalculator, confirmPopupCalc, calcExpression, calcCurrency, calcRate, calcResultDisplay,
+                appendCalc, backspaceCalc, clearCalc, updateEstimatedRate, updateExpenseRate, expenseHighlight, getCategoryIcon, calcInput,
+                checklist, newCheckItem, addCheckItem, toggleCheck, deleteCheckItem, populateDefaults,
+                transInput, transResult, doTranslate, weather, joinCode, joinTrip,
+                showFriendList, openFriendList, friends, addFriend, showQRModal, qrMode, openQRScanner, startScanner, stopScanner, closeQRModal, manualFriendId
             };
         }
     }).mount('#app');
