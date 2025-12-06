@@ -63,7 +63,7 @@
             color: white;
             padding: 12px 24px;
             border-radius: 50px;
-            z-index: 11000; /* Higher than everything */
+            z-index: 11000;
             display: none;
             font-size: 16px;
             font-weight: 500;
@@ -81,7 +81,7 @@
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.5);
-            z-index: 10000; /* Higher than Bottom Nav (9999) */
+            z-index: 10000;
             backdrop-filter: blur(2px);
             display: flex;
             align-items: flex-end;
@@ -92,7 +92,7 @@
             max-height: 85vh;
             border-radius: 20px 20px 0 0;
             padding: 20px;
-            padding-bottom: calc(30px + env(safe-area-inset-bottom)); /* Extra padding for bottom button */
+            padding-bottom: calc(30px + env(safe-area-inset-bottom));
             overflow-y: auto;
             animation: slideUp 0.3s ease-out;
             box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
@@ -155,74 +155,30 @@
             border-color: #34d399;
             cursor: not-allowed;
         }
+        /* CHANGE: Use data-date attribute for content */
         .month-btn.paid::after {
-            content: '✓ 已收';
+            content: attr(data-date); /* Display the date */
             position: absolute;
             bottom: 2px;
             left: 50%;
             transform: translateX(-50%);
             font-size: 9px;
             line-height: 1;
+            white-space: nowrap;
         }
 
         /* Print Styles */
         @media print {
-            /* Hide everything non-essential */
-            #view-entry, #view-settle, #view-settings, #mainHeader, #bottomNav, .toast, #loading-overlay, .modal-overlay, button {
-                display: none !important;
-            }
-            /* Show only the print container */
-            #printContainer {
-                display: block !important;
-                position: static;
-                width: 100%;
-                height: auto;
-                overflow: visible;
-            }
-            body {
-                background-color: white;
-                padding: 0;
-                margin: 0;
-                font-size: 12pt;
-                color: black;
-            }
-            /* Table Styling */
-            .print-table {
-                width: 100%;
-                border-collapse: collapse;
-                margin-top: 10px;
-            }
-            .print-table th, .print-table td {
-                border: 1px solid #000;
-                padding: 8px;
-                text-align: left;
-            }
-            .print-table th {
-                background-color: #f3f4f6 !important;
-                font-weight: bold;
-                -webkit-print-color-adjust: exact;
-            }
-            /* Stats Box */
-            .print-summary {
-                border: 2px solid #000;
-                padding: 15px;
-                margin-bottom: 20px;
-                display: grid;
-                grid-template-columns: 1fr 1fr 1fr;
-                gap: 10px;
-            }
-            .print-title {
-                text-align: center;
-                font-size: 24px;
-                font-weight: bold;
-                margin-bottom: 10px;
-                margin-top: 20px;
-            }
+            #view-entry, #view-settle, #view-settings, #mainHeader, #bottomNav, .toast, #loading-overlay, .modal-overlay, button { display: none !important; }
+            #printContainer { display: block !important; width: 100%; }
+            body { background-color: white; font-size: 12pt; color: black; }
+            .print-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+            .print-table th, .print-table td { border: 1px solid #000; padding: 8px; text-align: left; }
+            .print-table th { background-color: #f3f4f6 !important; font-weight: bold; -webkit-print-color-adjust: exact; }
+            .print-summary { border: 2px solid #000; padding: 15px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; }
+            .print-title { text-align: center; font-size: 24px; font-weight: bold; margin-bottom: 10px; margin-top: 20px; }
         }
-        
-        /* Hide print container on screen */
         #printContainer { display: none; }
-
         #mainHeader { transition: background-color 0.3s ease; }
     </style>
 </head>
@@ -252,16 +208,16 @@
             
             <div class="grid grid-cols-2 gap-3 text-center">
                 <div class="bg-white/10 backdrop-blur-sm rounded-xl p-2 border border-white/20 shadow-sm">
-                    <div class="text-xs text-white mb-1 font-medium opacity-90">個人手頭現金</div>
+                    <div class="text-xs text-white mb-1 font-medium opacity-90">個人手頭 (含LP)</div>
                     <div class="text-xl font-bold tracking-wide drop-shadow-sm" id="headerCashTotal">$0</div>
                 </div>
                 <div class="bg-white/10 backdrop-blur-sm rounded-xl p-2 border border-white/20 shadow-sm">
-                    <div class="text-xs text-white mb-1 font-medium opacity-90">個人銀行匯款</div>
+                    <div class="text-xs text-white mb-1 font-medium opacity-90">個人全部營收</div>
                     <div class="text-xl font-bold tracking-wide drop-shadow-sm" id="headerTransferTotal">$0</div>
                 </div>
             </div>
              <div class="mt-2 text-center text-white/90 font-medium">
-                <span class="text-xs opacity-90">個人今日總計: </span>
+                <span class="text-xs opacity-90">今日個人營收: </span>
                 <span id="headerGrandTotal" class="font-bold text-sm drop-shadow-sm">$0</span>
             </div>
         </div>
@@ -357,6 +313,8 @@
                             <select id="inputType" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-lg h-[54px] focus:border-gray-400 outline-none transition-colors">
                                 <option value="cash">💵 現金</option>
                                 <option value="transfer">🏦 匯款</option>
+                                <option value="linepay">🟢 LinePay</option>
+                                <option value="dad">👴 匯給爸爸</option>
                             </select>
                         </div>
                     </div>
@@ -411,24 +369,35 @@
                 </h2>
                 
                 <div class="space-y-6">
-                    <!-- Personal Stats -->
-                    <div class="grid grid-cols-2 gap-4">
+                    <!-- Personal Stats Grid -->
+                    <div class="grid grid-cols-2 gap-3">
                         <div class="bg-gray-50 p-3 rounded-xl border border-gray-100 text-center">
-                             <div class="text-xs text-gray-500 mb-1">個人手頭現金</div>
+                             <div class="text-xs text-gray-500 mb-1">現金 (持有)</div>
                              <div class="font-bold text-gray-800 text-lg" id="settleCash">$0</div>
                         </div>
                         <div class="bg-blue-50 p-3 rounded-xl border border-blue-100 text-center">
-                             <div class="text-xs text-blue-600 mb-1">個人銀行匯款</div>
+                             <div class="text-xs text-blue-600 mb-1">銀行匯款 (持有)</div>
                              <div class="font-bold text-blue-700 text-lg" id="settleTransfer">$0</div>
+                        </div>
+                        <div class="bg-lime-50 p-3 rounded-xl border border-lime-200 text-center">
+                             <div class="text-xs text-lime-700 mb-1">LinePay (持有)</div>
+                             <div class="font-bold text-lime-800 text-lg" id="settleLinePay">$0</div>
+                        </div>
+                        <div class="bg-purple-50 p-3 rounded-xl border border-purple-200 text-center opacity-70">
+                             <div class="text-xs text-purple-700 mb-1">已匯給爸爸</div>
+                             <div class="font-bold text-purple-800 text-lg" id="settleDad">$0</div>
                         </div>
                     </div>
 
                     <!-- Total and Salary -->
-                    <div class="flex justify-between items-center px-2">
-                        <span class="font-bold text-gray-600">個人總收入</span>
+                    <div class="flex justify-between items-center px-2 pt-2 border-t border-gray-100">
+                        <div>
+                            <span class="font-bold text-gray-600 block">個人總營收</span>
+                            <span class="text-[10px] text-gray-400">(含給爸爸的)</span>
+                        </div>
                         <span class="font-bold text-2xl text-emerald-600" id="settleTotal">$0</span>
                     </div>
-                    <hr class="border-gray-100">
+                    
                     <div class="bg-yellow-50 p-4 rounded-xl border border-yellow-200 shadow-sm">
                         <label class="block text-sm font-bold text-yellow-800 mb-2">
                             <i class="fa-solid fa-user-tag mr-1"></i> 我的薪水
@@ -438,10 +407,11 @@
                             <input type="number" id="mySalary" value="0" inputmode="decimal" pattern="[0-9]*" oninput="calculateSettlement()" class="w-full py-3 text-2xl font-bold text-gray-800 text-right outline-none">
                         </div>
                     </div>
+                    
                     <div class="bg-gradient-to-br from-emerald-500 to-teal-600 p-5 rounded-xl text-center shadow-lg text-white transform scale-105">
                         <div class="text-sm text-emerald-100 mb-1 font-medium">最後給爸爸的錢</div>
                         <div class="text-4xl font-bold tracking-tight" id="finalToDad">$0</div>
-                        <div class="text-[10px] text-emerald-200 mt-1">個人總收 - 我的薪水</div>
+                        <div class="text-[10px] text-emerald-200 mt-1">(現金+匯款+LinePay) - 薪水</div>
                     </div>
 
                     <!-- Others Breakdown (Bottom) -->
@@ -562,9 +532,20 @@
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 mb-1">收款日期 (預設為今天)</label>
-                    <input type="date" id="confirmModalDate" class="w-full p-3 bg-white border-2 border-emerald-100 rounded-xl text-lg font-bold text-gray-700 outline-none focus:border-emerald-400">
+                <div class="flex gap-2">
+                     <div class="flex-1">
+                        <label class="block text-xs font-bold text-gray-500 mb-1">收款日期</label>
+                        <input type="date" id="confirmModalDate" class="w-full p-3 bg-white border-2 border-emerald-100 rounded-xl text-lg font-bold text-gray-700 outline-none focus:border-emerald-400">
+                     </div>
+                     <div class="flex-1">
+                        <label class="block text-xs font-bold text-gray-500 mb-1">方式</label>
+                        <select id="confirmModalType" class="w-full p-3 bg-white border-2 border-emerald-100 rounded-xl text-lg h-[54px] focus:border-emerald-400 outline-none">
+                            <option value="cash">現金</option>
+                            <option value="transfer">匯款</option>
+                            <option value="linepay">LinePay</option>
+                            <option value="dad">匯給爸爸</option>
+                        </select>
+                     </div>
                 </div>
 
                 <div class="text-center">
@@ -924,6 +905,7 @@
                 btn.onclick = () => window.toggleMonth(i);
                 container.appendChild(btn);
             }
+            // Re-apply selections for current year if any
             window.appState.selectedMonthsSet.forEach(key => {
                 const [y, m] = key.split('-').map(Number);
                 if(y === window.appState.pickerYear) {
@@ -931,6 +913,12 @@
                     if(btn) btn.classList.add('selected');
                 }
             });
+            
+            // Re-apply Paid status for current year
+            // We can re-run checkPaidStatus if we have address, or just use stored logic?
+            // Better to re-run check
+            const addr = document.getElementById('inputAddress').value;
+            if(addr) window.checkPaidStatus(addr);
         };
 
         window.toggleMonth = function(m) {
@@ -977,6 +965,7 @@
             window.appState.selectedMonthsSet.clear();
             document.querySelectorAll('.month-btn').forEach(b => {
                 b.classList.remove('selected', 'paid');
+                b.removeAttribute('data-date');
             });
             window.updateSelectedMonthsInput();
             window.appState.currentBaseAmount = 0;
@@ -991,22 +980,33 @@
         };
 
         window.checkPaidStatus = function(address) {
+            // Always clear paid status first
+            document.querySelectorAll('.month-btn').forEach(b => {
+                b.classList.remove('paid');
+                b.removeAttribute('data-date');
+            });
+
             if(!address) return;
             
-            document.querySelectorAll('.month-btn').forEach(b => b.classList.remove('paid'));
-            
             const records = window.appState.records.filter(r => r.address === address);
-            const paidSet = new Set();
+            // Map: "YEAR-MONTH" -> "DATE_STRING"
+            const paidMap = new Map();
 
             const regex = /(\d+)年\s*([0-9,]+)/g;
 
             records.forEach(r => {
                 if(r.months) {
+                    // Get record date
+                    const d = new Date(r.date);
+                    const dateStr = `${d.getMonth()+1}/${d.getDate()}`;
+                    
                     let match;
-                    while ((match = regex.exec(r.months)) !== null) {
+                    // Need to reset regex lastIndex because of 'g' flag in loop
+                    const localRegex = new RegExp(regex);
+                    while ((match = localRegex.exec(r.months)) !== null) {
                         const y = parseInt(match[1]);
                         const ms = match[2].split(',').map(Number);
-                        ms.forEach(m => paidSet.add(`${y}-${m}`));
+                        ms.forEach(m => paidMap.set(`${y}-${m}`, dateStr));
                     }
                 }
             });
@@ -1015,13 +1015,16 @@
             
             for(let m=1; m<=12; m++) {
                 const key = `${currentPickerYear}-${m}`;
-                if(paidSet.has(key)) {
+                if(paidMap.has(key)) {
                     const btn = document.getElementById(`mbtn-${m}`);
-                    if(btn) btn.classList.add('paid');
-                    
-                    if(window.appState.selectedMonthsSet.has(key)) {
-                        window.appState.selectedMonthsSet.delete(key);
-                        if(btn) btn.classList.remove('selected');
+                    if(btn) {
+                        btn.classList.add('paid');
+                        btn.setAttribute('data-date', paidMap.get(key));
+                        
+                        if(window.appState.selectedMonthsSet.has(key)) {
+                            window.appState.selectedMonthsSet.delete(key);
+                            btn.classList.remove('selected');
+                        }
                     }
                 }
             }
@@ -1148,6 +1151,8 @@
                             <select id="${typeId}" class="bg-gray-50 border rounded p-2 text-sm w-20">
                                 <option value="cash" ${item.type === 'cash' ? 'selected' : ''}>現金</option>
                                 <option value="transfer" ${item.type === 'transfer' ? 'selected' : ''}>匯款</option>
+                                <option value="linepay" ${item.type === 'linepay' ? 'selected' : ''}>LinePay</option>
+                                <option value="dad" ${item.type === 'dad' ? 'selected' : ''}>匯給爸爸</option>
                             </select>
                             <input id="${noteId}" value="${item.note || ''}" placeholder="備註..." class="bg-gray-50 border rounded p-2 text-sm flex-1">
                             <button onclick="openConfirmCollectionModal('${item.id}', ${item.amount}, '${item.address}', '${item.category || 'stairs'}')" class="bg-green-500 text-white w-10 h-10 rounded-full shadow flex items-center justify-center active:scale-90 transition-transform flex-shrink-0">
@@ -1250,6 +1255,9 @@
             
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('confirmModalDate').value = today;
+            
+            // Set type in modal
+            document.getElementById('confirmModalType').value = type;
 
             document.getElementById('confirmCollectionModal').classList.remove('hidden');
             document.getElementById('confirmCollectionBtn').onclick = doConfirmCollection;
@@ -1266,6 +1274,7 @@
 
             const date = document.getElementById('confirmModalDate').value;
             const months = document.getElementById('confirmModalMonths').value; 
+            const type = document.getElementById('confirmModalType').value; 
             if(!date) { alert("請選擇日期"); return; }
 
             window.completePending(action.id, {
@@ -1275,7 +1284,7 @@
                 floor: action.floor,
                 months: months,
                 note: action.note,
-                type: action.type,
+                type: type,
                 category: action.category
             });
 
@@ -1297,6 +1306,11 @@
                 history.forEach(h => {
                     const d = new Date(h.date);
                     const dateStr = `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
+                    let typeText = '現金';
+                    if(h.type === 'transfer') typeText = '匯款';
+                    if(h.type === 'linepay') typeText = 'LinePay';
+                    if(h.type === 'dad') typeText = '匯給爸爸';
+
                     const row = document.createElement('div');
                     row.className = 'p-3 border-b border-gray-100 flex justify-between items-center';
                     row.innerHTML = `
@@ -1306,7 +1320,7 @@
                         </div>
                         <div class="text-right">
                             <div class="font-bold text-emerald-600">$${h.amount}</div>
-                            <div class="text-xs text-gray-400">${h.type === 'cash' ? '現金' : '匯款'}</div>
+                            <div class="text-xs text-gray-400">${typeText}</div>
                         </div>
                     `;
                     list.appendChild(row);
@@ -1320,7 +1334,6 @@
             document.getElementById('historyModal').classList.add('hidden');
         };
 
-        // --- Records & Selects ---
         window.renderRecords = function() {
             const list = document.getElementById('recordList');
             const records = window.appState.records.filter(r => {
@@ -1336,9 +1349,13 @@
             }
 
             records.forEach(record => {
-                const isCash = record.type === 'cash';
-                const tagClass = isCash ? 'tag-cash' : 'tag-transfer';
-                const tagText = isCash ? '現金' : '匯款';
+                // Tag determination
+                let tagClass = 'tag-cash';
+                let tagText = '現金';
+                if(record.type === 'transfer') { tagClass = 'tag-transfer'; tagText = '匯款'; }
+                else if(record.type === 'linepay') { tagClass = 'tag-linepay'; tagText = 'LinePay'; }
+                else if(record.type === 'dad') { tagClass = 'tag-dad'; tagText = '已匯給爸爸'; }
+
                 let noteHtml = record.note ? `<div class="text-sm mt-2 p-2 rounded-lg border border-gray-100 bg-gray-50 text-gray-600 flex items-center gap-2"><i class="fa-regular fa-comment-dots"></i> <span>${record.note}</span></div>` : '';
                 const dateObj = new Date(record.date);
                 const displayDate = `${dateObj.getMonth()+1}/${dateObj.getDate()}`;
@@ -1348,7 +1365,7 @@
                 else sTag = `<span class="text-xs font-bold px-2 py-0.5 rounded-full tag-stairs flex items-center gap-1">🪜 洗樓梯</span>`;
 
                 const item = document.createElement('div');
-                item.className = 'card p-4 relative border-l-4 ' + (isCash ? 'border-gray-400' : 'border-gray-300');
+                item.className = 'card p-4 relative border-l-4 ' + (record.type === 'cash' ? 'border-gray-400' : 'border-gray-300');
                 item.innerHTML = `
                     <div class="flex justify-between items-start">
                         <div class="flex-1 mr-2">
@@ -1356,7 +1373,7 @@
                                 <span class="text-xs font-bold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">${displayDate}</span>
                                 ${sTag}
                                 <span class="text-xs font-bold px-2 py-0.5 rounded-full ${tagClass} flex items-center gap-1">
-                                    ${isCash ? '<i class="fa-solid fa-coins text-[10px]"></i>' : '<i class="fa-solid fa-building-columns text-[10px]"></i>'} ${tagText}
+                                    ${tagText}
                                 </span>
                             </div>
                             <div class="text-xl font-bold text-gray-800 leading-tight mb-1">
@@ -1417,8 +1434,6 @@
             );
 
             list.innerHTML = '';
-            // Only filter if search term exists, or if you want to show all, adjust here
-            // Showing all customers if search is empty is often better for quick selection
             const filtered = customers.filter(c => c.address.toLowerCase().includes(search));
             
             document.getElementById('customerModalCollector').innerText = current;
@@ -1467,8 +1482,8 @@
         };
 
         window.updateSummary = function() {
-            let totalCashAll = 0, totalTransferAll = 0;
-            let totalCashMe = 0, totalTransferMe = 0;
+            let totalCashAll = 0, totalTransferAll = 0, totalLinePayAll = 0, totalDadAll = 0;
+            let totalCashMe = 0, totalTransferMe = 0, totalLinePayMe = 0, totalDadMe = 0;
             let breakdown = { '子晴': { cash: 0, transfer: 0 }, '子涵': { cash: 0, transfer: 0 }, '宗敬': { cash: 0, transfer: 0 }, '其他': { cash: 0, transfer: 0 } };
             let catStats = { 'stairs': 0, 'tank': 0 };
             const current = window.appState.currentCollector;
@@ -1481,28 +1496,46 @@
                     if (r.collector === '妹') col = '其他';
                     if (r.collector === '弟') col = '其他';
                 }
-                if (r.type === 'cash') { totalCashAll += r.amount; breakdown[col].cash += r.amount; } 
-                else { totalTransferAll += r.amount; breakdown[col].transfer += r.amount; }
                 
-                if (col === current) {
-                    if (r.type === 'cash') totalCashMe += r.amount; else totalTransferMe += r.amount;
+                // Stats
+                if (r.type === 'cash') {
+                    totalCashAll += r.amount;
+                    if (col === current) totalCashMe += r.amount;
+                    breakdown[col].cash += r.amount;
+                } else if (r.type === 'transfer') {
+                    totalTransferAll += r.amount;
+                    if (col === current) totalTransferMe += r.amount;
+                    breakdown[col].transfer += r.amount;
+                } else if (r.type === 'linepay') {
+                    totalLinePayAll += r.amount;
+                    if (col === current) totalLinePayMe += r.amount;
+                } else if (r.type === 'dad') {
+                    totalDadAll += r.amount;
+                    if (col === current) totalDadMe += r.amount;
                 }
 
                 const cat = r.category === 'tank' ? 'tank' : 'stairs';
                 catStats[cat] += r.amount;
             });
             
-            const grandTotalAll = totalCashAll + totalTransferAll;
-            const grandTotalMe = totalCashMe + totalTransferMe;
+            const grandTotalMe = totalCashMe + totalTransferMe + totalLinePayMe + totalDadMe;
+            const userHolding = totalCashMe + totalTransferMe + totalLinePayMe; // Dad money not held
             const fmt = (n) => `$${n.toLocaleString()}`;
 
-            document.getElementById('headerCashTotal').innerText = fmt(totalCashMe);
+            document.getElementById('headerCashTotal').innerText = fmt(totalCashMe + totalLinePayMe);
             document.getElementById('headerTransferTotal').innerText = fmt(totalTransferMe);
             document.getElementById('headerGrandTotal').innerText = fmt(grandTotalMe);
             
             document.getElementById('settleCash').innerText = fmt(totalCashMe);
             document.getElementById('settleTransfer').innerText = fmt(totalTransferMe);
+            document.getElementById('settleLinePay').innerText = fmt(totalLinePayMe);
+            document.getElementById('settleDad').innerText = fmt(totalDadMe);
             document.getElementById('settleTotal').innerText = fmt(grandTotalMe);
+
+            // Calculate Final to Dad: (User Holding) - Salary
+            const salary = parseInt(document.getElementById('mySalary').value) || 0;
+            const finalToDad = userHolding - salary;
+            document.getElementById('finalToDad').innerText = fmt(finalToDad);
 
             document.getElementById('categoryBreakdown').innerHTML = `
                 <div class="bg-white p-3 rounded-lg border border-orange-200 text-center">
@@ -1514,34 +1547,10 @@
                     <div class="text-xl font-bold text-gray-800">${fmt(catStats.tank)}</div>
                 </div>
             `;
-
-            const bdDiv = document.getElementById('collectorBreakdown');
-            bdDiv.innerHTML = '';
-            const people = [
-                { id: '子晴', name: '子晴', icon: '🎠', color: 'text-[#795548] bg-[#f5ebe0]' },
-                { id: '子涵', name: '子涵', icon: '🌸', color: 'text-pink-800 bg-[#ffe4e6]' },
-                { id: '宗敬', name: '宗敬', icon: '☁️', color: 'text-sky-800 bg-sky-100' },
-                { id: '其他', name: '其他', icon: '📦', color: 'text-gray-600 bg-gray-100' }
-            ];
-            people.forEach(p => {
-                const data = breakdown[p.id];
-                const pTotal = data.cash + data.transfer;
-                if(pTotal > 0) {
-                    const row = document.createElement('div');
-                    row.className = 'flex justify-between items-center text-sm p-2 rounded-lg bg-white border border-gray-100';
-                    row.innerHTML = `<div class="flex items-center gap-2"><span class="w-8 h-8 rounded-full flex items-center justify-center ${p.color}">${p.icon}</span><span class="font-bold text-gray-700">${p.name}</span></div><div class="text-right"><div class="font-bold text-gray-800">$${pTotal.toLocaleString()}</div><div class="text-xs text-gray-400">現${data.cash} / 匯${data.transfer}</div></div>`;
-                    bdDiv.appendChild(row);
-                }
-            });
-            calculateSettlement();
         };
 
         window.calculateSettlement = function() {
-            const salary = parseInt(document.getElementById('mySalary').value) || 0;
-            localStorage.setItem('cleaning_app_salary', salary);
-            const totalStr = document.getElementById('settleTotal').innerText.replace(/[$,]/g, '');
-            const total = parseInt(totalStr) || 0;
-            document.getElementById('finalToDad').innerText = `$${(total - salary).toLocaleString()}`;
+            window.updateSummary(); // Re-trigger calculation
         };
 
         window.addTag = function(text) { const el = document.getElementById('inputNote'); el.value = el.value ? el.value + `，${text}` : text; };
@@ -1583,12 +1592,16 @@
 
             let totalCash = 0;
             let totalTransfer = 0;
+            let totalLinePay = 0;
+            let totalDad = 0;
             let totalAmount = 0;
 
             // Calculate totals
             records.forEach(r => {
                 if(r.type === 'cash') totalCash += r.amount;
-                else totalTransfer += r.amount;
+                else if(r.type === 'transfer') totalTransfer += r.amount;
+                else if(r.type === 'linepay') totalLinePay += r.amount;
+                else if(r.type === 'dad') totalDad += r.amount;
                 totalAmount += r.amount;
             });
 
@@ -1601,15 +1614,23 @@
                 <div class="print-summary">
                     <div>
                         <div style="font-size:12px;">本期總收入</div>
-                        <div style="font-size:20px; font-weight:bold;">$${totalAmount.toLocaleString()}</div>
+                        <div style="font-size:16px; font-weight:bold;">$${totalAmount.toLocaleString()}</div>
                     </div>
                     <div>
                         <div style="font-size:12px;">現金總額</div>
-                        <div style="font-size:20px; font-weight:bold;">$${totalCash.toLocaleString()}</div>
+                        <div style="font-size:16px; font-weight:bold;">$${totalCash.toLocaleString()}</div>
                     </div>
                     <div>
                         <div style="font-size:12px;">匯款總額</div>
-                        <div style="font-size:20px; font-weight:bold;">$${totalTransfer.toLocaleString()}</div>
+                        <div style="font-size:16px; font-weight:bold;">$${totalTransfer.toLocaleString()}</div>
+                    </div>
+                    <div>
+                        <div style="font-size:12px;">LinePay</div>
+                        <div style="font-size:16px; font-weight:bold;">$${totalLinePay.toLocaleString()}</div>
+                    </div>
+                    <div>
+                        <div style="font-size:12px;">已匯給爸爸</div>
+                        <div style="font-size:16px; font-weight:bold;">$${totalDad.toLocaleString()}</div>
                     </div>
                 </div>
 
@@ -1621,8 +1642,8 @@
                             <th width="25%">地址/客戶</th>
                             <th width="10%">項目</th>
                             <th width="10%">金額</th>
-                            <th width="8%">方式</th>
-                            <th width="15%">月份</th>
+                            <th width="10%">方式</th>
+                            <th width="13%">月份</th>
                             <th width="10%">備註</th>
                         </tr>
                     </thead>
@@ -1633,7 +1654,11 @@
                 const d = new Date(r.date);
                 const dStr = `${d.getMonth()+1}/${d.getDate()}`;
                 const cat = r.category === 'tank' ? '水塔' : '樓梯';
-                const type = r.type === 'cash' ? '現金' : '匯款';
+                let type = '現金';
+                if(r.type === 'transfer') type = '匯款';
+                if(r.type === 'linepay') type = 'LinePay';
+                if(r.type === 'dad') type = '已匯爸';
+                
                 const note = r.note || '';
                 const collector = r.collector || '子晴';
                 const floor = r.floor ? `(${r.floor})` : '';
@@ -1655,15 +1680,12 @@
             html += `
                     </tbody>
                 </table>
-                <div style="margin-top:20px; text-align:right; font-size:10px;">
-                    報表產生於：清潔收費小幫手
-                </div>
             `;
 
             document.getElementById('printContainer').innerHTML = html;
             window.print();
         };
-        
+
         window.openAddCustomerModal = function() {
             window.appState.editingCustomerId = null;
             document.getElementById('customerModalTitle').innerHTML = '<i class="fa-solid fa-user-plus text-green-600"></i> 新增常用客戶';
