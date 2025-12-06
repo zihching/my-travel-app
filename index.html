@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SideMission v7.8</title>
+    <title>SideMission v7.9</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -22,7 +22,7 @@
     <!-- Pixel Font -->
     <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
 
-    <!-- QR Code Libraries -->
+    <!-- QR Code -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
@@ -258,7 +258,10 @@
             <div v-if="currentTab === 'tools'" class="grid grid-cols-1 gap-4">
                 <div class="bg-white p-5 rounded-2xl card-shadow">
                     <h3 class="font-bold text-primary mb-4 flex items-center gap-2 text-sm"><i class="fa-solid fa-suitcase text-secondary"></i> 行李清單</h3>
+                    
+                    <!-- One-Click Import Button -->
                     <div v-if="checklist.length === 0" class="text-center py-6 border border-dashed border-gray-200 rounded-xl mb-4"><p class="text-xs text-gray-400 mb-3">空蕩蕩的背包...</p><button @click="populateDefaults" class="bg-secondary text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm hover:bg-opacity-90 transition">一鍵放入必備品</button></div>
+
                     <div class="flex gap-2 mb-4"><input v-model="newCheckItem" @keyup.enter="addCheckItem" placeholder="還要帶什麼？" class="flex-1 bg-gray-50 px-3 py-2 rounded-lg text-sm outline-none text-primary"><button @click="addCheckItem" class="bg-primary text-white w-9 rounded-lg"><i class="fa-solid fa-plus text-xs"></i></button></div>
                     <div class="space-y-1"><div v-for="item in checklist" :key="item.id" @click="toggleCheck(item)" class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition group"><div class="w-4 h-4 rounded border border-gray-300 flex items-center justify-center transition" :class="{'bg-green-500 border-green-500': item.checked}"><i class="fa-solid fa-check text-white text-[10px]" v-if="item.checked"></i></div><span :class="{'line-through text-gray-300': item.checked, 'text-primary': !item.checked}" class="flex-1 text-sm transition">{{ item.text }}</span><button @click.stop="deleteCheckItem(item.id)" class="text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition"><i class="fa-solid fa-trash text-xs"></i></button></div></div>
                 </div>
@@ -531,36 +534,31 @@
             const openCreateModal = () => showCreateTripModal.value = true;
             const openAddItemModal = () => { showAddItem.value = true; newItem.value = { time: '09:00', title: '', searchQuery: '', locName: '', transport: 'walking' }; locationSuggestions.value = []; };
             const selectLocation = (l) => { newItem.value.searchQuery = l.display_name; newItem.value.locName = l.display_name.split(',')[0]; newItem.value.lat = l.lat; newItem.value.lng = l.lon; locationSuggestions.value = []; };
+            
+            // 12 Item Checklist
             const populateDefaults = () => { 
                 const defaults = [
-                    "護照 🛂", 
-                    "機票/登機證 🎫", 
-                    "網卡/Wifi機 📶", 
-                    "錢包 (外幣/信用卡) 💴", 
-                    "行動電源 🔋", 
-                    "充電線/轉接頭 🔌",
-                    "個人藥品 💊",      // New
-                    "盥洗用品 🪥",      // New
-                    "換洗衣物 👕",      // New
-                    "雨具 ☂️",         // New
-                    "耳機 🎧",          // New
-                    "太陽眼鏡 🕶️"       // New
+                    "護照 🛂", "機票/登機證 🎫", "網卡/Wifi機 📶", "錢包 (外幣/信用卡) 💴", "行動電源 🔋", 
+                    "充電線/轉接頭 🔌", "個人藥品 💊", "盥洗用品 🪥", "換洗衣物 👕", "雨具 ☂️", "耳機 🎧", "太陽眼鏡 🕶️"
                 ]; 
                 defaults.forEach(txt => { 
                     if(!checklist.value.some(i => i.text === txt)) 
                         saveDB(`trips/${currentTripId.value}/checklist`, { text: txt, checked: false }); 
                 }); 
             };
+            
             const createTrip = async () => { 
                 if (!newTripName.value) return alert("請輸入名稱"); 
                 isProcessing.value = true; 
                 const tid = await saveDB('trips', { name: newTripName.value, startDate: newTripDate.value, members: [user.value.uid], splitMembers: ['我'], createdAt: new Date().toISOString() }); 
-                // Updated defaults for new trip creation
+                
+                // Auto-populate 12 items on creation
                 const defaults = [
                     "護照 🛂", "機票/登機證 🎫", "網卡/Wifi機 📶", "錢包 (外幣/信用卡) 💴", "行動電源 🔋", 
                     "充電線/轉接頭 🔌", "個人藥品 💊", "盥洗用品 🪥", "換洗衣物 👕", "雨具 ☂️", "耳機 🎧", "太陽眼鏡 🕶️"
                 ];
                 defaults.forEach(txt => saveDB(`trips/${tid}/checklist`, { text: txt, checked: false })); 
+                
                 showCreateTripModal.value = false; newTripName.value = ''; isProcessing.value = false; 
             };
             const enterTrip = (t) => { 
@@ -593,26 +591,40 @@
             const addExpense = () => { if(newExpense.value.amount) { if (!newExpense.value.payer) newExpense.value.payer = '我'; let finalAmount = parseInt(newExpense.value.amount); let originalAmount = null; let originalCurrency = null; if (newExpense.value.currency !== 'TWD') { originalAmount = finalAmount; originalCurrency = newExpense.value.currency; finalAmount = Math.round(finalAmount * (parseFloat(newExpense.value.rate) || 1)); } const expenseData = { desc: newExpense.value.desc, amount: finalAmount, category: newExpense.value.category, payer: newExpense.value.payer, originalAmount: originalAmount, originalCurrency: originalCurrency }; saveDB(`trips/${currentTripId.value}/expenses`, expenseData); newExpense.value.amount=''; newExpense.value.desc=''; expenseHighlight.value = true; setTimeout(() => expenseHighlight.value = false, 800); } };
 
             onMounted(async () => {
-                // Load User ID
+                // 1. Identify User
                 let storedUid = localStorage.getItem('tb_uid');
                 let isNewUser = false;
 
-                if (!storedUid) { 
-                    storedUid = 'ID' + Math.floor(Math.random()*1000000); 
+                if (!storedUid) {
+                    storedUid = 'ID' + Math.floor(Math.random()*1000000);
                     localStorage.setItem('tb_uid', storedUid);
-                    isNewUser = true; 
-                } else {
-                    const storedProfile = localStorage.getItem(getLocalKey('profile'));
-                    if (storedProfile) { userProfile.value = JSON.parse(storedProfile); } else { showForceProfileModal.value = true; }
+                    isNewUser = true;
                 }
-                user.value.uid = storedUid;
                 
-                // Prefixed Load
+                // FIX: Set user.value.uid BEFORE using getLocalKey
+                user.value.uid = storedUid;
+
+                // 2. Load Profile Data
+                if (isNewUser) {
+                    showForceProfileModal.value = true;
+                } else {
+                    // Check for existing profile
+                    const storedProfile = localStorage.getItem(getLocalKey('profile'));
+                    if (storedProfile) {
+                        userProfile.value = JSON.parse(storedProfile);
+                        // Do NOT show modal if profile exists
+                    } else {
+                        showForceProfileModal.value = true;
+                    }
+                }
+                
+                // 3. Load Data
                 myTrips.value = getLocal('trips');
                 friends.value = getLocal('friends');
                 const storedSheet = getLocal('pixel_sheet');
                 if (storedSheet && storedSheet.length > 0) { avatarOptions.value = storedSheet; }
 
+                // 4. Firebase Sync
                 try {
                     if (window.firebase) {
                         const fbConfig = {
