@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SideMission v7.9</title>
+    <title>SideMission v8.0</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -423,7 +423,8 @@
 
             // DB
             const saveDB = async (path, data, id = null) => { 
-                const docId = id || 'doc_' + Date.now(); const key = path.split('/')[0]; const list = getLocal(key); 
+                const docId = id || 'doc_' + Date.now() + '_' + Math.floor(Math.random()*10000); // FIXED: Random ID
+                const key = path.split('/')[0]; const list = getLocal(key); 
                 const payload = { id: docId, ...data }; 
                 if (path.includes('trips') && !path.includes('/')) {
                      const idx = list.findIndex(x => x.id === docId);
@@ -535,7 +536,7 @@
             const openAddItemModal = () => { showAddItem.value = true; newItem.value = { time: '09:00', title: '', searchQuery: '', locName: '', transport: 'walking' }; locationSuggestions.value = []; };
             const selectLocation = (l) => { newItem.value.searchQuery = l.display_name; newItem.value.locName = l.display_name.split(',')[0]; newItem.value.lat = l.lat; newItem.value.lng = l.lon; locationSuggestions.value = []; };
             
-            // 12 Item Checklist
+            // Full Checklist Defaults
             const populateDefaults = () => { 
                 const defaults = [
                     "護照 🛂", "機票/登機證 🎫", "網卡/Wifi機 📶", "錢包 (外幣/信用卡) 💴", "行動電源 🔋", 
@@ -552,7 +553,7 @@
                 isProcessing.value = true; 
                 const tid = await saveDB('trips', { name: newTripName.value, startDate: newTripDate.value, members: [user.value.uid], splitMembers: ['我'], createdAt: new Date().toISOString() }); 
                 
-                // Auto-populate 12 items on creation
+                // Auto-populate full list
                 const defaults = [
                     "護照 🛂", "機票/登機證 🎫", "網卡/Wifi機 📶", "錢包 (外幣/信用卡) 💴", "行動電源 🔋", 
                     "充電線/轉接頭 🔌", "個人藥品 💊", "盥洗用品 🪥", "換洗衣物 👕", "雨具 ☂️", "耳機 🎧", "太陽眼鏡 🕶️"
