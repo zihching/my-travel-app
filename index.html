@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SideMission v7.3</title>
+    <title>SideMission v7.5</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -72,12 +72,12 @@
         /* Loading Overlay */
         .loading-overlay { position: fixed; inset: 0; background: var(--color-bg); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s; }
         
-        /* Error Display */
+        /* Error Box */
         #error-box { display: none; position: fixed; top: 0; left: 0; right: 0; padding: 20px; background: #ffe4e6; color: #e11d48; z-index: 20000; font-size: 12px; font-family: monospace; border-bottom: 1px solid #f43f5e; max-height: 50vh; overflow: auto; }
         
         #qr-reader { width: 100%; border-radius: 16px; overflow: hidden; }
         #qr-reader video { object-fit: cover; border-radius: 16px; }
-        
+
         [v-cloak] { display: none; }
     </style>
     <script>
@@ -92,8 +92,9 @@
     window.onerror = function(msg, url, line, col, error) {
         const box = document.getElementById('error-box');
         box.style.display = 'block';
-        box.innerHTML += `<strong>Error:</strong> ${msg}<br><small>${url}:${line}</small><br><br>`;
-        console.error("Global Error:", error);
+        box.innerHTML += `⚠️ Error: ${msg} <br> ${url}:${line}`;
+        const loader = document.querySelector('.loading-overlay');
+        if(loader) loader.style.display = 'none';
     };
 </script>
 
@@ -168,22 +169,17 @@
 
     <!-- 2. TRIP VIEW -->
     <div v-else class="flex flex-col h-full w-full">
-        <!-- Header -->
         <div class="px-4 py-3 bg-bg-cream z-20 flex items-center justify-between shrink-0">
             <button @click="exitTrip" class="w-9 h-9 flex items-center justify-center text-primary bg-white rounded-full shadow-sm hover:bg-gray-50 transition border border-gray-100"><i class="fa-solid fa-arrow-left text-sm"></i></button>
             <h1 class="font-bold text-primary truncate text-base mx-4">{{ currentTrip.name }}</h1>
             <div class="w-9 h-9"></div>
         </div>
-
-        <!-- Tabs -->
         <div v-if="currentTab==='itinerary'" class="bg-bg-cream pb-2 px-4 z-10 flex overflow-x-auto no-scrollbar gap-2 shrink-0 border-b border-gray-100/50">
             <button v-for="(day, idx) in tripDays" :key="idx" @click="selectedDayIndex=idx" class="flex-shrink-0 px-4 py-2 rounded-full transition-all text-xs font-bold border" :class="selectedDayIndex===idx ? 'bg-primary text-white border-primary shadow-md' : 'bg-white text-gray-400 border-transparent'">Day {{ idx+1 }}</button>
             <button @click="addDay" class="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 text-xs"><i class="fa-solid fa-plus"></i></button>
         </div>
 
-        <!-- Scroll Content -->
         <div class="flex-1 overflow-y-auto overflow-x-hidden bg-bg-cream relative pb-32 p-4 space-y-5 w-full" id="scrollContainer">
-            
             <!-- ITINERARY -->
             <div v-if="currentTab === 'itinerary'">
                 <div class="bg-white p-4 rounded-2xl card-shadow border border-gray-50 flex justify-between items-center mb-4">
@@ -325,13 +321,16 @@
                 </div>
             </div>
             <input v-model="tempProfile.name" class="w-full bg-gray-50 p-3 rounded-xl mb-4 text-center outline-none border border-transparent focus:border-secondary text-sm font-bold" placeholder="輸入名字">
-            <button @click="saveProfile" class="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm shadow-md">儲存</button>
+            <div class="flex gap-2">
+                <button @click="logout" class="flex-1 bg-gray-100 text-gray-500 py-3 rounded-xl font-bold text-sm hover:bg-red-50 hover:text-red-400">登出重置</button>
+                <button @click="saveProfile" class="flex-1 bg-primary text-white py-3 rounded-xl font-bold text-sm shadow-md">儲存</button>
+            </div>
         </div>
     </div>
     
     <div v-if="showForceProfileModal" class="modal-overlay"><div class="modal-content text-center"><h3 class="font-bold text-primary text-lg mb-2">歡迎來到 SideMission</h3><p class="text-xs text-gray-400 mb-4">請建立您的島民檔案</p><div class="flex flex-col items-center mb-6"><div class="relative w-28 h-28 mb-4"><img :src="tempProfile.avatar || CHOCOLATE_AVATAR" class="w-full h-full object-cover rounded-full border border-gray-100 pixel-art bg-[#90CAF9]"><button @click="triggerFileUpload" class="absolute bottom-0 right-0 bg-primary text-white w-9 h-9 rounded-full border-2 border-white flex items-center justify-center shadow-md active:scale-90 transition"><i class="fa-solid fa-camera text-xs"></i></button><input type="file" ref="fileInput1" @change="handleFileUpload" class="hidden" accept="image/*"></div></div><input v-model="tempProfile.name" placeholder="您的名字" class="w-full bg-gray-50 p-4 rounded-2xl mb-6 text-center border border-transparent focus:border-secondary outline-none text-sm font-bold"><button @click="saveProfile" :disabled="!tempProfile.name" class="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm shadow-md">開始旅程</button></div></div>
     <div v-if="showCreateTripModal" class="modal-overlay" @click.self="showCreateTripModal=false"><div class="modal-content"><h3 class="text-lg font-bold text-primary mb-1">開啟新任務</h3><p class="text-xs text-gray-400 mb-4">準備好要去哪裡冒險了嗎？</p><input v-model="newTripName" placeholder="任務名稱" class="w-full bg-gray-50 p-3 rounded-xl outline-none border border-transparent focus:border-secondary mb-3 text-sm font-bold text-primary"><input v-model="newTripDate" type="date" class="w-full bg-gray-50 p-3 rounded-xl outline-none border border-transparent focus:border-secondary mb-6 text-sm text-gray-500 font-bold"><div class="flex gap-3"><button @click="showCreateTripModal=false" class="flex-1 py-3 bg-gray-100 text-gray-500 rounded-xl text-sm font-bold">取消</button><button @click="createTrip" :disabled="isProcessing" class="flex-1 py-3 bg-primary text-white rounded-xl text-sm font-bold shadow-md">{{ isProcessing?'建立中...':'出發' }}</button></div></div></div>
-    <div v-if="showAddItem" class="modal-overlay" @click.self="showAddItem=false"><div class="modal-content"><h3 class="text-lg font-bold text-primary mb-4">記錄行程</h3><div class="space-y-3"><input v-model="newItem.time" type="time" class="w-full bg-gray-50 p-3 rounded-xl text-sm font-bold text-primary outline-none"><div class="flex gap-2"><input v-model="newItem.searchQuery" placeholder="搜尋地點" class="flex-1 bg-gray-50 p-3 rounded-xl text-sm outline-none"><button @click="searchLocation(newItem.searchQuery)" class="bg-primary text-white w-10 rounded-xl flex items-center justify-center"><i class="fa-solid fa-search text-xs"></i></button></div><div v-if="locationSuggestions.length" class="max-h-32 overflow-y-auto bg-gray-50 rounded-xl border border-gray-100"><div v-for="l in locationSuggestions" @click="selectLocation(l)" class="p-3 border-b border-gray-100 text-xs text-primary hover:bg-white cursor-pointer">{{ l.display_name }}</div></div><input v-model="newItem.title" placeholder="標題" class="w-full bg-gray-50 p-3 rounded-xl text-sm outline-none font-bold"><div class="flex justify-around bg-gray-50 p-2 rounded-xl"><i @click="newItem.transport='car'" class="fa-solid fa-car p-2 rounded-lg cursor-pointer transition text-sm" :class="newItem.transport==='car'? 'bg-white text-primary shadow-sm':'text-gray-300'"></i><i @click="newItem.transport='train'" class="fa-solid fa-train-subway p-2 rounded-lg cursor-pointer transition text-sm" :class="newItem.transport==='train'? 'bg-white text-primary shadow-sm':'text-gray-300'"></i><i @click="newItem.transport='walking'" class="fa-solid fa-person-walking p-2 rounded-lg cursor-pointer transition text-sm" :class="newItem.transport==='walking'? 'bg-white text-primary shadow-sm':'text-gray-300'"></i></div><textarea v-model="newItem.notes" placeholder="備註..." class="w-full bg-gray-50 p-3 rounded-xl h-20 text-sm resize-none outline-none"></textarea><button @click="addItem" class="w-full bg-primary text-white py-3 rounded-xl font-bold shadow-md text-sm">新增</button></div></div></div>
+    <div v-if="showAddItem" class="modal-overlay" @click.self="showAddItem=false"><div class="modal-content"><h3 class="text-lg font-bold text-primary mb-4">記錄行程</h3><div class="space-y-3"><input v-model="newItem.time" type="time" class="w-full bg-gray-50 p-3 rounded-xl text-sm font-bold text-primary outline-none"><div class="flex gap-2"><input v-model="newItem.searchQuery" placeholder="搜尋地點" class="flex-1 bg-gray-50 p-3 rounded-xl text-sm outline-none"><button @click="searchMapLocation(newItem.searchQuery)" class="bg-primary text-white w-10 rounded-xl flex items-center justify-center"><i class="fa-solid fa-search text-xs"></i></button></div><div v-if="locationSuggestions.length" class="max-h-32 overflow-y-auto bg-gray-50 rounded-xl border border-gray-100"><div v-for="l in locationSuggestions" @click="selectLocation(l)" class="p-3 border-b border-gray-100 text-xs text-primary hover:bg-white cursor-pointer">{{ l.display_name }}</div></div><input v-model="newItem.title" placeholder="標題" class="w-full bg-gray-50 p-3 rounded-xl text-sm outline-none font-bold"><div class="flex justify-around bg-gray-50 p-2 rounded-xl"><i @click="newItem.transport='car'" class="fa-solid fa-car p-2 rounded-lg cursor-pointer transition text-sm" :class="newItem.transport==='car'? 'bg-white text-primary shadow-sm':'text-gray-300'"></i><i @click="newItem.transport='train'" class="fa-solid fa-train-subway p-2 rounded-lg cursor-pointer transition text-sm" :class="newItem.transport==='train'? 'bg-white text-primary shadow-sm':'text-gray-300'"></i><i @click="newItem.transport='walking'" class="fa-solid fa-person-walking p-2 rounded-lg cursor-pointer transition text-sm" :class="newItem.transport==='walking'? 'bg-white text-primary shadow-sm':'text-gray-300'"></i></div><textarea v-model="newItem.notes" placeholder="備註..." class="w-full bg-gray-50 p-3 rounded-xl h-20 text-sm resize-none outline-none"></textarea><button @click="addItem" class="w-full bg-primary text-white py-3 rounded-xl font-bold shadow-md text-sm">新增</button></div></div></div>
 </div>
 
 <script>
@@ -402,33 +401,68 @@
             const averageExpense = computed(() => { if (splitMembers.value.length === 0) return 0; return Math.round(totalExpense.value / splitMembers.value.length); });
 
             // Helpers
-            const getLocal = (k) => JSON.parse(localStorage.getItem(k) || '[]');
-            const setLocal = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+            // Core helper functions first to prevent reference errors
+            const getLocalKey = (key) => `${user.value.uid}_${key}`;
+            const getLocal = (k) => JSON.parse(localStorage.getItem(getLocalKey(k)) || '[]');
+            const setLocal = (k, v) => localStorage.setItem(getLocalKey(k), JSON.stringify(v));
             const formatDate = (d) => { const date = new Date(d); return `${date.getMonth()+1}/${date.getDate()}`; };
             const getCategoryIcon = (c) => ({'食':'🍔','住':'🏨','行':'🚗','樂':'🎟️','購':'🛍️','公':'💸'}[c] || '🧾');
             const getTransportIcon = (t) => ({'car':'fa-solid fa-car','train':'fa-solid fa-train-subway','walking':'fa-solid fa-person-walking'}[t]);
+            
+            // Search Location Helper (Defined early for hoisting)
+            const searchLocation = async (q) => { 
+                if(!q) return;
+                try{ 
+                    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}`); 
+                    const data = await r.json();
+                    locationSuggestions.value = data; // Update suggestions for list
+                    return data;
+                }catch(e){ return []; } 
+            };
 
             // DB
             const saveDB = async (path, data, id = null) => { 
-                const docId = id || 'doc_' + Date.now(); const key = `tb_${path.replace(/\//g, '_')}`; const list = getLocal(key); 
-                const payload = { id: docId, ...data }; const idx = list.findIndex(x => x.id === docId); 
-                if (idx >= 0) list[idx] = { ...list[idx], ...data }; else list.push(payload); setLocal(key, list); 
-                if (path.includes('trips')) myTrips.value = list; if (path.includes('itinerary')) allItineraryItems.value = list; 
-                if (path.includes('expenses')) expenses.value = list; if (path.includes('checklist')) checklist.value = list;
+                const docId = id || 'doc_' + Date.now(); const key = path.split('/')[0]; const list = getLocal(key); 
+                const payload = { id: docId, ...data }; 
+                if (path.includes('trips') && !path.includes('/')) {
+                     const idx = list.findIndex(x => x.id === docId);
+                     if (idx >= 0) list[idx] = { ...list[idx], ...data }; else list.push(payload);
+                } else {
+                    const subKey = path.replace(/\//g, '_');
+                    const subList = getLocal(subKey);
+                    const idx = subList.findIndex(x => x.id === docId);
+                    if (idx >= 0) subList[idx] = { ...subList[idx], ...data }; else subList.push(payload);
+                    setLocal(subKey, subList);
+                     if (path.includes('itinerary')) allItineraryItems.value = subList; 
+                     if (path.includes('expenses')) expenses.value = subList; 
+                     if (path.includes('checklist')) checklist.value = subList;
+                     return docId;
+                }
+                setLocal(key, list); 
+                if (path.includes('trips')) myTrips.value = list;
                 if (isOnline.value && window.fb_db) try { if (id) await window.fb_db.collection(path.split('/')[0]).doc(id).set(data, { merge: true }); else await window.fb_db.collection(path).add(data); } catch (e) {} 
                 return docId; 
             };
-            const deleteDB = async (path, id) => { const key = `tb_${path.replace(/\//g, '_')}`; let list = getLocal(key); list = list.filter(x => x.id !== id); setLocal(key, list); if (path.includes('itinerary')) allItineraryItems.value = list; if (path.includes('expenses')) expenses.value = list; if (path.includes('checklist')) checklist.value = list; };
+            
+            const deleteDB = async (path, id) => { 
+                const subKey = path.replace(/\//g, '_');
+                let list = getLocal(subKey);
+                list = list.filter(x => x.id !== id);
+                setLocal(subKey, list);
+                 if (path.includes('itinerary')) allItineraryItems.value = list; 
+                 if (path.includes('expenses')) expenses.value = list; 
+                 if (path.includes('checklist')) checklist.value = list;
+            };
 
             // Logic
-            const openFriendList = () => { friends.value = getLocal('tb_friends'); showFriendList.value = true; };
-            const addFriend = (id) => { if (!id) return; const newFriend = { id: id, name: '島民 ' + id.slice(0,4), avatar: DEFAULT_AVATAR }; friends.value.push(newFriend); setLocal('tb_friends', friends.value); alert("成功加入好友！"); manualFriendId.value = ''; };
+            const openFriendList = () => { friends.value = getLocal('friends'); showFriendList.value = true; };
+            const addFriend = (id) => { if (!id) return; const newFriend = { id: id, name: '島民 ' + id.slice(0,4), avatar: DEFAULT_AVATAR }; friends.value.push(newFriend); setLocal('friends', friends.value); alert("成功加入好友！"); manualFriendId.value = ''; };
             const openQRScanner = (mode) => { qrMode.value = mode; showFriendList.value = false; showQRModal.value = true; if (mode === 'my' && window.QRCode) { nextTick(() => { document.getElementById("qrcode").innerHTML = ""; new QRCode(document.getElementById("qrcode"), { text: user.value.uid, width: 180, height: 180 }); }); } };
             const startScanner = () => { if(window.Html5Qrcode) { nextTick(() => { html5QrCode = new Html5Qrcode("reader"); html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (decodedText) => { stopScanner(); addFriend(decodedText); showQRModal.value = false; showFriendList.value = true; }, (errorMessage) => { }).catch(err => console.log(err)); }); } else { alert("相機功能載入失敗"); } };
             const stopScanner = () => { if (html5QrCode) { html5QrCode.stop().then(() => { html5QrCode.clear(); }).catch(e=>console.log(e)); } };
             const closeQRModal = () => { stopScanner(); showQRModal.value = false; };
             
-            // Map Logic (Fixed)
+            // Map Logic
             let map;
             const initMap = () => nextTick(() => { 
                 if(!map && document.getElementById('map')) { 
@@ -438,19 +472,15 @@
                 setTimeout(()=>{ map?.invalidateSize(); }, 200); 
             });
             
-            const searchMapLocation = async () => { 
-                if(!mapSearchQuery.value) return;
-                try{ 
-                    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${mapSearchQuery.value}`); 
-                    const data = await r.json();
-                    if(data.length > 0) { 
-                        const l = data[0]; 
-                        if (map) {
-                            map.setView([l.lat, l.lon], 16); 
-                            L.marker([l.lat, l.lon]).addTo(map).bindPopup(l.display_name).openPopup();
-                        }
-                    } 
-                }catch(e){} 
+            const searchMapLocation = async (q) => { 
+                const data = await searchLocation(q); // Reuse shared function
+                if(data && data.length > 0) { 
+                    const l = data[0]; 
+                    if (map) {
+                        map.setView([l.lat, l.lon], 16); 
+                        L.marker([l.lat, l.lon]).addTo(map).bindPopup(l.display_name).openPopup();
+                    }
+                } 
             };
             
             const openMapTo = (i) => { 
@@ -486,7 +516,7 @@
                             }
                         }
                         avatarOptions.value = newAvatars;
-                        setLocal('tb_pixel_sheet', newAvatars);
+                        setLocal('pixel_sheet', newAvatars);
                         tempProfile.value.avatar = newAvatars[0];
                         alert(`切片成功！`);
                     };
@@ -496,19 +526,34 @@
             };
             const triggerFileUpload = () => { if (showForceProfileModal.value) fileInput1.value?.click(); else if (editingProfile.value) fileInput2.value?.click(); };
             const handleFileUpload = (event) => { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (e) => { const img = new Image(); img.onload = () => { const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d'); canvas.width = img.width; canvas.height = img.height; ctx.drawImage(img, 0, 0); tempProfile.value.avatar = canvas.toDataURL('image/jpeg'); }; img.src = e.target.result; }; reader.readAsDataURL(file); };
-            const saveProfile = () => { const profileData = { name: tempProfile.value.name, avatar: tempProfile.value.avatar }; localStorage.setItem('tb_profile', JSON.stringify(profileData)); userProfile.value = { ...profileData }; editingProfile.value = false; showForceProfileModal.value = false; };
-            const openProfileEdit = () => { tempProfile.value = { ...userProfile.value }; const savedSheet = getLocal('tb_pixel_sheet'); if (savedSheet && savedSheet.length > 0) { avatarOptions.value = savedSheet; } editingProfile.value = true; };
+            const saveProfile = () => { const profileData = { name: tempProfile.value.name, avatar: tempProfile.value.avatar }; localStorage.setItem(getLocalKey('profile'), JSON.stringify(profileData)); userProfile.value = { ...profileData }; editingProfile.value = false; showForceProfileModal.value = false; };
+            const openProfileEdit = () => { tempProfile.value = { ...userProfile.value }; const savedSheet = getLocal('pixel_sheet'); if (savedSheet && savedSheet.length > 0) { avatarOptions.value = savedSheet; } editingProfile.value = true; };
             const resetApp = () => location.reload();
+            const logout = () => { localStorage.removeItem('tb_uid'); location.reload(); };
             const openCreateModal = () => showCreateTripModal.value = true;
             const openAddItemModal = () => { showAddItem.value = true; newItem.value = { time: '09:00', title: '', searchQuery: '', locName: '', transport: 'walking' }; locationSuggestions.value = []; };
-            const searchLocation = async (q) => { try{ const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}`); locationSuggestions.value = await r.json(); }catch(e){} };
             const selectLocation = (l) => { newItem.value.searchQuery = l.display_name; newItem.value.locName = l.display_name.split(',')[0]; newItem.value.lat = l.lat; newItem.value.lng = l.lon; locationSuggestions.value = []; };
             const populateDefaults = () => { const defaults = ["護照 🛂", "機票/登機證 🎫", "網卡/Wifi機 📶", "錢包 (外幣/信用卡) 💴", "行動電源 🔋", "充電線/轉接頭 🔌"]; defaults.forEach(txt => { if(!checklist.value.some(i => i.text === txt)) saveDB(`trips/${currentTripId.value}/checklist`, { text: txt, checked: false }); }); };
             const createTrip = async () => { if (!newTripName.value) return alert("請輸入名稱"); isProcessing.value = true; const tid = await saveDB('trips', { name: newTripName.value, startDate: newTripDate.value, members: [user.value.uid], splitMembers: ['我'], createdAt: new Date().toISOString() }); const defaults = ["護照 🛂", "機票/登機證 🎫", "網卡/Wifi機 📶", "錢包 (外幣/信用卡) 💴", "行動電源 🔋"]; defaults.forEach(txt => saveDB(`trips/${tid}/checklist`, { text: txt, checked: false })); showCreateTripModal.value = false; newTripName.value = ''; isProcessing.value = false; };
-            const enterTrip = (t) => { currentTripId.value = t.id; currentTrip.value = t; splitMembers.value = t.splitMembers || ['我']; const start = new Date(t.startDate); tripDays.value = [start, new Date(start.getTime()+86400000), new Date(start.getTime()+172800000)]; const p = `trips/${t.id}`; allItineraryItems.value = getLocal(`tb_${p}_itinerary`); expenses.value = getLocal(`tb_${p}_expenses`); checklist.value = getLocal(`tb_${p}_checklist`); };
+            const enterTrip = (t) => { 
+                currentTripId.value = t.id; currentTrip.value = t; splitMembers.value = t.splitMembers || ['我']; 
+                const start = new Date(t.startDate); tripDays.value = [start, new Date(start.getTime()+86400000), new Date(start.getTime()+172800000)]; 
+                const p = `trips/${t.id}`; 
+                allItineraryItems.value = getLocal(p.replace(/\//g, '_') + '_itinerary'); 
+                expenses.value = getLocal(p.replace(/\//g, '_') + '_expenses'); 
+                checklist.value = getLocal(p.replace(/\//g, '_') + '_checklist'); 
+            };
             const exitTrip = () => currentTripId.value = null;
-            const addItem = async () => { if (!newItem.value.title) return alert("請輸入名稱"); await saveDB(`trips/${currentTripId.value}/itinerary`, { ...newItem.value, dateStr: formatDate(tripDays.value[selectedDayIndex.value]) }); showAddItem.value = false; };
+            
+            // ADDED MISSING FUNCTION: addItem
+            const addItem = async () => { 
+                if (!newItem.value.title) return alert("請輸入名稱"); 
+                await saveDB(`trips/${currentTripId.value}/itinerary`, { ...newItem.value, dateStr: formatDate(tripDays.value[selectedDayIndex.value]) }); 
+                showAddItem.value = false; 
+            };
+            // ADDED MISSING FUNCTION: deleteItem
             const deleteItem = (id) => deleteDB(`trips/${currentTripId.value}/itinerary`, id);
+
             const addSplitMember = () => { const name = prompt("請輸入島民名字："); if(name && !splitMembers.value.includes(name)) { splitMembers.value.push(name); saveDB('trips', { splitMembers: splitMembers.value }, currentTripId.value); } };
             const removeSplitMember = (idx) => { if(confirm("確定讓這位島民離開嗎？")) { splitMembers.value.splice(idx, 1); saveDB('trips', { splitMembers: splitMembers.value }, currentTripId.value); } };
             const deleteExpense = (id) => deleteDB(`trips/${currentTripId.value}/expenses`, id);
@@ -528,15 +573,24 @@
             const addExpense = () => { if(newExpense.value.amount) { if (!newExpense.value.payer) newExpense.value.payer = '我'; let finalAmount = parseInt(newExpense.value.amount); let originalAmount = null; let originalCurrency = null; if (newExpense.value.currency !== 'TWD') { originalAmount = finalAmount; originalCurrency = newExpense.value.currency; finalAmount = Math.round(finalAmount * (parseFloat(newExpense.value.rate) || 1)); } const expenseData = { desc: newExpense.value.desc, amount: finalAmount, category: newExpense.value.category, payer: newExpense.value.payer, originalAmount: originalAmount, originalCurrency: originalCurrency }; saveDB(`trips/${currentTripId.value}/expenses`, expenseData); newExpense.value.amount=''; newExpense.value.desc=''; expenseHighlight.value = true; setTimeout(() => expenseHighlight.value = false, 800); } };
 
             onMounted(async () => {
-                const storedSheet = getLocal('tb_pixel_sheet');
-                if (storedSheet && storedSheet.length > 0) { avatarOptions.value = storedSheet; }
-                const storedProfile = localStorage.getItem('tb_profile');
+                // Load User ID
                 let storedUid = localStorage.getItem('tb_uid');
-                if (!storedUid) { storedUid = 'ID' + Math.floor(Math.random()*1000000); localStorage.setItem('tb_uid', storedUid); }
+                if (!storedUid) { 
+                    storedUid = 'ID' + Math.floor(Math.random()*1000000); 
+                    localStorage.setItem('tb_uid', storedUid);
+                    showForceProfileModal.value = true; 
+                } else {
+                    const storedProfile = localStorage.getItem(getLocalKey('profile'));
+                    if (storedProfile) { userProfile.value = JSON.parse(storedProfile); } else { showForceProfileModal.value = true; }
+                }
                 user.value.uid = storedUid;
-                if (storedProfile) { userProfile.value = JSON.parse(storedProfile); } else { showForceProfileModal.value = true; }
-                myTrips.value = getLocal('tb_trips');
-                friends.value = getLocal('tb_friends');
+                
+                // Prefixed Load
+                myTrips.value = getLocal('trips');
+                friends.value = getLocal('friends');
+                const storedSheet = getLocal('pixel_sheet');
+                if (storedSheet && storedSheet.length > 0) { avatarOptions.value = storedSheet; }
+
                 try {
                     if (window.firebase) {
                         const fbConfig = {
@@ -554,14 +608,21 @@
                         await firebase.auth().signInAnonymously();
                         isOnline.value = true;
                         loadingText.value = '同步完成！';
-                        window.fb_db.collection('trips').onSnapshot((s) => { const cloudTrips = s.docs.map(d=>({id:d.id, ...d.data()})); if(cloudTrips.length) { myTrips.value = cloudTrips; setLocal('tb_trips', cloudTrips); } });
+                        
+                        window.fb_db.collection('trips').where('members', 'array-contains', storedUid).onSnapshot((s) => { 
+                            const cloudTrips = s.docs.map(d=>({id:d.id, ...d.data()})); 
+                            if(cloudTrips.length > 0) { 
+                                myTrips.value = cloudTrips; 
+                                setLocal('trips', cloudTrips); 
+                            } 
+                        });
                     }
                 } catch(e) { console.log("Offline mode"); }
                 setTimeout(() => { isLoading.value = false; }, 1500);
             });
 
             return {
-                isLoading, loadingText, isOnline, isProcessing, resetApp,
+                isLoading, loadingText, isOnline, isProcessing, resetApp, logout,
                 user, userProfile, showForceProfileModal, tempProfile, saveProfile, openProfileEdit, editingProfile, avatarOptions, CHOCOLATE_AVATAR,
                 fileInput1, fileInput2, sheetInput, triggerFileUpload, handleFileUpload, triggerSheetUpload, handleSheetUpload,
                 myTrips, currentTripId, currentTrip, createTrip, enterTrip, exitTrip, showCreateTripModal, newTripName, newTripDate, openCreateModal,
