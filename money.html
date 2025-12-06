@@ -165,6 +165,64 @@
             line-height: 1;
         }
 
+        /* Print Styles */
+        @media print {
+            /* Hide everything non-essential */
+            #view-entry, #view-settle, #view-settings, #mainHeader, #bottomNav, .toast, #loading-overlay, .modal-overlay, button {
+                display: none !important;
+            }
+            /* Show only the print container */
+            #printContainer {
+                display: block !important;
+                position: static;
+                width: 100%;
+                height: auto;
+                overflow: visible;
+            }
+            body {
+                background-color: white;
+                padding: 0;
+                margin: 0;
+                font-size: 12pt;
+                color: black;
+            }
+            /* Table Styling */
+            .print-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 10px;
+            }
+            .print-table th, .print-table td {
+                border: 1px solid #000;
+                padding: 8px;
+                text-align: left;
+            }
+            .print-table th {
+                background-color: #f3f4f6 !important;
+                font-weight: bold;
+                -webkit-print-color-adjust: exact;
+            }
+            /* Stats Box */
+            .print-summary {
+                border: 2px solid #000;
+                padding: 15px;
+                margin-bottom: 20px;
+                display: grid;
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 10px;
+            }
+            .print-title {
+                text-align: center;
+                font-size: 24px;
+                font-weight: bold;
+                margin-bottom: 10px;
+                margin-top: 20px;
+            }
+        }
+        
+        /* Hide print container on screen */
+        #printContainer { display: none; }
+
         #mainHeader { transition: background-color 0.3s ease; }
     </style>
 </head>
@@ -425,6 +483,10 @@
                         <span class="font-bold text-emerald-600">已連線 (公共區域)</span>
                         <div class="text-xs text-emerald-600 mt-1 opacity-75">ID: <span id="userIdDisplay">...</span></div>
                     </div>
+                    <button onclick="printAllRecords()" class="w-full p-4 bg-blue-50 border border-blue-200 rounded-xl text-left text-blue-700 flex justify-between items-center shadow-sm active:bg-blue-100">
+                        <span class="font-bold"><i class="fa-solid fa-print mr-3"></i> 列印總報表 (給爸爸)</span>
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
                     <button onclick="exportData()" class="w-full p-4 bg-white border border-gray-200 rounded-xl text-left active:bg-gray-50 flex justify-between items-center shadow-sm">
                         <span class="font-medium text-gray-700"><i class="fa-solid fa-download mr-3 text-blue-500 w-5"></i> 下載備份 (JSON)</span>
                         <i class="fa-solid fa-chevron-right text-gray-300"></i>
@@ -437,6 +499,9 @@
         </div>
 
     </div>
+    
+    <!-- PRINT CONTAINER -->
+    <div id="printContainer"></div>
 
     <!-- Bottom Navigation (FIXED POSITION) -->
     <div class="fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-md border-t border-gray-200 flex justify-around pb-safe pt-2 z-[9999] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]" id="bottomNav">
@@ -1217,6 +1282,7 @@
             closeConfirmCollectionModal(null);
         };
 
+        // --- History Logic ---
         window.openHistory = function(address) {
             const list = document.getElementById('historyList');
             const title = document.getElementById('historyTitle');
@@ -1254,6 +1320,7 @@
             document.getElementById('historyModal').classList.add('hidden');
         };
 
+        // --- Records & Selects ---
         window.renderRecords = function() {
             const list = document.getElementById('recordList');
             const records = window.appState.records.filter(r => {
@@ -1350,6 +1417,8 @@
             );
 
             list.innerHTML = '';
+            // Only filter if search term exists, or if you want to show all, adjust here
+            // Showing all customers if search is empty is often better for quick selection
             const filtered = customers.filter(c => c.address.toLowerCase().includes(search));
             
             document.getElementById('customerModalCollector').innerText = current;
@@ -1364,6 +1433,7 @@
             }
 
             filtered.forEach(c => {
+                // Find Last Record
                 const lastRec = window.appState.records.find(r => r.address === c.address);
                 let lastInfo = '尚無紀錄';
                 if(lastRec) {
@@ -1501,6 +1571,97 @@
             a.href = URL.createObjectURL(blob);
             a.download = `雲端收費備份_${new Date().toISOString().slice(0,10)}.json`;
             a.click();
+        };
+        
+        // --- PRINT LOGIC ---
+        window.printAllRecords = function() {
+            const records = window.appState.records;
+            if (records.length === 0) {
+                window.showToast("目前沒有紀錄可列印");
+                return;
+            }
+
+            let totalCash = 0;
+            let totalTransfer = 0;
+            let totalAmount = 0;
+
+            // Calculate totals
+            records.forEach(r => {
+                if(r.type === 'cash') totalCash += r.amount;
+                else totalTransfer += r.amount;
+                totalAmount += r.amount;
+            });
+
+            const dateStr = new Date().toLocaleDateString('zh-TW', {year: 'numeric', month: '2-digit', day: '2-digit'});
+
+            let html = `
+                <div class="print-title">清潔收費總報表</div>
+                <div style="text-align:center; margin-bottom:10px;">列印日期：${dateStr}</div>
+                
+                <div class="print-summary">
+                    <div>
+                        <div style="font-size:12px;">本期總收入</div>
+                        <div style="font-size:20px; font-weight:bold;">$${totalAmount.toLocaleString()}</div>
+                    </div>
+                    <div>
+                        <div style="font-size:12px;">現金總額</div>
+                        <div style="font-size:20px; font-weight:bold;">$${totalCash.toLocaleString()}</div>
+                    </div>
+                    <div>
+                        <div style="font-size:12px;">匯款總額</div>
+                        <div style="font-size:20px; font-weight:bold;">$${totalTransfer.toLocaleString()}</div>
+                    </div>
+                </div>
+
+                <table class="print-table">
+                    <thead>
+                        <tr>
+                            <th width="12%">日期</th>
+                            <th width="10%">經手人</th>
+                            <th width="25%">地址/客戶</th>
+                            <th width="10%">項目</th>
+                            <th width="10%">金額</th>
+                            <th width="8%">方式</th>
+                            <th width="15%">月份</th>
+                            <th width="10%">備註</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            records.forEach(r => {
+                const d = new Date(r.date);
+                const dStr = `${d.getMonth()+1}/${d.getDate()}`;
+                const cat = r.category === 'tank' ? '水塔' : '樓梯';
+                const type = r.type === 'cash' ? '現金' : '匯款';
+                const note = r.note || '';
+                const collector = r.collector || '子晴';
+                const floor = r.floor ? `(${r.floor})` : '';
+
+                html += `
+                    <tr>
+                        <td>${dStr}</td>
+                        <td>${collector}</td>
+                        <td>${r.address} ${floor}</td>
+                        <td>${cat}</td>
+                        <td style="font-weight:bold;">$${r.amount.toLocaleString()}</td>
+                        <td>${type}</td>
+                        <td style="font-size:11px;">${r.months || ''}</td>
+                        <td style="font-size:11px;">${note}</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+                <div style="margin-top:20px; text-align:right; font-size:10px;">
+                    報表產生於：清潔收費小幫手
+                </div>
+            `;
+
+            document.getElementById('printContainer').innerHTML = html;
+            window.print();
         };
         
         window.openAddCustomerModal = function() {
