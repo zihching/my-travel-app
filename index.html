@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SideMission v7.5</title>
+    <title>SideMission v7.8</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -72,12 +72,12 @@
         /* Loading Overlay */
         .loading-overlay { position: fixed; inset: 0; background: var(--color-bg); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.5s; }
         
-        /* Error Box */
+        /* Error Display */
         #error-box { display: none; position: fixed; top: 0; left: 0; right: 0; padding: 20px; background: #ffe4e6; color: #e11d48; z-index: 20000; font-size: 12px; font-family: monospace; border-bottom: 1px solid #f43f5e; max-height: 50vh; overflow: auto; }
         
         #qr-reader { width: 100%; border-radius: 16px; overflow: hidden; }
         #qr-reader video { object-fit: cover; border-radius: 16px; }
-
+        
         [v-cloak] { display: none; }
     </style>
     <script>
@@ -330,7 +330,7 @@
     
     <div v-if="showForceProfileModal" class="modal-overlay"><div class="modal-content text-center"><h3 class="font-bold text-primary text-lg mb-2">歡迎來到 SideMission</h3><p class="text-xs text-gray-400 mb-4">請建立您的島民檔案</p><div class="flex flex-col items-center mb-6"><div class="relative w-28 h-28 mb-4"><img :src="tempProfile.avatar || CHOCOLATE_AVATAR" class="w-full h-full object-cover rounded-full border border-gray-100 pixel-art bg-[#90CAF9]"><button @click="triggerFileUpload" class="absolute bottom-0 right-0 bg-primary text-white w-9 h-9 rounded-full border-2 border-white flex items-center justify-center shadow-md active:scale-90 transition"><i class="fa-solid fa-camera text-xs"></i></button><input type="file" ref="fileInput1" @change="handleFileUpload" class="hidden" accept="image/*"></div></div><input v-model="tempProfile.name" placeholder="您的名字" class="w-full bg-gray-50 p-4 rounded-2xl mb-6 text-center border border-transparent focus:border-secondary outline-none text-sm font-bold"><button @click="saveProfile" :disabled="!tempProfile.name" class="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm shadow-md">開始旅程</button></div></div>
     <div v-if="showCreateTripModal" class="modal-overlay" @click.self="showCreateTripModal=false"><div class="modal-content"><h3 class="text-lg font-bold text-primary mb-1">開啟新任務</h3><p class="text-xs text-gray-400 mb-4">準備好要去哪裡冒險了嗎？</p><input v-model="newTripName" placeholder="任務名稱" class="w-full bg-gray-50 p-3 rounded-xl outline-none border border-transparent focus:border-secondary mb-3 text-sm font-bold text-primary"><input v-model="newTripDate" type="date" class="w-full bg-gray-50 p-3 rounded-xl outline-none border border-transparent focus:border-secondary mb-6 text-sm text-gray-500 font-bold"><div class="flex gap-3"><button @click="showCreateTripModal=false" class="flex-1 py-3 bg-gray-100 text-gray-500 rounded-xl text-sm font-bold">取消</button><button @click="createTrip" :disabled="isProcessing" class="flex-1 py-3 bg-primary text-white rounded-xl text-sm font-bold shadow-md">{{ isProcessing?'建立中...':'出發' }}</button></div></div></div>
-    <div v-if="showAddItem" class="modal-overlay" @click.self="showAddItem=false"><div class="modal-content"><h3 class="text-lg font-bold text-primary mb-4">記錄行程</h3><div class="space-y-3"><input v-model="newItem.time" type="time" class="w-full bg-gray-50 p-3 rounded-xl text-sm font-bold text-primary outline-none"><div class="flex gap-2"><input v-model="newItem.searchQuery" placeholder="搜尋地點" class="flex-1 bg-gray-50 p-3 rounded-xl text-sm outline-none"><button @click="searchMapLocation(newItem.searchQuery)" class="bg-primary text-white w-10 rounded-xl flex items-center justify-center"><i class="fa-solid fa-search text-xs"></i></button></div><div v-if="locationSuggestions.length" class="max-h-32 overflow-y-auto bg-gray-50 rounded-xl border border-gray-100"><div v-for="l in locationSuggestions" @click="selectLocation(l)" class="p-3 border-b border-gray-100 text-xs text-primary hover:bg-white cursor-pointer">{{ l.display_name }}</div></div><input v-model="newItem.title" placeholder="標題" class="w-full bg-gray-50 p-3 rounded-xl text-sm outline-none font-bold"><div class="flex justify-around bg-gray-50 p-2 rounded-xl"><i @click="newItem.transport='car'" class="fa-solid fa-car p-2 rounded-lg cursor-pointer transition text-sm" :class="newItem.transport==='car'? 'bg-white text-primary shadow-sm':'text-gray-300'"></i><i @click="newItem.transport='train'" class="fa-solid fa-train-subway p-2 rounded-lg cursor-pointer transition text-sm" :class="newItem.transport==='train'? 'bg-white text-primary shadow-sm':'text-gray-300'"></i><i @click="newItem.transport='walking'" class="fa-solid fa-person-walking p-2 rounded-lg cursor-pointer transition text-sm" :class="newItem.transport==='walking'? 'bg-white text-primary shadow-sm':'text-gray-300'"></i></div><textarea v-model="newItem.notes" placeholder="備註..." class="w-full bg-gray-50 p-3 rounded-xl h-20 text-sm resize-none outline-none"></textarea><button @click="addItem" class="w-full bg-primary text-white py-3 rounded-xl font-bold shadow-md text-sm">新增</button></div></div></div>
+    <div v-if="showAddItem" class="modal-overlay" @click.self="showAddItem=false"><div class="modal-content"><h3 class="text-lg font-bold text-primary mb-4">記錄行程</h3><div class="space-y-3"><input v-model="newItem.time" type="time" class="w-full bg-gray-50 p-3 rounded-xl text-sm font-bold text-primary outline-none"><div class="flex gap-2"><input v-model="newItem.searchQuery" placeholder="搜尋地點" class="flex-1 bg-gray-50 p-3 rounded-xl text-sm outline-none"><button @click="searchMapLocation(newItem.searchQuery)" class="bg-primary text-white w-10 rounded-xl flex items-center justify-center"><i class="fa-solid fa-search text-xs"></i></button></div><div v-if="locationSuggestions.length" class="max-h-32 overflow-y-auto bg-gray-50 rounded-xl border border-gray-100"><div v-for="l in locationSuggestions" @click="selectLocation(l)" class="p-3 border-b border-gray-100 text-xs text-primary hover:bg-white cursor-pointer">{{ l.display_name }}</div></div><input v-model="newItem.title" placeholder="標題" class="w-full bg-gray-50 p-3 rounded-xl text-sm outline-none font-bold"><div class="grid grid-cols-6 gap-1 bg-gray-50 p-2 rounded-xl"><i @click="newItem.transport='plane'" class="fa-solid fa-plane p-2 rounded-lg cursor-pointer transition text-sm flex justify-center" :class="newItem.transport==='plane'? 'bg-white text-primary shadow-sm':'text-gray-300'"></i><i @click="newItem.transport='car'" class="fa-solid fa-car p-2 rounded-lg cursor-pointer transition text-sm flex justify-center" :class="newItem.transport==='car'? 'bg-white text-primary shadow-sm':'text-gray-300'"></i><i @click="newItem.transport='motorcycle'" class="fa-solid fa-motorcycle p-2 rounded-lg cursor-pointer transition text-sm flex justify-center" :class="newItem.transport==='motorcycle'? 'bg-white text-primary shadow-sm':'text-gray-300'"></i><i @click="newItem.transport='train'" class="fa-solid fa-train-subway p-2 rounded-lg cursor-pointer transition text-sm flex justify-center" :class="newItem.transport==='train'? 'bg-white text-primary shadow-sm':'text-gray-300'"></i><i @click="newItem.transport='boat'" class="fa-solid fa-ship p-2 rounded-lg cursor-pointer transition text-sm flex justify-center" :class="newItem.transport==='boat'? 'bg-white text-primary shadow-sm':'text-gray-300'"></i><i @click="newItem.transport='walking'" class="fa-solid fa-person-walking p-2 rounded-lg cursor-pointer transition text-sm flex justify-center" :class="newItem.transport==='walking'? 'bg-white text-primary shadow-sm':'text-gray-300'"></i></div><textarea v-model="newItem.notes" placeholder="備註..." class="w-full bg-gray-50 p-3 rounded-xl h-20 text-sm resize-none outline-none"></textarea><button @click="addItem" class="w-full bg-primary text-white py-3 rounded-xl font-bold shadow-md text-sm">新增</button></div></div></div>
 </div>
 
 <script>
@@ -401,21 +401,19 @@
             const averageExpense = computed(() => { if (splitMembers.value.length === 0) return 0; return Math.round(totalExpense.value / splitMembers.value.length); });
 
             // Helpers
-            // Core helper functions first to prevent reference errors
             const getLocalKey = (key) => `${user.value.uid}_${key}`;
             const getLocal = (k) => JSON.parse(localStorage.getItem(getLocalKey(k)) || '[]');
             const setLocal = (k, v) => localStorage.setItem(getLocalKey(k), JSON.stringify(v));
             const formatDate = (d) => { const date = new Date(d); return `${date.getMonth()+1}/${date.getDate()}`; };
             const getCategoryIcon = (c) => ({'食':'🍔','住':'🏨','行':'🚗','樂':'🎟️','購':'🛍️','公':'💸'}[c] || '🧾');
-            const getTransportIcon = (t) => ({'car':'fa-solid fa-car','train':'fa-solid fa-train-subway','walking':'fa-solid fa-person-walking'}[t]);
+            const getTransportIcon = (t) => ({'plane':'fa-solid fa-plane','car':'fa-solid fa-car','motorcycle':'fa-solid fa-motorcycle','train':'fa-solid fa-train-subway','boat':'fa-solid fa-ship','walking':'fa-solid fa-person-walking'}[t] || 'fa-solid fa-location-dot');
             
-            // Search Location Helper (Defined early for hoisting)
             const searchLocation = async (q) => { 
                 if(!q) return;
                 try{ 
                     const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}`); 
                     const data = await r.json();
-                    locationSuggestions.value = data; // Update suggestions for list
+                    locationSuggestions.value = data; 
                     return data;
                 }catch(e){ return []; } 
             };
@@ -473,7 +471,7 @@
             });
             
             const searchMapLocation = async (q) => { 
-                const data = await searchLocation(q); // Reuse shared function
+                const data = await searchLocation(q); 
                 if(data && data.length > 0) { 
                     const l = data[0]; 
                     if (map) {
@@ -533,8 +531,38 @@
             const openCreateModal = () => showCreateTripModal.value = true;
             const openAddItemModal = () => { showAddItem.value = true; newItem.value = { time: '09:00', title: '', searchQuery: '', locName: '', transport: 'walking' }; locationSuggestions.value = []; };
             const selectLocation = (l) => { newItem.value.searchQuery = l.display_name; newItem.value.locName = l.display_name.split(',')[0]; newItem.value.lat = l.lat; newItem.value.lng = l.lon; locationSuggestions.value = []; };
-            const populateDefaults = () => { const defaults = ["護照 🛂", "機票/登機證 🎫", "網卡/Wifi機 📶", "錢包 (外幣/信用卡) 💴", "行動電源 🔋", "充電線/轉接頭 🔌"]; defaults.forEach(txt => { if(!checklist.value.some(i => i.text === txt)) saveDB(`trips/${currentTripId.value}/checklist`, { text: txt, checked: false }); }); };
-            const createTrip = async () => { if (!newTripName.value) return alert("請輸入名稱"); isProcessing.value = true; const tid = await saveDB('trips', { name: newTripName.value, startDate: newTripDate.value, members: [user.value.uid], splitMembers: ['我'], createdAt: new Date().toISOString() }); const defaults = ["護照 🛂", "機票/登機證 🎫", "網卡/Wifi機 📶", "錢包 (外幣/信用卡) 💴", "行動電源 🔋"]; defaults.forEach(txt => saveDB(`trips/${tid}/checklist`, { text: txt, checked: false })); showCreateTripModal.value = false; newTripName.value = ''; isProcessing.value = false; };
+            const populateDefaults = () => { 
+                const defaults = [
+                    "護照 🛂", 
+                    "機票/登機證 🎫", 
+                    "網卡/Wifi機 📶", 
+                    "錢包 (外幣/信用卡) 💴", 
+                    "行動電源 🔋", 
+                    "充電線/轉接頭 🔌",
+                    "個人藥品 💊",      // New
+                    "盥洗用品 🪥",      // New
+                    "換洗衣物 👕",      // New
+                    "雨具 ☂️",         // New
+                    "耳機 🎧",          // New
+                    "太陽眼鏡 🕶️"       // New
+                ]; 
+                defaults.forEach(txt => { 
+                    if(!checklist.value.some(i => i.text === txt)) 
+                        saveDB(`trips/${currentTripId.value}/checklist`, { text: txt, checked: false }); 
+                }); 
+            };
+            const createTrip = async () => { 
+                if (!newTripName.value) return alert("請輸入名稱"); 
+                isProcessing.value = true; 
+                const tid = await saveDB('trips', { name: newTripName.value, startDate: newTripDate.value, members: [user.value.uid], splitMembers: ['我'], createdAt: new Date().toISOString() }); 
+                // Updated defaults for new trip creation
+                const defaults = [
+                    "護照 🛂", "機票/登機證 🎫", "網卡/Wifi機 📶", "錢包 (外幣/信用卡) 💴", "行動電源 🔋", 
+                    "充電線/轉接頭 🔌", "個人藥品 💊", "盥洗用品 🪥", "換洗衣物 👕", "雨具 ☂️", "耳機 🎧", "太陽眼鏡 🕶️"
+                ];
+                defaults.forEach(txt => saveDB(`trips/${tid}/checklist`, { text: txt, checked: false })); 
+                showCreateTripModal.value = false; newTripName.value = ''; isProcessing.value = false; 
+            };
             const enterTrip = (t) => { 
                 currentTripId.value = t.id; currentTrip.value = t; splitMembers.value = t.splitMembers || ['我']; 
                 const start = new Date(t.startDate); tripDays.value = [start, new Date(start.getTime()+86400000), new Date(start.getTime()+172800000)]; 
@@ -544,16 +572,8 @@
                 checklist.value = getLocal(p.replace(/\//g, '_') + '_checklist'); 
             };
             const exitTrip = () => currentTripId.value = null;
-            
-            // ADDED MISSING FUNCTION: addItem
-            const addItem = async () => { 
-                if (!newItem.value.title) return alert("請輸入名稱"); 
-                await saveDB(`trips/${currentTripId.value}/itinerary`, { ...newItem.value, dateStr: formatDate(tripDays.value[selectedDayIndex.value]) }); 
-                showAddItem.value = false; 
-            };
-            // ADDED MISSING FUNCTION: deleteItem
+            const addItem = async () => { if (!newItem.value.title) return alert("請輸入名稱"); await saveDB(`trips/${currentTripId.value}/itinerary`, { ...newItem.value, dateStr: formatDate(tripDays.value[selectedDayIndex.value]) }); showAddItem.value = false; };
             const deleteItem = (id) => deleteDB(`trips/${currentTripId.value}/itinerary`, id);
-
             const addSplitMember = () => { const name = prompt("請輸入島民名字："); if(name && !splitMembers.value.includes(name)) { splitMembers.value.push(name); saveDB('trips', { splitMembers: splitMembers.value }, currentTripId.value); } };
             const removeSplitMember = (idx) => { if(confirm("確定讓這位島民離開嗎？")) { splitMembers.value.splice(idx, 1); saveDB('trips', { splitMembers: splitMembers.value }, currentTripId.value); } };
             const deleteExpense = (id) => deleteDB(`trips/${currentTripId.value}/expenses`, id);
@@ -575,10 +595,12 @@
             onMounted(async () => {
                 // Load User ID
                 let storedUid = localStorage.getItem('tb_uid');
+                let isNewUser = false;
+
                 if (!storedUid) { 
                     storedUid = 'ID' + Math.floor(Math.random()*1000000); 
                     localStorage.setItem('tb_uid', storedUid);
-                    showForceProfileModal.value = true; 
+                    isNewUser = true; 
                 } else {
                     const storedProfile = localStorage.getItem(getLocalKey('profile'));
                     if (storedProfile) { userProfile.value = JSON.parse(storedProfile); } else { showForceProfileModal.value = true; }
