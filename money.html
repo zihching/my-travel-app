@@ -19,7 +19,6 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: #f3f4f6;
-            /* Ensure enough space for fixed bottom nav */
             padding-bottom: calc(90px + env(safe-area-inset-bottom));
             -webkit-tap-highlight-color: transparent;
             overscroll-behavior-y: none;
@@ -64,7 +63,7 @@
             color: white;
             padding: 12px 24px;
             border-radius: 50px;
-            z-index: 9999;
+            z-index: 11000; /* Higher than everything */
             display: none;
             font-size: 16px;
             font-weight: 500;
@@ -82,7 +81,7 @@
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.5);
-            z-index: 3000; /* High z-index but below toast */
+            z-index: 10000; /* Higher than Bottom Nav (9999) */
             backdrop-filter: blur(2px);
             display: flex;
             align-items: flex-end;
@@ -93,9 +92,10 @@
             max-height: 85vh;
             border-radius: 20px 20px 0 0;
             padding: 20px;
+            padding-bottom: calc(30px + env(safe-area-inset-bottom)); /* Extra padding for bottom button */
             overflow-y: auto;
             animation: slideUp 0.3s ease-out;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
         }
         @keyframes slideUp {
             from { transform: translateY(100%); }
@@ -103,7 +103,7 @@
         }
         @media(min-width: 640px) {
             .modal-overlay { align-items: center; justify-content: center; }
-            .modal-content { width: 90%; max-width: 500px; border-radius: 20px; }
+            .modal-content { width: 90%; max-width: 500px; border-radius: 20px; padding-bottom: 20px; }
         }
         
         .list-btn:active {
@@ -113,7 +113,7 @@
         
         #loading-overlay {
             position: fixed; inset: 0; background: rgba(255,255,255,0.8);
-            z-index: 9999; display: flex; justify-content: center; align-items: center;
+            z-index: 11000; display: flex; justify-content: center; align-items: center;
             backdrop-filter: blur(4px); transition: opacity 0.3s;
         }
 
@@ -209,7 +209,6 @@
         </div>
     </div>
 
-    <!-- Main Content -->
     <div class="container mx-auto px-4 py-4 max-w-md pb-28">
 
         <!-- VIEW: ENTRY FORM -->
