@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>醫美小秘書 v10 (症狀對策版)</title>
+    <title>醫美小秘書 v11 (自動除重版)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Vue.js 3 -->
@@ -87,7 +87,15 @@
 
                 <div class="flex justify-between items-center mb-2">
                     <h2 class="text-sm font-bold text-gray-500 pl-2 border-l-4 border-rose-400">{{ wikiSearchQuery ? '符合症狀的項目' : '醫美項目清單' }}</h2>
-                    <button @click="createNewWikiItem" class="text-xs bg-gray-200 text-gray-600 px-3 py-1 rounded-full"><i class="fas fa-plus"></i> 自訂</button>
+                    <div class="flex gap-2">
+                        <!-- 清理重複按鈕 -->
+                        <button @click="cleanDuplicates" class="text-xs bg-rose-100 text-rose-600 px-3 py-1 rounded-full hover:bg-rose-200">
+                            <i class="fas fa-broom mr-1"></i>清理重複
+                        </button>
+                        <button @click="createNewWikiItem" class="text-xs bg-gray-200 text-gray-600 px-3 py-1 rounded-full">
+                            <i class="fas fa-plus"></i> 自訂
+                        </button>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 gap-3">
@@ -96,6 +104,7 @@
                         <p class="text-xs">找不到關於「{{ wikiSearchQuery }}」的解決方案</p>
                     </div>
 
+                    <!-- 這裡會顯示過濾後不重複的列表 -->
                     <div v-for="item in filteredWikiList" :key="item.id" @click="openWikiDetail(item)" 
                         class="bg-white p-4 rounded-xl card-shadow border border-gray-100 hover:border-rose-300 transition cursor-pointer group relative overflow-hidden">
                         
@@ -335,6 +344,11 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
     const SHARED_APP_ID = 'beauty-manager-family'; 
+    
+    // 掛載到 Window 供 Vue 元件使用
+    window.db = db;
+    window.auth = auth;
+    window.firebaseOps = { collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp, signInAnonymously, onAuthStateChanged, SHARED_APP_ID };
 
     const { createApp } = Vue;
 
@@ -493,27 +507,42 @@
                 return this.clinics.filter(c => c.status === this.clinicFilter);
             },
             filteredWikiList() {
-                if (!this.wikiSearchQuery) return this.wikiData;
-                const lowerQuery = this.wikiSearchQuery.toLowerCase();
-                return this.wikiData.filter(item => 
-                    item.title.toLowerCase().includes(lowerQuery) || 
-                    item.category.toLowerCase().includes(lowerQuery) || 
-                    (item.desc && item.desc.toLowerCase().includes(lowerQuery)) ||
-                    // 增加搜尋症狀 (Symptoms)
-                    (item.symptoms && item.symptoms.some(s => s.toLowerCase().includes(lowerQuery)))
-                );
+                // 1. 先做搜尋過濾
+                let list = this.wikiData;
+                if (this.wikiSearchQuery) {
+                    const lowerQuery = this.wikiSearchQuery.toLowerCase();
+                    list = list.filter(item => 
+                        item.title.toLowerCase().includes(lowerQuery) || 
+                        item.category.toLowerCase().includes(lowerQuery) || 
+                        (item.desc && item.desc.toLowerCase().includes(lowerQuery)) ||
+                        (item.symptoms && item.symptoms.some(s => s.toLowerCase().includes(lowerQuery)))
+                    );
+                }
+
+                // 2. 再做自動除重 (Dedup) - 只顯示每個標題的第一筆
+                const seen = new Set();
+                return list.filter(item => {
+                    if (seen.has(item.title)) {
+                        return false; // 重複的，不顯示
+                    }
+                    seen.add(item.title);
+                    return true;
+                });
             }
         },
         async created() {
+            const { SHARED_APP_ID, collection, onSnapshot, query, orderBy, signInAnonymously, onAuthStateChanged, addDoc } = window.firebaseOps;
+            const auth = window.auth;
+            const db = window.db;
+
             onAuthStateChanged(auth, async (user) => {
                 if (!user) { await signInAnonymously(auth); }
                 
-                // 改用 v10 路徑，強制載入新結構
+                // Wiki
                 const wikiRef = collection(db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'wiki_v10');
                 onSnapshot(wikiRef, (snapshot) => {
                     this.wikiData = snapshot.docs.map(d => {
                         let data = d.data();
-                        // 轉換 symptoms array to string for edit input
                         if(data.symptoms && Array.isArray(data.symptoms)) {
                             data.symptomsStr = data.symptoms.join(', ');
                         }
@@ -524,9 +553,11 @@
                     }
                 });
 
+                // Clinics
                 const clinicsRef = collection(db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'clinics');
                 onSnapshot(clinicsRef, (snapshot) => { this.clinics = snapshot.docs.map(d => ({ id: d.id, ...d.data() })); });
 
+                // Records
                 const recordsRef = collection(db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'records');
                 onSnapshot(recordsRef, (snapshot) => { this.records = snapshot.docs.map(d => ({ id: d.id, ...d.data() })); this.loading = false; });
             });
@@ -541,23 +572,54 @@
             async createNewWikiItem() { 
                 const name = prompt("項目名稱"); 
                 if(name) { 
-                    await addDoc(collection(db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'wiki_v10'), {
+                    const { addDoc, collection, SHARED_APP_ID } = window.firebaseOps;
+                    await addDoc(collection(window.db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'wiki_v10'), {
                         title:name, category:'自訂', price:'-', desc:'', symptoms:[], principle:'', duration:'', recovery:'', quotes:[]
                     });
                 } 
             },
             async deleteWikiItem() { 
                 if(confirm('刪除?')) { 
-                    await deleteDoc(doc(db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'wiki_v10', this.selectedWikiItem.id));
+                    const { deleteDoc, doc, SHARED_APP_ID } = window.firebaseOps;
+                    await deleteDoc(doc(window.db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'wiki_v10', this.selectedWikiItem.id));
                     this.selectedWikiItem=null; 
                 } 
             },
+            // 一鍵清理重複資料 (Cleanup Logic)
+            async cleanDuplicates() {
+                if(!confirm('確定要清理重複的項目嗎？系統會保留最早的一筆，並刪除其他重複資料。')) return;
+                
+                const seen = new Set();
+                const duplicates = [];
+                const { deleteDoc, doc, SHARED_APP_ID } = window.firebaseOps;
+
+                this.wikiData.forEach(item => {
+                    if (seen.has(item.title)) {
+                        duplicates.push(item);
+                    } else {
+                        seen.add(item.title);
+                    }
+                });
+
+                if(duplicates.length === 0) {
+                    alert('目前沒有發現重複資料喔！');
+                    return;
+                }
+
+                this.loading = true; // 顯示 Loading
+                for (const item of duplicates) {
+                    await deleteDoc(doc(window.db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'wiki_v10', item.id));
+                }
+                this.loading = false;
+                alert(`成功清理了 ${duplicates.length} 筆重複資料！`);
+            },
+
             async updateWikiItem(item) {
-                // 將字串轉回陣列
                 let symArray = item.symptomsStr ? item.symptomsStr.split(/,|，/).map(s => s.trim()).filter(s => s) : [];
                 item.symptoms = symArray;
 
-                await updateDoc(doc(db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'wiki_v10', item.id), {
+                const { updateDoc, doc, SHARED_APP_ID } = window.firebaseOps;
+                await updateDoc(doc(window.db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'wiki_v10', item.id), {
                     desc: item.desc || '', 
                     price: item.price || '',
                     duration: item.duration || '',
@@ -569,38 +631,57 @@
                 const file = event.target.files[0]; if (!file) return;
                 this.compressImage(file, async (base64) => { 
                     this.selectedWikiItem.photo = base64; 
-                    await updateDoc(doc(db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'wiki_v10', this.selectedWikiItem.id), { photo: base64 });
+                    const { updateDoc, doc, SHARED_APP_ID } = window.firebaseOps;
+                    await updateDoc(doc(window.db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'wiki_v10', this.selectedWikiItem.id), { photo: base64 });
                 });
             },
             async deleteWikiPhoto() {
                 if(confirm('刪除圖片？')) {
                     this.selectedWikiItem.photo = '';
-                    await updateDoc(doc(db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'wiki_v10', this.selectedWikiItem.id), { photo: '' });
+                    const { updateDoc, doc, SHARED_APP_ID } = window.firebaseOps;
+                    await updateDoc(doc(window.db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'wiki_v10', this.selectedWikiItem.id), { photo: '' });
                 }
             },
             async addQuote() { 
                 if(!this.selectedWikiItem) return;
                 const newQuotes = [...(this.selectedWikiItem.quotes || []), { ...this.newQuote }];
-                await updateDoc(doc(db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'wiki_v10', this.selectedWikiItem.id), { quotes: newQuotes });
+                const { updateDoc, doc, SHARED_APP_ID } = window.firebaseOps;
+                await updateDoc(doc(window.db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'wiki_v10', this.selectedWikiItem.id), { quotes: newQuotes });
                 this.newQuote={clinic:'',price:''}; 
             },
             async removeQuote(idx) { 
                 const newQuotes = [...this.selectedWikiItem.quotes];
                 newQuotes.splice(idx,1);
-                await updateDoc(doc(db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'wiki_v10', this.selectedWikiItem.id), { quotes: newQuotes });
+                const { updateDoc, doc, SHARED_APP_ID } = window.firebaseOps;
+                await updateDoc(doc(window.db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'wiki_v10', this.selectedWikiItem.id), { quotes: newQuotes });
             },
 
             // CLINICS
-            async addClinic() { await addDoc(collection(db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'clinics'), { ...this.newClinic }); this.showAddClinic=false; },
-            async removeClinic(id) { if(confirm('刪除?')) await deleteDoc(doc(db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'clinics', id)); },
+            async addClinic() { 
+                const { addDoc, collection, SHARED_APP_ID } = window.firebaseOps;
+                await addDoc(collection(window.db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'clinics'), { ...this.newClinic }); 
+                this.showAddClinic=false; 
+            },
+            async removeClinic(id) { 
+                if(confirm('刪除?')) {
+                    const { deleteDoc, doc, SHARED_APP_ID } = window.firebaseOps;
+                    await deleteDoc(doc(window.db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'clinics', id));
+                }
+            },
 
             // RECORDS
             async addRecord() { 
                 if(!this.newRecord.item) return; 
-                await addDoc(collection(db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'records'), { ...this.newRecord, photos: { before: '', after: '' } }); 
+                const { addDoc, collection, SHARED_APP_ID } = window.firebaseOps;
+                await addDoc(collection(window.db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'records'), { ...this.newRecord, photos: { before: '', after: '' } }); 
                 this.newRecord.item=''; this.newRecord.price=''; 
             },
-            async removeRecord(id) { if(confirm('刪除?')) await deleteDoc(doc(db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'records', id)); },
+            async removeRecord(id) { 
+                if(confirm('刪除?')) {
+                    const { deleteDoc, doc, SHARED_APP_ID } = window.firebaseOps;
+                    await deleteDoc(doc(window.db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'records', id));
+                }
+            },
 
             // PHOTOS
             openPhotoModal(record) { this.currentEditingRecord = record; if(!this.currentEditingRecord.photos) this.currentEditingRecord.photos = { before: '', after: '' }; this.showPhotoModal = true; },
@@ -609,13 +690,15 @@
                 const file = event.target.files[0]; if (!file) return;
                 this.compressImage(file, async (base64) => { 
                     this.currentEditingRecord.photos[type] = base64;
-                    await updateDoc(doc(db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'records', this.currentEditingRecord.id), { [`photos.${type}`]: base64 });
+                    const { updateDoc, doc, SHARED_APP_ID } = window.firebaseOps;
+                    await updateDoc(doc(window.db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'records', this.currentEditingRecord.id), { [`photos.${type}`]: base64 });
                 });
             },
             async deletePhoto(type) { 
                 if(confirm('刪除?')) { 
                     this.currentEditingRecord.photos[type] = '';
-                    await updateDoc(doc(db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'records', this.currentEditingRecord.id), { [`photos.${type}`]: '' });
+                    const { updateDoc, doc, SHARED_APP_ID } = window.firebaseOps;
+                    await updateDoc(doc(window.db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'records', this.currentEditingRecord.id), { [`photos.${type}`]: '' });
                 } 
             },
             compressImage(file, callback) {
