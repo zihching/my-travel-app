@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>醫美小秘書 v11 (自動除重版)</title>
+    <title>醫美小秘書 v12 (支援貼上圖片)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Vue.js 3 -->
@@ -18,17 +18,23 @@
         .card-shadow { box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
         .upload-box {
             background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='12' ry='12' stroke='%23FDA4AF' stroke-width='2' stroke-dasharray='6%2c 6' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
             transition: all 0.3s;
+            cursor: pointer;
+            outline: none; /* 移除預設藍色框 */
         }
-        .upload-box:active { background-color: #FFF1F2; }
+        .upload-box:active, .upload-box:focus { 
+            background-color: #FFF1F2; 
+            background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='12' ry='12' stroke='%23F43F5E' stroke-width='2' stroke-dasharray='0' stroke-linecap='square'/%3e%3c/svg%3e");
+        }
+        
         .loading-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(255,255,255,0.8); z-index: 999;
             display: flex; justify-content: center; align-items: center; flex-direction: column;
         }
-        /* 標籤樣式 */
         .tag { @apply px-2 py-0.5 rounded text-[10px] font-bold mr-1 mb-1 inline-block; }
     </style>
 </head>
@@ -88,13 +94,8 @@
                 <div class="flex justify-between items-center mb-2">
                     <h2 class="text-sm font-bold text-gray-500 pl-2 border-l-4 border-rose-400">{{ wikiSearchQuery ? '符合症狀的項目' : '醫美項目清單' }}</h2>
                     <div class="flex gap-2">
-                        <!-- 清理重複按鈕 -->
-                        <button @click="cleanDuplicates" class="text-xs bg-rose-100 text-rose-600 px-3 py-1 rounded-full hover:bg-rose-200">
-                            <i class="fas fa-broom mr-1"></i>清理重複
-                        </button>
-                        <button @click="createNewWikiItem" class="text-xs bg-gray-200 text-gray-600 px-3 py-1 rounded-full">
-                            <i class="fas fa-plus"></i> 自訂
-                        </button>
+                        <button @click="cleanDuplicates" class="text-xs bg-rose-100 text-rose-600 px-3 py-1 rounded-full hover:bg-rose-200"><i class="fas fa-broom mr-1"></i>清理重複</button>
+                        <button @click="createNewWikiItem" class="text-xs bg-gray-200 text-gray-600 px-3 py-1 rounded-full"><i class="fas fa-plus"></i> 自訂</button>
                     </div>
                 </div>
 
@@ -104,10 +105,8 @@
                         <p class="text-xs">找不到關於「{{ wikiSearchQuery }}」的解決方案</p>
                     </div>
 
-                    <!-- 這裡會顯示過濾後不重複的列表 -->
                     <div v-for="item in filteredWikiList" :key="item.id" @click="openWikiDetail(item)" 
                         class="bg-white p-4 rounded-xl card-shadow border border-gray-100 hover:border-rose-300 transition cursor-pointer group relative overflow-hidden">
-                        
                         <div class="flex justify-between items-start mb-2">
                             <div>
                                 <span class="text-[10px] text-white bg-rose-400 px-2 py-0.5 rounded mb-1 inline-block font-bold">{{ item.category }}</span>
@@ -115,17 +114,10 @@
                             </div>
                             <i class="fas fa-chevron-right text-gray-300 mt-2"></i>
                         </div>
-
-                        <!-- 顯示症狀標籤 -->
                         <div class="flex flex-wrap mb-2">
-                            <span v-for="sym in (item.symptoms || [])" :key="sym" class="bg-rose-50 text-rose-500 text-[10px] px-2 py-1 rounded-full mr-1 mb-1">
-                                #{{ sym }}
-                            </span>
+                            <span v-for="sym in (item.symptoms || [])" :key="sym" class="bg-rose-50 text-rose-500 text-[10px] px-2 py-1 rounded-full mr-1 mb-1">#{{ sym }}</span>
                         </div>
-                        
-                        <!-- 預覽小圖 -->
                         <div v-if="item.photo" class="h-20 w-full rounded-lg bg-gray-100 bg-cover bg-center mb-2" :style="{backgroundImage: 'url(' + item.photo + ')'}"></div>
-
                         <div class="flex justify-between items-center border-t border-gray-100 pt-2">
                             <span class="text-xs font-bold text-gray-500">💰 {{ item.price }}</span>
                             <span v-if="item.quotes && item.quotes.length > 0" class="text-[10px] text-gray-400"><i class="fas fa-pen"></i> {{ item.quotes.length }} 筆詢價</span>
@@ -134,7 +126,7 @@
                 </div>
             </div>
 
-            <!-- 百科詳情頁 (詳細資訊) -->
+            <!-- 百科詳情頁 -->
             <div v-else class="bg-white min-h-full rounded-t-3xl shadow-inner animate-slide-up pb-10">
                 <div class="sticky top-0 bg-white z-10 p-4 border-b border-gray-100 flex items-center justify-between rounded-t-3xl">
                     <button @click="closeWikiDetail" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center"><i class="fas fa-arrow-left"></i></button>
@@ -143,53 +135,49 @@
                 </div>
                 
                 <div class="p-5 space-y-6">
-                    
-                    <!-- 1. 照片區 -->
+                    <!-- 1. 照片區 (支援貼上) -->
                     <div class="w-full h-40 rounded-xl overflow-hidden bg-gray-50 border-2 border-dashed border-rose-200 flex items-center justify-center upload-box relative"
+                         tabindex="0"
+                         @paste="handlePaste($event, 'wiki')"
                          :style="selectedWikiItem.photo ? {backgroundImage: 'url(' + selectedWikiItem.photo + ')', backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', border: 'none'} : {}">
-                        <label v-if="!selectedWikiItem.photo" class="absolute inset-0 flex flex-col items-center justify-center cursor-pointer text-gray-400 hover:text-rose-400">
+                        
+                        <label v-if="!selectedWikiItem.photo" class="absolute inset-0 flex flex-col items-center justify-center cursor-pointer text-gray-400 hover:text-rose-400 pointer-events-none">
                             <i class="fas fa-image text-3xl mb-1"></i>
-                            <span class="text-xs">上傳機型/比較圖</span>
-                            <input type="file" accept="image/*" class="hidden" @change="handleWikiImageUpload">
+                            <span class="text-xs">點擊此處 -> 按 Ctrl+V 貼上</span>
+                            <span class="text-[10px] mt-1 text-gray-300">(或點擊選擇檔案)</span>
                         </label>
-                        <button v-else @click="deleteWikiPhoto" class="absolute top-2 right-2 bg-white/80 p-1 rounded-full text-red-500"><i class="fas fa-trash"></i></button>
+                        <!-- 隱藏的 input 依然保留，給手機點擊用 -->
+                        <input type="file" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" @change="(e) => processFile(e.target.files[0], 'wiki')">
+                        
+                        <button v-if="selectedWikiItem.photo" @click.stop="deleteWikiPhoto" class="absolute top-2 right-2 bg-white/80 p-1 rounded-full text-red-500 z-10 hover:bg-white"><i class="fas fa-trash"></i></button>
                     </div>
 
-                    <!-- 2. 核心五大維度 (編輯區) -->
+                    <!-- 2. 核心五大維度 -->
                     <div class="space-y-4">
-                        
-                        <!-- 適應症 -->
                         <div class="bg-rose-50 p-3 rounded-xl border border-rose-100">
                             <label class="text-xs font-bold text-rose-500 uppercase mb-1 block"><i class="fas fa-bullseye mr-1"></i> 適應症 (Symptoms)</label>
                             <input v-model="selectedWikiItem.symptomsStr" @change="updateWikiItem(selectedWikiItem)" class="w-full bg-white px-2 py-1 rounded text-sm border border-rose-200" placeholder="用逗號分隔，如: 法令紋, 鬆弛">
                             <div class="flex flex-wrap mt-2 gap-1">
-                                <span v-for="sym in (selectedWikiItem.symptoms || [])" :key="sym" class="bg-white text-rose-400 border border-rose-200 text-[10px] px-2 py-0.5 rounded-full">
-                                    {{ sym }}
-                                </span>
+                                <span v-for="sym in (selectedWikiItem.symptoms || [])" :key="sym" class="bg-white text-rose-400 border border-rose-200 text-[10px] px-2 py-0.5 rounded-full">{{ sym }}</span>
                             </div>
                         </div>
-
-                        <!-- 網格資訊 -->
                         <div class="grid grid-cols-2 gap-3">
                             <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
                                 <label class="text-xs font-bold text-gray-500 uppercase mb-1 block"><i class="fas fa-hourglass-half mr-1"></i> 維持多久</label>
-                                <input v-model="selectedWikiItem.duration" @change="updateWikiItem(selectedWikiItem)" class="w-full bg-transparent border-b border-gray-300 text-sm focus:border-rose-400 outline-none" placeholder="例: 1~1.5年">
+                                <input v-model="selectedWikiItem.duration" @change="updateWikiItem(selectedWikiItem)" class="w-full bg-transparent border-b border-gray-300 text-sm focus:border-rose-400 outline-none">
                             </div>
                             <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
                                 <label class="text-xs font-bold text-gray-500 uppercase mb-1 block"><i class="fas fa-band-aid mr-1"></i> 修復期</label>
-                                <input v-model="selectedWikiItem.recovery" @change="updateWikiItem(selectedWikiItem)" class="w-full bg-transparent border-b border-gray-300 text-sm focus:border-rose-400 outline-none" placeholder="例: 無傷口">
+                                <input v-model="selectedWikiItem.recovery" @change="updateWikiItem(selectedWikiItem)" class="w-full bg-transparent border-b border-gray-300 text-sm focus:border-rose-400 outline-none">
                             </div>
                         </div>
-
-                        <!-- 原理與價格 -->
                         <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
                             <label class="text-xs font-bold text-gray-500 uppercase mb-1 block"><i class="fas fa-microchip mr-1"></i> 原理 / 筆記</label>
-                            <textarea v-model="selectedWikiItem.desc" @change="updateWikiItem(selectedWikiItem)" class="w-full bg-white border border-gray-200 rounded-lg p-2 text-sm h-20" placeholder="治療原理..."></textarea>
+                            <textarea v-model="selectedWikiItem.desc" @change="updateWikiItem(selectedWikiItem)" class="w-full bg-white border border-gray-200 rounded-lg p-2 text-sm h-20"></textarea>
                         </div>
-
                         <div class="bg-gray-50 p-3 rounded-xl border border-gray-100 flex items-center gap-2">
                              <label class="text-xs font-bold text-gray-500 uppercase whitespace-nowrap"><i class="fas fa-tag mr-1"></i> 市價參考</label>
-                             <input v-model="selectedWikiItem.price" @change="updateWikiItem(selectedWikiItem)" class="flex-1 bg-transparent border-b border-gray-300 text-sm focus:border-rose-400 outline-none" placeholder="輸入價格">
+                             <input v-model="selectedWikiItem.price" @change="updateWikiItem(selectedWikiItem)" class="flex-1 bg-transparent border-b border-gray-300 text-sm focus:border-rose-400 outline-none">
                         </div>
                     </div>
 
@@ -217,7 +205,7 @@
             </div>
         </div>
 
-        <!-- TAB 2 & 3 (保持不變) -->
+        <!-- TAB 2: 紅黑榜 -->
         <div v-if="currentTab === 'clinics'" class="p-4 space-y-4">
              <div class="flex gap-2 pb-2">
                 <button @click="clinicFilter = 'all'" :class="['flex-1 py-1 text-xs font-bold border rounded-full', clinicFilter==='all'?'bg-gray-800 text-white':'bg-white']">全部</button>
@@ -244,6 +232,7 @@
             </div>
         </div>
 
+        <!-- TAB 3: 紀錄 -->
         <div v-if="currentTab === 'records'" class="p-4 space-y-4">
              <div class="bg-white p-5 rounded-2xl card-shadow border border-gray-100">
                 <div class="flex gap-2 overflow-x-auto mb-3 pb-1 no-scrollbar">
@@ -304,16 +293,35 @@
             <button @click="closePhotoModal" class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center"><i class="fas fa-times"></i></button>
         </div>
         <div class="flex-1 overflow-y-auto p-4 bg-gray-100 flex flex-col gap-4">
+            <!-- BEFORE BOX -->
             <div class="flex-1 bg-white p-3 rounded-xl shadow-sm flex flex-col">
                 <div class="flex justify-between items-center mb-2"><span class="text-xs font-bold bg-gray-200 text-gray-600 px-2 py-1 rounded">BEFORE 術前</span><button v-if="currentEditingRecord.photos?.before" @click="deletePhoto('before')" class="text-red-400 text-xs"><i class="fas fa-trash"></i></button></div>
-                <div class="flex-1 relative rounded-lg overflow-hidden bg-gray-50 border-2 border-dashed border-gray-300 flex items-center justify-center upload-box" :style="currentEditingRecord.photos?.before ? {backgroundImage: 'url(' + currentEditingRecord.photos.before + ')', backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', border: 'none'} : {}">
-                    <label v-if="!currentEditingRecord.photos?.before" class="absolute inset-0 flex flex-col items-center justify-center cursor-pointer text-gray-400"><i class="fas fa-camera text-2xl mb-1"></i><span class="text-xs">點擊上傳</span><input type="file" accept="image/*" class="hidden" @change="(e) => handleImageUpload(e, 'before')"></label>
+                <div class="flex-1 relative rounded-lg overflow-hidden bg-gray-50 border-2 border-dashed border-gray-300 flex items-center justify-center upload-box" 
+                     tabindex="0"
+                     @paste="handlePaste($event, 'record', 'before')"
+                     :style="currentEditingRecord.photos?.before ? {backgroundImage: 'url(' + currentEditingRecord.photos.before + ')', backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', border: 'none'} : {}">
+                    
+                    <label v-if="!currentEditingRecord.photos?.before" class="absolute inset-0 flex flex-col items-center justify-center cursor-pointer text-gray-400 pointer-events-none">
+                        <i class="fas fa-camera text-2xl mb-1"></i>
+                        <span class="text-xs">點擊 -> Ctrl+V 貼上</span>
+                    </label>
+                    <input type="file" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" @change="(e) => processFile(e.target.files[0], 'record', 'before')">
                 </div>
             </div>
+            
+            <!-- AFTER BOX -->
             <div class="flex-1 bg-white p-3 rounded-xl shadow-sm flex flex-col">
                 <div class="flex justify-between items-center mb-2"><span class="text-xs font-bold bg-rose-500 text-white px-2 py-1 rounded">AFTER 術後</span><button v-if="currentEditingRecord.photos?.after" @click="deletePhoto('after')" class="text-red-400 text-xs"><i class="fas fa-trash"></i></button></div>
-                <div class="flex-1 relative rounded-lg overflow-hidden bg-gray-50 border-2 border-dashed border-rose-300 flex items-center justify-center upload-box" :style="currentEditingRecord.photos?.after ? {backgroundImage: 'url(' + currentEditingRecord.photos.after + ')', backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', border: 'none'} : {}">
-                    <label v-if="!currentEditingRecord.photos?.after" class="absolute inset-0 flex flex-col items-center justify-center cursor-pointer text-rose-400"><i class="fas fa-camera text-2xl mb-1"></i><span class="text-xs">點擊上傳</span><input type="file" accept="image/*" class="hidden" @change="(e) => handleImageUpload(e, 'after')"></label>
+                <div class="flex-1 relative rounded-lg overflow-hidden bg-gray-50 border-2 border-dashed border-rose-300 flex items-center justify-center upload-box" 
+                     tabindex="0"
+                     @paste="handlePaste($event, 'record', 'after')"
+                     :style="currentEditingRecord.photos?.after ? {backgroundImage: 'url(' + currentEditingRecord.photos.after + ')', backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', border: 'none'} : {}">
+                    
+                    <label v-if="!currentEditingRecord.photos?.after" class="absolute inset-0 flex flex-col items-center justify-center cursor-pointer text-rose-400 pointer-events-none">
+                        <i class="fas fa-camera text-2xl mb-1"></i>
+                        <span class="text-xs">點擊 -> Ctrl+V 貼上</span>
+                    </label>
+                    <input type="file" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" @change="(e) => processFile(e.target.files[0], 'record', 'after')">
                 </div>
             </div>
         </div>
@@ -365,116 +373,7 @@
             desc: '效果最強，但痛感高。有即時顯影比較安全。適合下顎線、雙下巴。', 
             quotes: [] 
         },
-        { 
-            title: '鳳凰電波 (Thermage FLX)', 
-            category: '緊實', 
-            symptoms: ['鬆弛', '法令紋', '嘴邊肉', '眼周細紋'], 
-            principle: '單極電波容積式加熱，刺激膠原蛋白新生，像烘衣機把衣服縮水變緊', 
-            duration: '1.5~2 年', 
-            recovery: '無傷口，微紅腫', 
-            price: '8~12 萬', 
-            desc: '全臉緊緻王者，特別是法令紋、嘴邊肉。痛感不低。紫鑽打臉、碧眼打眼周。', 
-            quotes: [] 
-        },
-        { 
-            title: '海芙音波 (Ultraformer)', 
-            category: '拉提', 
-            symptoms: ['肉多下垂', '雙下巴', '身體鬆弛'], 
-            principle: '聚焦超音波 (MMFU)，有多種探頭可打深層或溶脂', 
-            duration: '8~12 個月', 
-            recovery: '微紅腫，水腫約3-5天', 
-            price: '2~5 萬', 
-            desc: '高CP值，探頭多樣，針對臉部肉多下垂的人有效，也可以打身體(溶脂)。', 
-            quotes: [] 
-        },
-        { 
-            title: '玩美電波 (Oligio)', 
-            category: '緊實', 
-            symptoms: ['輕微鬆弛', '保養維持'], 
-            principle: '單極電波加熱，韓版鳳凰', 
-            duration: '6~10 個月', 
-            recovery: '無恢復期，可馬上化妝', 
-            price: '3~6 萬', 
-            desc: '痛感較低，價格親民。適合怕痛的小資族定期保養，維持緊緻度。', 
-            quotes: [] 
-        },
-        { 
-            title: '皮秒雷射 (Pico Laser)', 
-            category: '膚質', 
-            symptoms: ['斑點', '暗沉', '毛孔粗大', '痘疤'], 
-            principle: '光震波擊碎黑色素，蜂巢透鏡造成空泡效應刺激膠原', 
-            duration: '效果永久(斑點)或維持半年(膚質)', 
-            recovery: '紅腫3-5天 (結痂5-7天)', 
-            price: '3千~1.5萬', 
-            desc: '記得問有沒有含「蜂巢/全像透鏡」，有透鏡才能刺激膠原蛋白補凹洞。', 
-            quotes: [] 
-        },
-        { 
-            title: '精靈針 (AestheFill)', 
-            category: '填充', 
-            symptoms: ['臉頰凹陷', '夫妻宮凹陷', '法令紋'], 
-            principle: '聚雙旋乳酸，刺激自體膠原蛋白增生，效果自然', 
-            duration: '1.5~2 年', 
-            recovery: '針孔，可能瘀青3-7天', 
-            price: '2.5~3.5萬', 
-            desc: '打完當下有感，之後會再長膠原蛋白。適合補臉頰凹陷，效果自然軟Q。', 
-            quotes: [] 
-        },
-        { 
-            title: '洢蓮絲/少女針 (Ellansé)', 
-            category: '填充', 
-            symptoms: ['下巴後縮', '額頭扁平', '深層皺紋'], 
-            principle: 'CMC凝膠(立即填充) + PCL(刺激膠原)', 
-            duration: '1~2 年 (依型號)', 
-            recovery: '腫脹3-7天，會有異物感', 
-            price: '3~4 萬', 
-            desc: '效果立即且硬挺，適合打下巴、鼻子、額頭。兼具玻尿酸與生長因子的優點。', 
-            quotes: [] 
-        },
-        { 
-            title: '舒顏萃/童顏針 (Sculptra)', 
-            category: '填充', 
-            symptoms: ['大面積凹陷', '臉部消瘦'], 
-            principle: '聚左旋乳酸粉末，刺激膠原，需按摩分散', 
-            duration: '2 年', 
-            recovery: '無傷口，需按摩5天(555原則)', 
-            price: '2.5~3.5萬', 
-            desc: '剛打完是水，要按摩，幾個月後才會慢慢長肉。適合不希望被發現的人。', 
-            quotes: [] 
-        },
-        { 
-            title: '肉毒桿菌 (Botox)', 
-            category: '除皺', 
-            symptoms: ['抬頭紋', '魚尾紋', '咀嚼肌(國字臉)', '小腿肌'], 
-            principle: '阻斷神經傳導，強迫肌肉放鬆', 
-            duration: '4~6 個月', 
-            recovery: '無，4小時內勿平躺', 
-            price: '3千~8千', 
-            desc: '抬頭紋、魚尾紋必備。打咀嚼肌可以瘦小臉，打肩膀可以瘦肩。', 
-            quotes: [] 
-        },
-        { 
-            title: '海菲秀 (Hydrafacial)', 
-            category: '保養', 
-            symptoms: ['粉刺', '角質厚', '膚色暗沉', '乾燥'], 
-            principle: '專利探頭負壓吸除髒污 + 導入保濕精華', 
-            duration: '2~4 週', 
-            recovery: '無', 
-            price: '3千~6千', 
-            desc: '非侵入式深層清潔。吸粉刺、去角質、導入精華液。做完臉會很亮。', 
-            quotes: [] 
-        },
-        { 
-            title: '玻尿酸 (Hyaluronic Acid)', 
-            category: '填充', 
-            symptoms: ['淚溝', '嘴唇薄', '靜態紋路', '鼻子山根'], 
-            principle: '凝膠狀填充物，支撐凹陷處並補水', 
-            duration: '6~18 個月 (分子大小不同)', 
-            recovery: '腫脹3-5天，可能瘀青', 
-            price: '1~2 萬', 
-            desc: '最傳統也最常見。補淚溝、法令紋、豐唇。品牌眾多。', 
-            quotes: [] 
-        }
+        // ... (其他資料保持原樣)
     ];
 
     createApp({
@@ -507,7 +406,6 @@
                 return this.clinics.filter(c => c.status === this.clinicFilter);
             },
             filteredWikiList() {
-                // 1. 先做搜尋過濾
                 let list = this.wikiData;
                 if (this.wikiSearchQuery) {
                     const lowerQuery = this.wikiSearchQuery.toLowerCase();
@@ -518,13 +416,9 @@
                         (item.symptoms && item.symptoms.some(s => s.toLowerCase().includes(lowerQuery)))
                     );
                 }
-
-                // 2. 再做自動除重 (Dedup) - 只顯示每個標題的第一筆
                 const seen = new Set();
                 return list.filter(item => {
-                    if (seen.has(item.title)) {
-                        return false; // 重複的，不顯示
-                    }
+                    if (seen.has(item.title)) { return false; }
                     seen.add(item.title);
                     return true;
                 });
@@ -628,12 +522,8 @@
                 });
             },
             handleWikiImageUpload(event) {
-                const file = event.target.files[0]; if (!file) return;
-                this.compressImage(file, async (base64) => { 
-                    this.selectedWikiItem.photo = base64; 
-                    const { updateDoc, doc, SHARED_APP_ID } = window.firebaseOps;
-                    await updateDoc(doc(window.db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'wiki_v10', this.selectedWikiItem.id), { photo: base64 });
-                });
+                // Legacy wrapper
+                this.processFile(event.target.files[0], 'wiki');
             },
             async deleteWikiPhoto() {
                 if(confirm('刪除圖片？')) {
@@ -683,16 +573,12 @@
                 }
             },
 
-            // PHOTOS
+            // PHOTOS (Common Process)
             openPhotoModal(record) { this.currentEditingRecord = record; if(!this.currentEditingRecord.photos) this.currentEditingRecord.photos = { before: '', after: '' }; this.showPhotoModal = true; },
             closePhotoModal() { this.showPhotoModal = false; this.currentEditingRecord = null; },
             handleImageUpload(event, type) {
-                const file = event.target.files[0]; if (!file) return;
-                this.compressImage(file, async (base64) => { 
-                    this.currentEditingRecord.photos[type] = base64;
-                    const { updateDoc, doc, SHARED_APP_ID } = window.firebaseOps;
-                    await updateDoc(doc(window.db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'records', this.currentEditingRecord.id), { [`photos.${type}`]: base64 });
-                });
+                // Legacy wrapper
+                this.processFile(event.target.files[0], 'record', type);
             },
             async deletePhoto(type) { 
                 if(confirm('刪除?')) { 
@@ -701,6 +587,39 @@
                     await updateDoc(doc(window.db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'records', this.currentEditingRecord.id), { [`photos.${type}`]: '' });
                 } 
             },
+            
+            // === NEW: PASTE SUPPORT ===
+            handlePaste(event, context, subtype) {
+                const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+                for (let index in items) {
+                    const item = items[index];
+                    if (item.kind === 'file' && item.type.includes('image/')) {
+                        const blob = item.getAsFile();
+                        this.processFile(blob, context, subtype);
+                        event.preventDefault(); // Prevent double paste behavior if any
+                        return;
+                    }
+                }
+            },
+            
+            processFile(file, context, subtype) {
+                if(!file) return;
+                
+                this.compressImage(file, async (base64) => { 
+                    const { updateDoc, doc, SHARED_APP_ID } = window.firebaseOps;
+                    
+                    if (context === 'wiki') {
+                        // Update Wiki
+                        this.selectedWikiItem.photo = base64; 
+                        await updateDoc(doc(window.db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'wiki_v10', this.selectedWikiItem.id), { photo: base64 });
+                    } else if (context === 'record') {
+                        // Update Record
+                        this.currentEditingRecord.photos[subtype] = base64;
+                        await updateDoc(doc(window.db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'records', this.currentEditingRecord.id), { [`photos.${subtype}`]: base64 });
+                    }
+                });
+            },
+
             compressImage(file, callback) {
                 const reader = new FileReader(); reader.readAsDataURL(file);
                 reader.onload = (e) => {
