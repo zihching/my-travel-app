@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>醫美小秘書 v13 (機器比較版)</title>
+    <title>醫美小秘書 v13.1 (比較表修復版)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Vue.js 3 -->
@@ -35,15 +35,85 @@
             background: rgba(255,255,255,0.8); z-index: 999;
             display: flex; justify-content: center; align-items: center; flex-direction: column;
         }
-        .tag { @apply px-2 py-0.5 rounded text-[10px] font-bold mr-1 mb-1 inline-block; }
         
-        /* 比較表專用樣式 */
-        .compare-table-container { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 20px; }
-        .compare-col { min-width: 160px; max-width: 160px; flex-shrink: 0; scroll-snap-align: start; }
-        .compare-header { min-width: 80px; position: sticky; left: 0; z-index: 10; background: rgba(255,255,255,0.95); backdrop-filter: blur(2px); border-right: 1px solid #f3f4f6; box-shadow: 2px 0 5px rgba(0,0,0,0.05); }
-        .compare-cell { padding: 8px; border-bottom: 1px solid #f3f4f6; font-size: 12px; height: 60px; display: flex; align-items: center; justify-content: center; text-align: center; }
-        .compare-cell.h-auto { height: auto; min-height: 60px; }
-        .compare-cell.header-cell { font-weight: bold; color: #fb7185; justify-content: flex-start; padding-left: 10px; background-color: #fff1f2; }
+        /* === 比較表強力修復樣式 === */
+        /* 1. 設定每一列的強制高度 (確保左右對齊) */
+        .row-img { height: 140px; min-height: 140px; }
+        .row-std { height: 50px; min-height: 50px; }
+        .row-lg  { height: 120px; min-height: 120px; }
+        
+        /* 2. 容器設定 */
+        .compare-table-container { 
+            display: flex; 
+            overflow-x: auto; 
+            padding-bottom: 20px; 
+            background: white;
+            position: relative; /* 重要 */
+        }
+        
+        /* 3. 左側標頭欄 (凍結) */
+        .compare-header-col { 
+            min-width: 90px; 
+            max-width: 90px;
+            position: sticky; 
+            left: 0; 
+            z-index: 20; /* 確保在內容之上，但在頂部選單之下 */
+            background: #fff1f2; 
+            border-right: 2px solid #e5e7eb; 
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+            flex-shrink: 0;
+        }
+        
+        /* 4. 內容欄位 */
+        .compare-data-col { 
+            min-width: 150px; 
+            max-width: 150px; 
+            flex-shrink: 0; 
+            border-right: 1px solid #f3f4f6;
+            background: white;
+        }
+        
+        /* 5. 儲存格通用設定 */
+        .compare-cell { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 4px; 
+            border-bottom: 1px solid #f3f4f6; 
+            font-size: 12px; 
+            box-sizing: border-box; /* 確保 padding 不影響高度 */
+        }
+        
+        .header-cell {
+            justify-content: flex-start;
+            padding-left: 8px;
+            font-weight: bold;
+            color: #be123c;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        /* 修正頂部 Sticky 遮擋問題 */
+        .sticky-top-bar {
+            position: sticky;
+            top: 0;
+            z-index: 30; /* 最高層級，蓋過左側標頭 */
+            background-color: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        /* 輸入框優化 */
+        .cell-input {
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            background: transparent;
+            outline: none;
+        }
+        .cell-input:focus {
+            background: #ffffff;
+            box-shadow: inset 0 0 0 2px #fecdd3;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body class="text-gray-700 h-screen overflow-hidden flex justify-center">
@@ -92,7 +162,7 @@
 
         <!-- TAB 1: 百科 (搜尋與列表) -->
         <div v-if="currentTab === 'wiki'" class="p-4 space-y-4">
-            <!-- (Wiki 內容保持不變，與 v12 相同) -->
+            <!-- (Wiki 內容保持不變，與 v13 相同) -->
             <div v-if="!selectedWikiItem">
                 <div class="sticky top-0 bg-gray-50 z-10 pb-2">
                     <div class="relative">
@@ -121,7 +191,7 @@
                     </div>
                 </div>
             </div>
-            <!-- (Wiki 詳情頁，為節省篇幅省略部分重複代碼，功能邏輯與 v12 完全一致) -->
+            <!-- (Wiki 詳情頁，與 v13 相同) -->
             <div v-else class="bg-white min-h-full rounded-t-3xl shadow-inner animate-slide-up pb-10">
                 <div class="sticky top-0 bg-white z-10 p-4 border-b border-gray-100 flex items-center justify-between rounded-t-3xl">
                     <button @click="closeWikiDetail" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center"><i class="fas fa-arrow-left"></i></button>
@@ -134,7 +204,6 @@
                         <input type="file" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" @change="(e) => processFile(e.target.files[0], 'wiki')">
                         <button v-if="selectedWikiItem.photo" @click.stop="deleteWikiPhoto" class="absolute top-2 right-2 bg-white/80 p-1 rounded-full text-red-500 z-10"><i class="fas fa-trash"></i></button>
                     </div>
-                    <!-- 編輯區塊 -->
                     <div class="space-y-4">
                         <div class="bg-rose-50 p-3 rounded-xl border border-rose-100"><label class="text-xs font-bold text-rose-500 uppercase mb-1 block">適應症</label><input v-model="selectedWikiItem.symptomsStr" @change="updateWikiItem(selectedWikiItem)" class="w-full bg-white px-2 py-1 rounded text-sm border border-rose-200"></div>
                         <div class="bg-gray-50 p-3 rounded-xl border border-gray-100"><label class="text-xs font-bold text-gray-500 uppercase mb-1 block">原理 / 筆記</label><textarea v-model="selectedWikiItem.desc" @change="updateWikiItem(selectedWikiItem)" class="w-full bg-white border border-gray-200 rounded-lg p-2 text-sm h-20"></textarea></div>
@@ -144,93 +213,91 @@
             </div>
         </div>
 
-        <!-- ==================== NEW TAB: 機器比較 (Comparison) ==================== -->
-        <div v-if="currentTab === 'compare'" class="bg-white min-h-full">
-            <div class="p-4 bg-gray-50 sticky top-0 z-20 shadow-sm flex justify-between items-center">
+        <!-- ==================== TAB 2: 機器比較 (Comparison - 修復版) ==================== -->
+        <div v-if="currentTab === 'compare'" class="bg-white min-h-full flex flex-col">
+            <!-- 標題列 (z-30) -->
+            <div class="p-4 bg-gray-50 sticky-top-bar shadow-sm flex justify-between items-center shrink-0">
                 <h2 class="text-sm font-bold text-gray-700 pl-2 border-l-4 border-rose-400">機器規格 PK</h2>
-                <button @click="addNewMachine" class="bg-rose-500 text-white text-xs px-3 py-1.5 rounded-full shadow font-bold">
-                    <i class="fas fa-plus"></i> 新增機器
+                <button @click="addNewMachine" class="bg-rose-500 text-white text-xs px-3 py-1.5 rounded-full shadow font-bold hover:bg-rose-600 transition">
+                    <i class="fas fa-plus"></i> 新增
                 </button>
             </div>
 
-            <!-- 橫向捲動比較表 -->
-            <div class="compare-table-container p-4">
+            <!-- 比較表容器 -->
+            <div class="compare-table-container flex-1">
                 
-                <!-- 1. 左側固定標頭 -->
-                <div class="compare-header flex flex-col">
-                    <div class="compare-cell header-cell h-auto" style="height: 100px;">圖片</div> <!-- 圖片高度 -->
-                    <div class="compare-cell header-cell">機器名稱</div>
-                    <div class="compare-cell header-cell">產地</div>
-                    <div class="compare-cell header-cell">痛感</div>
-                    <div class="compare-cell header-cell">恢復期</div>
-                    <div class="compare-cell header-cell">維持時間</div>
-                    <div class="compare-cell header-cell h-auto">特色/備註</div> <!-- 備註高度 -->
-                    <div class="compare-cell header-cell">參考價格</div>
-                    <div class="compare-cell header-cell">操作</div>
+                <!-- 1. 左側固定標頭 (z-20) -->
+                <div class="compare-header-col flex flex-col">
+                    <div class="compare-cell row-img header-cell">圖片</div>
+                    <div class="compare-cell row-std header-cell">機器名稱</div>
+                    <div class="compare-cell row-std header-cell">產地</div>
+                    <div class="compare-cell row-std header-cell">痛感</div>
+                    <div class="compare-cell row-std header-cell">恢復期</div>
+                    <div class="compare-cell row-std header-cell">維持時間</div>
+                    <div class="compare-cell row-lg header-cell">特色/備註</div>
+                    <div class="compare-cell row-std header-cell">參考價格</div>
+                    <div class="compare-cell row-std header-cell">操作</div>
                 </div>
 
                 <!-- 2. 右側機器欄位 (迴圈) -->
-                <div v-for="(machine, index) in machinesList" :key="machine.id" class="compare-col bg-white border-r border-gray-200 flex flex-col relative group">
+                <div v-for="(machine, index) in machinesList" :key="machine.id" class="compare-data-col flex flex-col">
                     
-                    <!-- 圖片 Cell -->
-                    <div class="compare-cell h-auto p-2" style="height: 100px;">
-                        <div class="w-full h-full bg-gray-100 rounded border border-dashed border-gray-300 flex items-center justify-center relative overflow-hidden upload-box"
+                    <!-- 圖片 (row-img: 140px) -->
+                    <div class="compare-cell row-img p-2">
+                        <div class="w-full h-full bg-gray-50 rounded border border-dashed border-gray-300 flex items-center justify-center relative overflow-hidden upload-box group"
                              tabindex="0" @paste="handlePaste($event, 'machine', null, machine)"
                              :style="machine.photo ? {backgroundImage: 'url(' + machine.photo + ')', backgroundSize: 'cover', backgroundPosition: 'center'} : {}">
                             <i v-if="!machine.photo" class="fas fa-camera text-gray-300"></i>
                             <input type="file" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" @change="(e) => processFile(e.target.files[0], 'machine', null, machine)">
+                            <div v-if="!machine.photo" class="absolute bottom-2 text-[8px] text-gray-400">點擊貼上</div>
                         </div>
                     </div>
 
-                    <!-- 屬性 Cells (可編輯) -->
-                    <div class="compare-cell">
-                        <input v-model="machine.name" @change="updateMachine(machine)" class="w-full text-center font-bold text-gray-800 text-sm outline-none bg-transparent placeholder-gray-300" placeholder="名稱">
+                    <!-- 屬性 (row-std: 50px) -->
+                    <div class="compare-cell row-std bg-rose-50/30">
+                        <input v-model="machine.name" @change="updateMachine(machine)" class="cell-input font-bold text-gray-800" placeholder="名稱">
                     </div>
-                    <div class="compare-cell">
-                        <input v-model="machine.origin" @change="updateMachine(machine)" class="w-full text-center text-xs outline-none bg-transparent" placeholder="國家">
+                    <div class="compare-cell row-std">
+                        <input v-model="machine.origin" @change="updateMachine(machine)" class="cell-input" placeholder="國家">
                     </div>
-                    <div class="compare-cell">
-                        <select v-model="machine.pain" @change="updateMachine(machine)" class="text-xs bg-transparent outline-none text-center w-full">
+                    <div class="compare-cell row-std">
+                        <select v-model="machine.pain" @change="updateMachine(machine)" class="cell-input cursor-pointer">
                             <option value="">-</option>
                             <option value="低">😊 低</option>
                             <option value="中">😐 中</option>
                             <option value="高">😭 高</option>
                         </select>
                     </div>
-                    <div class="compare-cell">
-                        <input v-model="machine.downtime" @change="updateMachine(machine)" class="w-full text-center text-xs outline-none bg-transparent" placeholder="幾天">
+                    <div class="compare-cell row-std">
+                        <input v-model="machine.downtime" @change="updateMachine(machine)" class="cell-input" placeholder="幾天">
                     </div>
-                    <div class="compare-cell">
-                        <input v-model="machine.duration" @change="updateMachine(machine)" class="w-full text-center text-xs outline-none bg-transparent" placeholder="多久">
+                    <div class="compare-cell row-std">
+                        <input v-model="machine.duration" @change="updateMachine(machine)" class="cell-input" placeholder="多久">
                     </div>
                     
-                    <!-- 特色 (Textarea) -->
-                    <div class="compare-cell h-auto" style="min-height: 60px;">
-                        <textarea v-model="machine.features" @change="updateMachine(machine)" class="w-full text-xs outline-none bg-transparent text-center resize-none h-full" placeholder="特點..."></textarea>
+                    <!-- 特色 (row-lg: 120px) -->
+                    <div class="compare-cell row-lg">
+                        <textarea v-model="machine.features" @change="updateMachine(machine)" class="cell-input resize-none p-1 text-xs leading-relaxed" placeholder="特點..."></textarea>
                     </div>
 
-                    <div class="compare-cell">
-                        <input v-model="machine.price" @change="updateMachine(machine)" class="w-full text-center text-rose-500 font-bold text-xs outline-none bg-transparent" placeholder="$">
+                    <div class="compare-cell row-std">
+                        <input v-model="machine.price" @change="updateMachine(machine)" class="cell-input text-rose-500 font-bold" placeholder="$">
                     </div>
 
-                    <!-- 操作 -->
-                    <div class="compare-cell">
-                        <button @click="deleteMachine(machine)" class="text-gray-300 hover:text-red-500 p-2"><i class="fas fa-trash-alt"></i></button>
+                    <!-- 操作 (row-std) -->
+                    <div class="compare-cell row-std">
+                        <button @click="deleteMachine(machine)" class="text-gray-300 hover:text-red-500 w-full h-full"><i class="fas fa-trash-alt"></i></button>
                     </div>
                 </div>
 
-                <!-- 新增按鈕欄 (最右邊) -->
-                <div class="compare-col flex items-center justify-center bg-gray-50 border-r border-gray-100 min-h-full cursor-pointer hover:bg-gray-100 transition" @click="addNewMachine">
+                <!-- 新增按鈕欄 (佔位) -->
+                <div class="compare-data-col flex items-center justify-center bg-gray-50 border-r border-gray-100 min-h-full cursor-pointer hover:bg-gray-100 transition" @click="addNewMachine" style="min-width: 80px; max-width: 80px;">
                     <div class="text-center text-gray-400">
-                        <i class="fas fa-plus-circle text-3xl mb-2"></i>
-                        <p class="text-xs">加入比較</p>
+                        <i class="fas fa-plus-circle text-2xl mb-1"></i>
                     </div>
                 </div>
 
             </div>
-            <p class="text-center text-[10px] text-gray-400 pb-10">
-                <i class="fas fa-info-circle"></i> 左右滑動查看更多機器，點擊圖片框可貼上照片。
-            </p>
         </div>
 
         <!-- TAB 2: 紅黑榜 (保持不變) -->
@@ -325,7 +392,6 @@
 
     const { createApp } = Vue;
 
-    // --- 預設機器資料 (v13新增) ---
     const defaultMachines = [
         { name: 'Morpheus 8 (墨菲斯)', origin: '以色列', type: '雙極微針', pain: '高', downtime: '5-7天', duration: '12-18個月', features: '治療最深(7mm)，適合消脂、嚴重鬆弛', price: '8-10萬' },
         { name: 'Sylfirm X (矽谷電波)', origin: '美國', type: '雙極微針', pain: '低', downtime: '0-24小時', duration: '6-12個月', features: '修復期極短，針對肝斑、酒糟、養膚', price: '3-6萬' },
@@ -356,7 +422,6 @@
                 wikiData: [],
                 clinics: [],
                 records: [],
-                // v13 新增
                 machinesList: [],
                 
                 newClinic: { name: '', location: '台北', note: '', status: 'good', rating: 5 },
@@ -385,7 +450,7 @@
             onAuthStateChanged(auth, async (user) => {
                 if (!user) { await signInAnonymously(auth); }
                 
-                // 1. Machines Collection (New)
+                // 1. Machines Collection
                 const machinesRef = collection(db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'machines');
                 onSnapshot(machinesRef, (snapshot) => {
                     this.machinesList = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -426,7 +491,6 @@
             },
             async updateMachine(m) {
                 const { updateDoc, doc, SHARED_APP_ID } = window.firebaseOps;
-                // 去除 id 欄位再存
                 const { id, ...data } = m;
                 await updateDoc(doc(window.db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'machines', id), data);
             },
