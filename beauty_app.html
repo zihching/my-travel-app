@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>醫美小秘書 v8 (全家雲端同步版)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Vue.js 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #FDF2F8; touch-action: manipulation; }
+        .card-shadow { box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .upload-box {
+            background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='12' ry='12' stroke='%23FDA4AF' stroke-width='2' stroke-dasharray='6%2c 6' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+            transition: all 0.3s;
+        }
+        .upload-box:active { background-color: #FFF1F2; }
+        .loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.8); z-index: 999;
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+        }
+    </style>
+</head>
+<body class="text-gray-700 h-screen overflow-hidden flex justify-center">
+
+<div id="app" class="w-full max-w-md h-full bg-white shadow-2xl relative flex flex-col">
+    
+    <!-- Loading Screen -->
+    <div v-if="loading" class="loading-overlay">
+        <i class="fas fa-circle-notch fa-spin text-4xl text-rose-400 mb-2"></i>
+        <p class="text-rose-500 font-bold">雲端同步中...</p>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-rose-400 to-pink-500 text-white p-6 pt-8 rounded-b-3xl shadow-lg shrink-0 z-20">
+        <div class="flex justify-between items-center mb-4">
+            <div>
+                <h1 class="text-2xl font-bold tracking-wide">Beauty Manager</h1>
+                <p class="text-xs text-rose-100 flex items-center">
+                    <span class="w-2 h-2 bg-green-400 rounded-full mr-1 animate-pulse"></span> 雲端連線中
+                </p>
+            </div>
+            <div class="text-right bg-white/20 p-2 rounded-lg backdrop-blur-sm">
+                <p class="text-[10px] text-rose-100 uppercase">Total Spent</p>
+                <p class="text-xl font-bold">NT$ {{ formatMoney(totalSpent) }}</p>
+            </div>
+        </div>
+        
+        <div class="flex bg-black/10 p-1 rounded-xl backdrop-blur-md">
+            <button @click="switchTab('wiki')" :class="['flex-1 py-2 rounded-lg text-xs font-bold transition', currentTab === 'wiki' ? 'bg-white text-rose-500 shadow' : 'text-white/70']">
+                <i class="fas fa-search mr-1"></i> 百科
+            </button>
+            <button @click="switchTab('clinics')" :class="['flex-1 py-2 rounded-lg text-xs font-bold transition', currentTab === 'clinics' ? 'bg-white text-rose-500 shadow' : 'text-white/70']">
+                <i class="fas fa-store mr-1"></i> 紅黑榜
+            </button>
+            <button @click="switchTab('records')" :class="['flex-1 py-2 rounded-lg text-xs font-bold transition', currentTab === 'records' ? 'bg-white text-rose-500 shadow' : 'text-white/70']">
+                <i class="fas fa-camera mr-1"></i> 紀錄
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="flex-1 overflow-y-auto bg-gray-50 pb-20 relative">
+
+        <!-- TAB 1: 百科 -->
+        <div v-if="currentTab === 'wiki'" class="p-4 space-y-4">
+            <div v-if="!selectedWikiItem">
+                <!-- 搜尋 -->
+                <div class="sticky top-0 bg-gray-50 z-10 pb-2">
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-4 top-3.5 text-gray-400 text-sm"></i>
+                        <input v-model="wikiSearchQuery" placeholder="搜尋項目、功效 (例: 毛孔)" class="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:border-rose-300 outline-none shadow-sm text-sm">
+                        <button v-if="wikiSearchQuery" @click="wikiSearchQuery=''" class="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"><i class="fas fa-times-circle"></i></button>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-sm font-bold text-gray-500 pl-2 border-l-4 border-rose-400">{{ wikiSearchQuery ? '搜尋結果' : '熱門項目清單' }}</h2>
+                    <button @click="createNewWikiItem" class="text-xs bg-gray-200 text-gray-600 px-3 py-1 rounded-full"><i class="fas fa-plus"></i> 自訂</button>
+                </div>
+
+                <div class="grid grid-cols-1 gap-3">
+                    <div v-if="filteredWikiList.length === 0" class="text-center py-10 text-gray-400">
+                        <i class="far fa-sad-tear text-2xl mb-2"></i>
+                        <p class="text-xs">找不到含有「{{ wikiSearchQuery }}」的項目</p>
+                    </div>
+
+                    <div v-for="item in filteredWikiList" :key="item.id" @click="openWikiDetail(item)" 
+                        class="bg-white p-4 rounded-xl card-shadow border border-gray-100 hover:border-rose-300 transition cursor-pointer group relative overflow-hidden">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="text-[10px] text-rose-500 font-bold bg-rose-50 px-2 py-0.5 rounded mb-1 inline-block">{{ item.category }}</span>
+                                <h3 class="font-bold text-gray-800 text-lg">{{ item.title }}</h3>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-300 mt-2"></i>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-2 line-clamp-1">{{ item.desc }}</p>
+                        <div class="mt-2 flex justify-between items-center">
+                            <span class="text-xs font-medium text-rose-400 bg-gray-50 px-2 py-1 rounded">參考價: {{ item.price }}</span>
+                            <span v-if="item.quotes && item.quotes.length > 0" class="text-[10px] bg-yellow-50 text-yellow-600 px-2 py-0.5 rounded"><i class="fas fa-pen"></i> {{ item.quotes.length }} 筆詢價</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 百科詳情 -->
+            <div v-else class="bg-white min-h-full rounded-t-3xl shadow-inner animate-slide-up">
+                <div class="sticky top-0 bg-white z-10 p-4 border-b border-gray-100 flex items-center justify-between rounded-t-3xl">
+                    <button @click="closeWikiDetail" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center"><i class="fas fa-arrow-left"></i></button>
+                    <span class="font-bold text-gray-800 truncate">{{ selectedWikiItem.title }}</span>
+                    <button @click="deleteWikiItem" class="text-red-300"><i class="fas fa-trash"></i></button>
+                </div>
+                <div class="p-5 space-y-6">
+                    <div>
+                        <label class="text-xs font-bold text-rose-400 uppercase mb-1 block">懶人包筆記 (編輯後自動儲存)</label>
+                        <textarea v-model="selectedWikiItem.desc" @change="updateWikiItem(selectedWikiItem)" class="w-full bg-gray-50 border-0 rounded-xl p-3 text-sm text-gray-700 h-24" placeholder="筆記..."></textarea>
+                        <div class="mt-2 text-xs text-gray-500">市價參考: <input v-model="selectedWikiItem.price" @change="updateWikiItem(selectedWikiItem)" class="bg-gray-100 px-2 py-1 rounded border-0"></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-end mb-3">
+                            <label class="text-xs font-bold text-rose-400 uppercase">比價紀錄</label>
+                        </div>
+                        <div class="bg-rose-50 p-3 rounded-xl border border-rose-100 mb-3">
+                            <div class="flex gap-2 mb-2">
+                                <input v-model="newQuote.clinic" placeholder="診所" class="w-1/2 p-2 text-sm rounded border-0">
+                                <input v-model="newQuote.price" type="number" placeholder="價格" class="w-1/2 p-2 text-sm rounded border-0">
+                            </div>
+                            <input v-model="newQuote.note" placeholder="備註 (如:送保濕)" class="w-full p-2 text-sm rounded border-0 mb-2">
+                            <button @click="addQuote" class="w-full bg-rose-400 text-white text-xs font-bold py-2 rounded">新增比價</button>
+                        </div>
+                        <div class="space-y-2">
+                            <div v-for="(q, idx) in selectedWikiItem.quotes" :key="idx" class="flex justify-between items-center bg-white border border-gray-100 p-3 rounded-xl">
+                                <div><div class="font-bold text-sm">{{ q.clinic }}</div><div class="text-xs text-gray-400">{{ q.note }}</div></div>
+                                <div class="text-right"><div class="font-bold text-rose-500">${{ formatMoney(q.price) }}</div><button @click="removeQuote(idx)" class="text-[10px] text-gray-300">刪除</button></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: 紅黑榜 -->
+        <div v-if="currentTab === 'clinics'" class="p-4 space-y-4">
+            <div class="flex gap-2 pb-2">
+                <button @click="clinicFilter = 'all'" :class="['flex-1 py-1 text-xs font-bold border rounded-full', clinicFilter==='all'?'bg-gray-800 text-white':'bg-white']">全部</button>
+                <button @click="clinicFilter = 'good'" :class="['flex-1 py-1 text-xs font-bold border rounded-full', clinicFilter==='good'?'bg-rose-500 text-white':'bg-white']">紅榜</button>
+                <button @click="clinicFilter = 'bad'" :class="['flex-1 py-1 text-xs font-bold border rounded-full', clinicFilter==='bad'?'bg-gray-500 text-white':'bg-white']">黑榜</button>
+            </div>
+            <button @click="showAddClinic=!showAddClinic" class="w-full py-2 bg-white border border-rose-200 text-rose-500 rounded-xl text-sm font-bold">新增評價</button>
+            <div v-if="showAddClinic" class="bg-white p-4 rounded-xl shadow border-t-4 border-rose-400 animate-fade-in">
+                <input v-model="newClinic.name" placeholder="診所名稱" class="w-full bg-gray-50 p-2 mb-2 text-sm rounded">
+                <div class="flex gap-2 mb-2">
+                    <select v-model="newClinic.location" class="w-1/2 bg-gray-50 p-2 text-sm rounded"><option value="台北">台北</option><option value="高雄">高雄</option><option value="韓國">韓國</option></select>
+                    <select v-model="newClinic.status" class="w-1/2 bg-gray-50 p-2 text-sm rounded"><option value="good">推薦</option><option value="bad">避雷</option></select>
+                </div>
+                <textarea v-model="newClinic.note" placeholder="評價..." class="w-full bg-gray-50 p-2 text-sm rounded mb-2"></textarea>
+                <button @click="addClinic" class="w-full bg-rose-500 text-white py-2 rounded text-sm">儲存</button>
+            </div>
+            <div v-for="c in filteredClinics" :key="c.id" class="p-4 bg-white rounded-xl card-shadow border-l-4" :class="c.status==='good'?'border-rose-400':'border-gray-500'">
+                <div class="flex justify-between items-start">
+                    <h3 class="font-bold">{{c.name}} <span class="text-xs font-normal text-gray-500">@{{c.location}}</span></h3>
+                    <div class="flex text-yellow-400 text-[10px]"><i v-for="n in 5" :key="n" :class="n <= c.rating ? 'fas fa-star' : 'far fa-star text-gray-300'"></i></div>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">{{c.note || '無備註'}}</p>
+                <div class="flex justify-between mt-2"><span class="text-[10px] px-2 py-0.5 rounded bg-gray-100">{{c.status==='good'?'推薦':'避雷'}}</span><button @click="removeClinic(c.id)" class="text-gray-300"><i class="fas fa-trash"></i></button></div>
+            </div>
+        </div>
+
+        <!-- TAB 3: 紀錄 & 照片 -->
+        <div v-if="currentTab === 'records'" class="p-4 space-y-4">
+            <div class="bg-white p-5 rounded-2xl card-shadow border border-gray-100">
+                <div class="flex gap-2 overflow-x-auto mb-3 pb-1 no-scrollbar">
+                    <button v-for="m in members" :key="m" @click="newRecord.member = m"
+                        :class="['px-4 py-1.5 whitespace-nowrap rounded-full text-xs font-bold border transition', newRecord.member === m ? 'bg-rose-500 text-white border-rose-500' : 'bg-white text-gray-500 border-gray-200']">
+                        {{ m }}
+                    </button>
+                </div>
+                <div class="space-y-2">
+                    <input type="date" v-model="newRecord.date" class="w-full bg-gray-50 p-2 rounded-lg text-sm outline-none">
+                    <input v-model="newRecord.item" placeholder="項目 (例: 音波600發)" class="w-full bg-gray-50 p-2 rounded-lg text-sm outline-none">
+                    <div class="flex gap-2">
+                        <input type="number" v-model="newRecord.price" placeholder="金額" class="w-full bg-gray-50 p-2 rounded-lg text-sm outline-none">
+                        <input v-model="newRecord.clinic" placeholder="診所" class="w-full bg-gray-50 p-2 rounded-lg text-sm outline-none">
+                    </div>
+                    <button @click="addRecord" class="w-full bg-gray-800 text-white py-2.5 rounded-xl font-bold shadow hover:bg-gray-900 mt-2">
+                        <i class="fas fa-check mr-1"></i> 記一筆 (同步雲端)
+                    </button>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div v-for="rec in sortedRecords" :key="rec.id" class="bg-white rounded-2xl card-shadow overflow-hidden">
+                    <div class="p-4 flex justify-between items-start relative">
+                        <div class="flex items-start gap-3">
+                            <div :class="['w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs shadow-sm text-white shrink-0', 
+                                rec.member === '子晴' ? 'bg-pink-400' : (rec.member === '子涵' ? 'bg-purple-400' : (rec.member === '媽媽' ? 'bg-rose-500' : 'bg-gray-400'))]">
+                                {{ rec.member.substring(0,2) }}
+                            </div>
+                            <div>
+                                <div class="text-sm font-bold text-gray-800">{{ rec.item }}</div>
+                                <div class="text-xs text-gray-400 mb-1">{{ rec.date }} <span v-if="rec.clinic">| {{ rec.clinic }}</span></div>
+                                <div class="text-sm font-bold text-rose-500">NT$ {{ formatMoney(rec.price) }}</div>
+                            </div>
+                        </div>
+                        <button @click="removeRecord(rec.id)" class="text-gray-300 hover:text-red-400"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+
+                    <div v-if="rec.photos && (rec.photos.before || rec.photos.after)" class="flex border-t border-gray-100 bg-gray-50">
+                        <div class="flex-1 h-24 bg-cover bg-center border-r border-gray-200 relative" :style="rec.photos.before ? {backgroundImage: 'url(' + rec.photos.before + ')'} : {}">
+                            <span v-if="rec.photos.before" class="absolute bottom-0 left-0 bg-black/50 text-white text-[10px] px-1">Before</span>
+                        </div>
+                        <div class="flex-1 h-24 bg-cover bg-center relative" :style="rec.photos.after ? {backgroundImage: 'url(' + rec.photos.after + ')'} : {}">
+                            <span v-if="rec.photos.after" class="absolute bottom-0 left-0 bg-rose-500/80 text-white text-[10px] px-1">After</span>
+                        </div>
+                    </div>
+
+                    <button @click="openPhotoModal(rec)" class="w-full py-2 bg-rose-50 text-rose-500 text-xs font-bold hover:bg-rose-100 transition border-t border-rose-100 flex items-center justify-center gap-1">
+                        <i class="fas fa-camera"></i> {{ (rec.photos && (rec.photos.before || rec.photos.after)) ? '查看對比' : '上傳術前術後照' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PHOTO MODAL -->
+    <div v-if="showPhotoModal && currentEditingRecord" class="absolute inset-0 z-50 bg-white flex flex-col animate-slide-up">
+        <div class="bg-gray-800 text-white p-4 flex justify-between items-center shrink-0">
+            <div><h3 class="font-bold">{{ currentEditingRecord.item }}</h3></div>
+            <button @click="closePhotoModal" class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="flex-1 overflow-y-auto p-4 bg-gray-100 flex flex-col gap-4">
+            <div class="flex-1 bg-white p-3 rounded-xl shadow-sm flex flex-col">
+                <div class="flex justify-between items-center mb-2"><span class="text-xs font-bold bg-gray-200 text-gray-600 px-2 py-1 rounded">BEFORE 術前</span><button v-if="currentEditingRecord.photos?.before" @click="deletePhoto('before')" class="text-red-400 text-xs"><i class="fas fa-trash"></i></button></div>
+                <div class="flex-1 relative rounded-lg overflow-hidden bg-gray-50 border-2 border-dashed border-gray-300 flex items-center justify-center upload-box" :style="currentEditingRecord.photos?.before ? {backgroundImage: 'url(' + currentEditingRecord.photos.before + ')', backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', border: 'none'} : {}">
+                    <label v-if="!currentEditingRecord.photos?.before" class="absolute inset-0 flex flex-col items-center justify-center cursor-pointer text-gray-400"><i class="fas fa-camera text-2xl mb-1"></i><span class="text-xs">點擊上傳</span><input type="file" accept="image/*" class="hidden" @change="(e) => handleImageUpload(e, 'before')"></label>
+                </div>
+            </div>
+            <div class="flex-1 bg-white p-3 rounded-xl shadow-sm flex flex-col">
+                <div class="flex justify-between items-center mb-2"><span class="text-xs font-bold bg-rose-500 text-white px-2 py-1 rounded">AFTER 術後</span><button v-if="currentEditingRecord.photos?.after" @click="deletePhoto('after')" class="text-red-400 text-xs"><i class="fas fa-trash"></i></button></div>
+                <div class="flex-1 relative rounded-lg overflow-hidden bg-gray-50 border-2 border-dashed border-rose-300 flex items-center justify-center upload-box" :style="currentEditingRecord.photos?.after ? {backgroundImage: 'url(' + currentEditingRecord.photos.after + ')', backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', border: 'none'} : {}">
+                    <label v-if="!currentEditingRecord.photos?.after" class="absolute inset-0 flex flex-col items-center justify-center cursor-pointer text-rose-400"><i class="fas fa-camera text-2xl mb-1"></i><span class="text-xs">點擊上傳</span><input type="file" accept="image/*" class="hidden" @change="(e) => handleImageUpload(e, 'after')"></label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- 合併腳本：初始化 Firebase 並啟動 Vue -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+    // 1. Firebase 設定
+    const firebaseConfig = {
+        apiKey: "AIzaSyDFUGYOobmVxYFQMBYz1iQ4z1HIrdbTi8Q",
+        authDomain: "travel-55c4b.firebaseapp.com",
+        databaseURL: "https://travel-55c4b-default-rtdb.firebaseio.com",
+        projectId: "travel-55c4b",
+        storageBucket: "travel-55c4b.firebasestorage.app",
+        messagingSenderId: "925227625640",
+        appId: "1:925227625640:web:e3421427e8006d65f8a69d",
+        measurementId: "G-ES7SCGQ9P8"
+    };
+
+    // 2. 初始化 Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const SHARED_APP_ID = 'beauty-manager-family'; 
+
+    const { createApp } = Vue;
+
+    // 預設資料
+    const defaultWikiData = [
+        { title: '美國音波 (Ulthera)', category: '拉提', price: '6~9 萬', desc: '【針對下垂】效果最強，但痛感高。有即時顯影比較安全。適合下顎線、雙下巴。', quotes: [] },
+        { title: '鳳凰電波 (Thermage FLX)', category: '緊實', price: '8~12 萬', desc: '【針對鬆弛】全臉緊緻王者，特別是法令紋、嘴邊肉。痛感不低。紫鑽打臉、碧眼打眼周。', quotes: [] },
+        { title: '海芙音波 (Ultraformer)', category: '拉提', price: '2~5 萬', desc: '【高CP值】探頭多樣，針對臉部肉多下垂的人有效，也可以打身體(溶脂)。', quotes: [] },
+        { title: '玩美電波 (Oligio)', category: '緊實', price: '3~6 萬', desc: '【韓版電波】痛感較低，價格親民。適合怕痛的小資族定期保養，維持緊緻度。', quotes: [] },
+        { title: '皮秒雷射 (PicoSure/Way)', category: '膚質', price: '3千~1.5萬', desc: '【斑點/毛孔】記得問有沒有含「蜂巢/全像透鏡」，有透鏡才能刺激膠原蛋白補凹洞。', quotes: [] },
+        { title: '精靈針 (AestheFill)', category: '填充', price: '2.5~3.5萬', desc: '【膠原蛋白增生】打完當下有感，之後會再長膠原蛋白。適合補臉頰凹陷，效果自然軟Q。', quotes: [] },
+        { title: '洢蓮絲/少女針 (Ellansé)', category: '填充', price: '3~4 萬', desc: '【立即填充】效果立即且硬挺，適合打下巴、鼻子、額頭。兼具玻尿酸與生長因子的優點。', quotes: [] },
+        { title: '舒顏萃/童顏針 (Sculptra)', category: '填充', price: '2.5~3.5萬', desc: '【漸進式變美】剛打完是水，要按摩，幾個月後才會慢慢長肉。適合不希望被發現的人。', quotes: [] },
+        { title: '肉毒桿菌 (Botox)', category: '除皺', price: '3千~8千', desc: '【除皺/瘦小臉】抬頭紋、魚尾紋必備。打咀嚼肌可以瘦小臉，打肩膀可以瘦肩。', quotes: [] },
+        { title: '海菲秀 (Hydrafacial)', category: '保養', price: '3千~6千', desc: '【水飛梭】非侵入式深層清潔。吸粉刺、去角質、導入精華液。做完臉會很亮。', quotes: [] },
+        { title: '玻尿酸 (Hyaluronic Acid)', category: '填充', price: '1~2 萬', desc: '【補水填充】最傳統也最常見。補淚溝、法令紋、豐唇。品牌眾多(喬雅登/瑞絲朗...)。', quotes: [] }
+    ];
+
+    createApp({
+        data() {
+            return {
+                loading: true,
+                currentTab: 'wiki',
+                clinicFilter: 'all',
+                showAddClinic: false,
+                members: ['子晴', '子涵', '媽媽', '其他'],
+                selectedWikiItem: null,
+                newQuote: { clinic: '', price: '', note: '' },
+                
+                wikiSearchQuery: '',
+                wikiData: [],
+                clinics: [],
+                records: [],
+                
+                newClinic: { name: '', location: '台北', note: '', status: 'good', rating: 5 },
+                newRecord: { member: '子晴', date: new Date().toISOString().split('T')[0], item: '', price: '', clinic: '' },
+                showPhotoModal: false,
+                currentEditingRecord: null,
+            }
+        },
+        computed: {
+            totalSpent() { return this.records.reduce((sum, item) => sum + Number(item.price), 0); },
+            sortedRecords() { return [...this.records].sort((a, b) => new Date(b.date) - new Date(a.date)); },
+            filteredClinics() {
+                if (this.clinicFilter === 'all') return this.clinics;
+                return this.clinics.filter(c => c.status === this.clinicFilter);
+            },
+            filteredWikiList() {
+                if (!this.wikiSearchQuery) return this.wikiData;
+                const lowerQuery = this.wikiSearchQuery.toLowerCase();
+                return this.wikiData.filter(item => 
+                    item.title.toLowerCase().includes(lowerQuery) || 
+                    item.category.toLowerCase().includes(lowerQuery) || 
+                    item.desc.toLowerCase().includes(lowerQuery)
+                );
+            }
+        },
+        async created() {
+            // 匿名登入 (確保有權限讀寫)
+            onAuthStateChanged(auth, async (user) => {
+                if (!user) {
+                    await signInAnonymously(auth);
+                }
+                
+                // 綁定 Firestore 監聽 (即時同步)
+                // --- WIKI ---
+                const wikiRef = collection(db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'wiki');
+                onSnapshot(wikiRef, (snapshot) => {
+                    this.wikiData = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                    // 如果資料庫是空的 (第一次用)，自動寫入預設資料
+                    if (this.wikiData.length === 0) {
+                        defaultWikiData.forEach(item => addDoc(wikiRef, item));
+                    }
+                });
+
+                // --- CLINICS ---
+                const clinicsRef = collection(db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'clinics');
+                // 照時間排序 (這裡簡單做，因為沒 createdTime，用預設)
+                onSnapshot(clinicsRef, (snapshot) => {
+                    this.clinics = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                });
+
+                // --- RECORDS ---
+                const recordsRef = collection(db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'records');
+                onSnapshot(recordsRef, (snapshot) => {
+                    this.records = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                    this.loading = false;
+                });
+            });
+        },
+        methods: {
+            formatMoney(value) { return Number(value || 0).toLocaleString(); },
+            switchTab(tab) { this.currentTab = tab; this.selectedWikiItem = null; },
+            
+            // --- FIREBASE 操作方法 ---
+            // 1. Wiki
+            openWikiDetail(item) { this.selectedWikiItem = item; },
+            closeWikiDetail() { this.selectedWikiItem = null; },
+            async createNewWikiItem() { 
+                const name = prompt("項目名稱"); 
+                if(name) { 
+                    await addDoc(collection(db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'wiki'), {
+                        title:name, category:'自訂', price:'-', desc:'', quotes:[]
+                    });
+                } 
+            },
+            async deleteWikiItem() { 
+                if(confirm('刪除?')) { 
+                    await deleteDoc(doc(db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'wiki', this.selectedWikiItem.id));
+                    this.selectedWikiItem=null; 
+                } 
+            },
+            async updateWikiItem(item) {
+                await updateDoc(doc(db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'wiki', item.id), {
+                    desc: item.desc, price: item.price
+                });
+            },
+            
+            // Quotes (存於 Wiki 文件內的陣列)
+            async addQuote() { 
+                if(!this.selectedWikiItem) return;
+                const newQuotes = [...(this.selectedWikiItem.quotes || []), { ...this.newQuote }];
+                await updateDoc(doc(db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'wiki', this.selectedWikiItem.id), { quotes: newQuotes });
+                this.newQuote={clinic:'',price:''}; 
+            },
+            async removeQuote(idx) { 
+                const newQuotes = [...this.selectedWikiItem.quotes];
+                newQuotes.splice(idx,1);
+                await updateDoc(doc(db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'wiki', this.selectedWikiItem.id), { quotes: newQuotes });
+            },
+
+            // 2. Clinics
+            async addClinic() { 
+                await addDoc(collection(db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'clinics'), { ...this.newClinic });
+                this.showAddClinic=false; 
+            },
+            async removeClinic(id) { 
+                if(confirm('刪除?')) { 
+                    await deleteDoc(doc(db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'clinics', id));
+                } 
+            },
+
+            // 3. Records
+            async addRecord() { 
+                if(!this.newRecord.item) return; 
+                await addDoc(collection(db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'records'), { 
+                    ...this.newRecord, photos: { before: '', after: '' } 
+                });
+                this.newRecord.item=''; this.newRecord.price=''; 
+            },
+            async removeRecord(id) { 
+                if(confirm('刪除?')) { 
+                    await deleteDoc(doc(db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'records', id));
+                } 
+            },
+
+            // 4. Photos (Base64 儲存於 Record 文件內)
+            openPhotoModal(record) { 
+                this.currentEditingRecord = record; 
+                if(!this.currentEditingRecord.photos) this.currentEditingRecord.photos = { before: '', after: '' }; 
+                this.showPhotoModal = true; 
+            },
+            closePhotoModal() { this.showPhotoModal = false; this.currentEditingRecord = null; },
+            
+            handleImageUpload(event, type) {
+                const file = event.target.files[0]; if (!file) return;
+                this.compressImage(file, async (base64) => { 
+                    // 更新本地顯示
+                    this.currentEditingRecord.photos[type] = base64;
+                    // 更新雲端
+                    await updateDoc(doc(db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'records', this.currentEditingRecord.id), {
+                        [`photos.${type}`]: base64
+                    });
+                });
+            },
+            async deletePhoto(type) { 
+                if(confirm('刪除?')) { 
+                    this.currentEditingRecord.photos[type] = '';
+                    await updateDoc(doc(db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'records', this.currentEditingRecord.id), {
+                        [`photos.${type}`]: ''
+                    });
+                } 
+            },
+            compressImage(file, callback) {
+                const reader = new FileReader(); reader.readAsDataURL(file);
+                reader.onload = (e) => {
+                    const img = new Image(); img.src = e.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const maxWidth = 500; let w = img.width; let h = img.height;
+                        if (w > maxWidth) { h *= maxWidth / w; w = maxWidth; }
+                        canvas.width = w; canvas.height = h;
+                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                        callback(canvas.toDataURL('image/jpeg', 0.7));
+                    };
+                };
+            }
+        }
+    }).mount('#app');
+</script>
+
+</body>
+</html>
