@@ -246,7 +246,7 @@
                     <div class="compare-cell row-img p-2">
                         <div class="w-full h-full bg-gray-50 rounded border border-dashed border-gray-300 flex items-center justify-center relative overflow-hidden upload-box group"
                              tabindex="0" @paste="handlePaste($event, 'machine', null, machine)"
-                             :style="machine.photo ? {backgroundImage: 'url(' + machine.photo + ')', backgroundSize: 'cover', backgroundPosition: 'center'} : {}">
+                             :style="machine.photo ? {backgroundImage: 'url(' + machine.photo + ')', backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center'} : {}">
                             <i v-if="!machine.photo" class="fas fa-camera text-gray-300"></i>
                             <input type="file" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" @change="(e) => processFile(e.target.files[0], 'machine', null, machine)">
                             <div v-if="!machine.photo" class="absolute bottom-2 text-[8px] text-gray-400">點擊貼上</div>
