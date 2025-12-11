@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>醫美小秘書 v13.1 (比較表修復版)</title>
+    <title>醫美小秘書 v13.2 (優缺點比較版)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Vue.js 3 -->
@@ -37,34 +37,30 @@
         }
         
         /* === 比較表強力修復樣式 === */
-        /* 1. 設定每一列的強制高度 (確保左右對齊) */
         .row-img { height: 140px; min-height: 140px; }
         .row-std { height: 50px; min-height: 50px; }
-        .row-lg  { height: 120px; min-height: 120px; }
+        .row-lg  { height: 100px; min-height: 100px; } /* 優缺點欄位高度 */
         
-        /* 2. 容器設定 */
         .compare-table-container { 
             display: flex; 
             overflow-x: auto; 
             padding-bottom: 20px; 
             background: white;
-            position: relative; /* 重要 */
+            position: relative; 
         }
         
-        /* 3. 左側標頭欄 (凍結) */
         .compare-header-col { 
             min-width: 90px; 
             max-width: 90px;
             position: sticky; 
             left: 0; 
-            z-index: 20; /* 確保在內容之上，但在頂部選單之下 */
+            z-index: 20;
             background: #fff1f2; 
             border-right: 2px solid #e5e7eb; 
             box-shadow: 2px 0 5px rgba(0,0,0,0.05);
             flex-shrink: 0;
         }
         
-        /* 4. 內容欄位 */
         .compare-data-col { 
             min-width: 150px; 
             max-width: 150px; 
@@ -73,7 +69,6 @@
             background: white;
         }
         
-        /* 5. 儲存格通用設定 */
         .compare-cell { 
             display: flex; 
             align-items: center; 
@@ -81,7 +76,7 @@
             padding: 4px; 
             border-bottom: 1px solid #f3f4f6; 
             font-size: 12px; 
-            box-sizing: border-box; /* 確保 padding 不影響高度 */
+            box-sizing: border-box; 
         }
         
         .header-cell {
@@ -92,16 +87,14 @@
             border-bottom: 1px solid #e5e7eb;
         }
 
-        /* 修正頂部 Sticky 遮擋問題 */
         .sticky-top-bar {
             position: sticky;
             top: 0;
-            z-index: 30; /* 最高層級，蓋過左側標頭 */
+            z-index: 30; 
             background-color: #f9fafb;
             border-bottom: 1px solid #e5e7eb;
         }
         
-        /* 輸入框優化 */
         .cell-input {
             width: 100%;
             height: 100%;
@@ -160,7 +153,7 @@
     <!-- Main Content -->
     <div class="flex-1 overflow-y-auto bg-gray-50 pb-20 relative">
 
-        <!-- TAB 1: 百科 (搜尋與列表) -->
+        <!-- TAB 1: 百科 -->
         <div v-if="currentTab === 'wiki'" class="p-4 space-y-4">
             <!-- (Wiki 內容保持不變，與 v13 相同) -->
             <div v-if="!selectedWikiItem">
@@ -213,7 +206,7 @@
             </div>
         </div>
 
-        <!-- ==================== TAB 2: 機器比較 (Comparison - 修復版) ==================== -->
+        <!-- ==================== TAB 2: 機器比較 (Comparison - v13.2) ==================== -->
         <div v-if="currentTab === 'compare'" class="bg-white min-h-full flex flex-col">
             <!-- 標題列 (z-30) -->
             <div class="p-4 bg-gray-50 sticky-top-bar shadow-sm flex justify-between items-center shrink-0">
@@ -234,7 +227,11 @@
                     <div class="compare-cell row-std header-cell">痛感</div>
                     <div class="compare-cell row-std header-cell">恢復期</div>
                     <div class="compare-cell row-std header-cell">維持時間</div>
-                    <div class="compare-cell row-lg header-cell">特色/備註</div>
+                    <!-- 新增優缺點 -->
+                    <div class="compare-cell row-lg header-cell bg-green-50 text-green-700">🟢 優點</div>
+                    <div class="compare-cell row-lg header-cell bg-red-50 text-red-700">🔴 缺點</div>
+                    
+                    <div class="compare-cell row-lg header-cell">其他備註</div>
                     <div class="compare-cell row-std header-cell">參考價格</div>
                     <div class="compare-cell row-std header-cell">操作</div>
                 </div>
@@ -242,7 +239,7 @@
                 <!-- 2. 右側機器欄位 (迴圈) -->
                 <div v-for="(machine, index) in machinesList" :key="machine.id" class="compare-data-col flex flex-col">
                     
-                    <!-- 圖片 (row-img: 140px) -->
+                    <!-- 圖片 -->
                     <div class="compare-cell row-img p-2">
                         <div class="w-full h-full bg-gray-50 rounded border border-dashed border-gray-300 flex items-center justify-center relative overflow-hidden upload-box group"
                              tabindex="0" @paste="handlePaste($event, 'machine', null, machine)"
@@ -253,7 +250,7 @@
                         </div>
                     </div>
 
-                    <!-- 屬性 (row-std: 50px) -->
+                    <!-- 屬性 -->
                     <div class="compare-cell row-std bg-rose-50/30">
                         <input v-model="machine.name" @change="updateMachine(machine)" class="cell-input font-bold text-gray-800" placeholder="名稱">
                     </div>
@@ -275,16 +272,26 @@
                         <input v-model="machine.duration" @change="updateMachine(machine)" class="cell-input" placeholder="多久">
                     </div>
                     
-                    <!-- 特色 (row-lg: 120px) -->
+                    <!-- 優點 -->
+                    <div class="compare-cell row-lg bg-green-50/30">
+                        <textarea v-model="machine.pros" @change="updateMachine(machine)" class="cell-input resize-none p-1 text-xs leading-relaxed text-green-700 font-medium" placeholder="優點..."></textarea>
+                    </div>
+                    
+                    <!-- 缺點 -->
+                    <div class="compare-cell row-lg bg-red-50/30">
+                        <textarea v-model="machine.cons" @change="updateMachine(machine)" class="cell-input resize-none p-1 text-xs leading-relaxed text-red-700 font-medium" placeholder="缺點..."></textarea>
+                    </div>
+
+                    <!-- 備註 -->
                     <div class="compare-cell row-lg">
-                        <textarea v-model="machine.features" @change="updateMachine(machine)" class="cell-input resize-none p-1 text-xs leading-relaxed" placeholder="特點..."></textarea>
+                        <textarea v-model="machine.features" @change="updateMachine(machine)" class="cell-input resize-none p-1 text-xs leading-relaxed" placeholder="備註..."></textarea>
                     </div>
 
                     <div class="compare-cell row-std">
                         <input v-model="machine.price" @change="updateMachine(machine)" class="cell-input text-rose-500 font-bold" placeholder="$">
                     </div>
 
-                    <!-- 操作 (row-std) -->
+                    <!-- 操作 -->
                     <div class="compare-cell row-std">
                         <button @click="deleteMachine(machine)" class="text-gray-300 hover:text-red-500 w-full h-full"><i class="fas fa-trash-alt"></i></button>
                     </div>
@@ -393,11 +400,11 @@
     const { createApp } = Vue;
 
     const defaultMachines = [
-        { name: 'Morpheus 8 (墨菲斯)', origin: '以色列', type: '雙極微針', pain: '高', downtime: '5-7天', duration: '12-18個月', features: '治療最深(7mm)，適合消脂、嚴重鬆弛', price: '8-10萬' },
-        { name: 'Sylfirm X (矽谷電波)', origin: '美國', type: '雙極微針', pain: '低', downtime: '0-24小時', duration: '6-12個月', features: '修復期極短，針對肝斑、酒糟、養膚', price: '3-6萬' },
-        { name: 'Potenza (無限電波)', origin: '韓國', type: '單/雙極', pain: '中', downtime: '1-3天', duration: '約12個月', features: '獨特CPtip可將精華導入真皮層', price: '4-6萬' },
-        { name: 'Genius (精靈電波)', origin: '韓國', type: '雙極微針', pain: '中', downtime: '3-7天', duration: '12-18個月', features: '能量精準，像砂紙磨過，針對深層痘疤', price: '5-8萬' },
-        { name: 'Virtue RF (神比電波)', origin: '韓國', type: '單/雙極', pain: '低', downtime: '1-3天', duration: '約12個月', features: '強大冷卻系統，舒適度高，怕痛首選', price: '3-5萬' }
+        { name: 'Morpheus 8 (墨菲斯)', origin: '以色列', type: '雙極微針', pain: '高', downtime: '5-7天', duration: '12-18個月', pros: '治療深度最深(7mm)，緊緻消脂強', cons: '痛感較明顯，恢復期較長', features: '適合想「瘦臉」、改善鬆弛、雙下巴', price: '8-10萬' },
+        { name: 'Sylfirm X (矽谷電波)', origin: '美國', type: '雙極微針', pain: '低', downtime: '0-24小時', duration: '6-12個月', pros: '修復期極短，隔天可上妝', cons: '單次拉提效果較溫和', features: '適合肝斑肌、敏感肌、養膚', price: '3-6萬' },
+        { name: 'Potenza (無限電波)', origin: '韓國', type: '單/雙極', pain: '中', downtime: '1-3天', duration: '約12個月', pros: '獨特導藥探頭，一機多用', cons: '探頭耗材價格較高', features: '適合毛孔粗大、凹洞痘疤', price: '4-6萬' },
+        { name: 'Genius (精靈電波)', origin: '韓國', type: '雙極微針', pain: '中', downtime: '3-7天', duration: '12-18個月', pros: '能量精準，針對深層痘疤強', cons: '有結痂期，皮膚粗糙幾天', features: '適合嚴重痘疤、妊娠紋、頸紋', price: '5-8萬' },
+        { name: 'Virtue RF (神比電波)', origin: '韓國', type: '單/雙極', pain: '低', downtime: '1-3天', duration: '約12個月', pros: '冷卻系統強，舒適度高', cons: '深層拉提效果不如墨菲斯', features: '適合怕痛、重視舒適度的人', price: '3-5萬' }
     ];
 
     const defaultWikiData = [
@@ -485,7 +492,7 @@
                 if(name) {
                     const { addDoc, collection, SHARED_APP_ID } = window.firebaseOps;
                     await addDoc(collection(window.db, 'artifacts', SHARED_APP_ID, 'public', 'data', 'machines'), {
-                        name, origin:'', type:'', pain:'', downtime:'', duration:'', features:'', price:''
+                        name, origin:'', type:'', pain:'', downtime:'', duration:'', pros:'', cons:'', features:'', price:''
                     });
                 }
             },
