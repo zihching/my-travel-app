@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>醫美小秘書 v13.2 (優缺點比較版)</title>
+    <title>醫美小秘書 v13.4 (編輯友善版)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Vue.js 3 -->
@@ -36,34 +36,34 @@
             display: flex; justify-content: center; align-items: center; flex-direction: column;
         }
         
-        /* === 比較表強力修復樣式 === */
-        .row-img { height: 140px; min-height: 140px; }
-        .row-std { height: 50px; min-height: 50px; }
-        .row-lg  { height: 100px; min-height: 100px; } /* 優缺點欄位高度 */
+        /* === v13.4 樣式優化 === */
+        .row-img { height: 160px; min-height: 160px; }
+        .row-std { height: 60px; min-height: 60px; }
+        .row-lg  { height: 150px; min-height: 150px; }
         
         .compare-table-container { 
             display: flex; 
             overflow-x: auto; 
-            padding-bottom: 20px; 
+            padding-bottom: 40px; 
             background: white;
             position: relative; 
         }
         
         .compare-header-col { 
-            min-width: 90px; 
-            max-width: 90px;
+            min-width: 100px; 
+            max-width: 100px;
             position: sticky; 
             left: 0; 
             z-index: 20;
             background: #fff1f2; 
             border-right: 2px solid #e5e7eb; 
-            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+            box-shadow: 4px 0 10px rgba(0,0,0,0.03);
             flex-shrink: 0;
         }
         
         .compare-data-col { 
-            min-width: 150px; 
-            max-width: 150px; 
+            min-width: 200px; /* 再加寬一點，方便打字 */
+            max-width: 200px; 
             flex-shrink: 0; 
             border-right: 1px solid #f3f4f6;
             background: white;
@@ -72,19 +72,21 @@
         .compare-cell { 
             display: flex; 
             align-items: center; 
-            justify-content: center; 
-            padding: 4px; 
+            justify-content: center; /* 預設置中 (給圖片、短文字用) */
+            padding: 8px; 
             border-bottom: 1px solid #f3f4f6; 
-            font-size: 12px; 
+            font-size: 14px; 
             box-sizing: border-box; 
         }
         
         .header-cell {
             justify-content: flex-start;
-            padding-left: 8px;
-            font-weight: bold;
-            color: #be123c;
+            padding-left: 12px;
+            font-weight: 700;
+            color: #881337; 
             border-bottom: 1px solid #e5e7eb;
+            font-size: 13px;
+            letter-spacing: 0.05em;
         }
 
         .sticky-top-bar {
@@ -95,25 +97,42 @@
             border-bottom: 1px solid #e5e7eb;
         }
         
+        /* 一般輸入框 (置中) */
         .cell-input {
             width: 100%;
             height: 100%;
             text-align: center;
             background: transparent;
             outline: none;
+            line-height: 1.5;
+            transition: all 0.2s;
         }
+        
+        /* 多行輸入框 (靠左，適合打字) */
+        textarea.cell-input {
+            text-align: left; /* 關鍵修改：靠左對齊 */
+            padding: 10px;    /* 增加內距 */
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        /* 聚焦效果：不管是單行還是多行，點下去變清楚 */
         .cell-input:focus {
             background: #ffffff;
-            box-shadow: inset 0 0 0 2px #fecdd3;
-            border-radius: 4px;
+            box-shadow: inset 0 0 0 2px #fda4af; /* 粉紅框 */
+            border-radius: 6px;
+            color: #1f2937; /* 深灰字 */
         }
+        
+        .pros-bg { background-color: #f0fdf4; }
+        .cons-bg { background-color: #fef2f2; }
     </style>
 </head>
 <body class="text-gray-700 h-screen overflow-hidden flex justify-center">
 
 <div id="app" class="w-full max-w-md h-full bg-white shadow-2xl relative flex flex-col">
     
-    <!-- Loading Screen -->
+    <!-- Loading -->
     <div v-if="loading" class="loading-overlay">
         <i class="fas fa-circle-notch fa-spin text-4xl text-rose-400 mb-2"></i>
         <p class="text-rose-500 font-bold">雲端同步中...</p>
@@ -155,7 +174,6 @@
 
         <!-- TAB 1: 百科 -->
         <div v-if="currentTab === 'wiki'" class="p-4 space-y-4">
-            <!-- (Wiki 內容保持不變，與 v13 相同) -->
             <div v-if="!selectedWikiItem">
                 <div class="sticky top-0 bg-gray-50 z-10 pb-2">
                     <div class="relative">
@@ -184,7 +202,6 @@
                     </div>
                 </div>
             </div>
-            <!-- (Wiki 詳情頁，與 v13 相同) -->
             <div v-else class="bg-white min-h-full rounded-t-3xl shadow-inner animate-slide-up pb-10">
                 <div class="sticky top-0 bg-white z-10 p-4 border-b border-gray-100 flex items-center justify-between rounded-t-3xl">
                     <button @click="closeWikiDetail" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center"><i class="fas fa-arrow-left"></i></button>
@@ -206,9 +223,8 @@
             </div>
         </div>
 
-        <!-- ==================== TAB 2: 機器比較 (Comparison - v13.2) ==================== -->
+        <!-- ==================== TAB 2: 機器比較 (Comparison - v13.4) ==================== -->
         <div v-if="currentTab === 'compare'" class="bg-white min-h-full flex flex-col">
-            <!-- 標題列 (z-30) -->
             <div class="p-4 bg-gray-50 sticky-top-bar shadow-sm flex justify-between items-center shrink-0">
                 <h2 class="text-sm font-bold text-gray-700 pl-2 border-l-4 border-rose-400">機器規格 PK</h2>
                 <button @click="addNewMachine" class="bg-rose-500 text-white text-xs px-3 py-1.5 rounded-full shadow font-bold hover:bg-rose-600 transition">
@@ -216,10 +232,8 @@
                 </button>
             </div>
 
-            <!-- 比較表容器 -->
             <div class="compare-table-container flex-1">
-                
-                <!-- 1. 左側固定標頭 (z-20) -->
+                <!-- 左側標頭 -->
                 <div class="compare-header-col flex flex-col">
                     <div class="compare-cell row-img header-cell">圖片</div>
                     <div class="compare-cell row-std header-cell">機器名稱</div>
@@ -227,87 +241,69 @@
                     <div class="compare-cell row-std header-cell">痛感</div>
                     <div class="compare-cell row-std header-cell">恢復期</div>
                     <div class="compare-cell row-std header-cell">維持時間</div>
-                    <!-- 新增優缺點 -->
                     <div class="compare-cell row-lg header-cell bg-green-50 text-green-700">🟢 優點</div>
                     <div class="compare-cell row-lg header-cell bg-red-50 text-red-700">🔴 缺點</div>
-                    
                     <div class="compare-cell row-lg header-cell">其他備註</div>
                     <div class="compare-cell row-std header-cell">參考價格</div>
                     <div class="compare-cell row-std header-cell">操作</div>
                 </div>
 
-                <!-- 2. 右側機器欄位 (迴圈) -->
+                <!-- 右側機器欄位 -->
                 <div v-for="(machine, index) in machinesList" :key="machine.id" class="compare-data-col flex flex-col">
-                    
                     <!-- 圖片 -->
-                    <div class="compare-cell row-img p-2">
-                        <div class="w-full h-full bg-gray-50 rounded border border-dashed border-gray-300 flex items-center justify-center relative overflow-hidden upload-box group"
+                    <div class="compare-cell row-img p-4">
+                        <div class="w-full h-full bg-gray-50 rounded-xl border border-dashed border-gray-300 flex items-center justify-center relative overflow-hidden upload-box group shadow-sm"
                              tabindex="0" @paste="handlePaste($event, 'machine', null, machine)"
                              :style="machine.photo ? {backgroundImage: 'url(' + machine.photo + ')', backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center'} : {}">
-                            <i v-if="!machine.photo" class="fas fa-camera text-gray-300"></i>
+                            <i v-if="!machine.photo" class="fas fa-camera text-2xl text-gray-300"></i>
                             <input type="file" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" @change="(e) => processFile(e.target.files[0], 'machine', null, machine)">
-                            <div v-if="!machine.photo" class="absolute bottom-2 text-[8px] text-gray-400">點擊貼上</div>
+                            <div v-if="!machine.photo" class="absolute bottom-2 text-[10px] text-gray-400">點擊貼上</div>
                         </div>
                     </div>
 
-                    <!-- 屬性 -->
-                    <div class="compare-cell row-std bg-rose-50/30">
-                        <input v-model="machine.name" @change="updateMachine(machine)" class="cell-input font-bold text-gray-800" placeholder="名稱">
+                    <!-- 屬性 (單行) -->
+                    <div class="compare-cell row-std bg-gray-50/50">
+                        <input v-model="machine.name" @change="updateMachine(machine)" class="cell-input font-bold text-gray-900 text-base" placeholder="名稱">
                     </div>
+                    <div class="compare-cell row-std"><input v-model="machine.origin" @change="updateMachine(machine)" class="cell-input text-gray-600" placeholder="國家"></div>
                     <div class="compare-cell row-std">
-                        <input v-model="machine.origin" @change="updateMachine(machine)" class="cell-input" placeholder="國家">
-                    </div>
-                    <div class="compare-cell row-std">
-                        <select v-model="machine.pain" @change="updateMachine(machine)" class="cell-input cursor-pointer">
-                            <option value="">-</option>
-                            <option value="低">😊 低</option>
-                            <option value="中">😐 中</option>
-                            <option value="高">😭 高</option>
+                        <select v-model="machine.pain" @change="updateMachine(machine)" class="cell-input cursor-pointer text-gray-700">
+                            <option value="">-</option><option value="低">😊 低</option><option value="中">😐 中</option><option value="高">😭 高</option>
                         </select>
                     </div>
-                    <div class="compare-cell row-std">
-                        <input v-model="machine.downtime" @change="updateMachine(machine)" class="cell-input" placeholder="幾天">
-                    </div>
-                    <div class="compare-cell row-std">
-                        <input v-model="machine.duration" @change="updateMachine(machine)" class="cell-input" placeholder="多久">
+                    <div class="compare-cell row-std"><input v-model="machine.downtime" @change="updateMachine(machine)" class="cell-input text-gray-700" placeholder="幾天"></div>
+                    <div class="compare-cell row-std"><input v-model="machine.duration" @change="updateMachine(machine)" class="cell-input text-gray-700" placeholder="多久"></div>
+                    
+                    <!-- 多行文字區 (靠左對齊，舒適編輯) -->
+                    <div class="compare-cell row-lg pros-bg border-b border-green-100">
+                        <textarea v-model="machine.pros" @change="updateMachine(machine)" class="cell-input resize-none text-green-800" placeholder="輸入優點..."></textarea>
                     </div>
                     
-                    <!-- 優點 -->
-                    <div class="compare-cell row-lg bg-green-50/30">
-                        <textarea v-model="machine.pros" @change="updateMachine(machine)" class="cell-input resize-none p-1 text-xs leading-relaxed text-green-700 font-medium" placeholder="優點..."></textarea>
-                    </div>
-                    
-                    <!-- 缺點 -->
-                    <div class="compare-cell row-lg bg-red-50/30">
-                        <textarea v-model="machine.cons" @change="updateMachine(machine)" class="cell-input resize-none p-1 text-xs leading-relaxed text-red-700 font-medium" placeholder="缺點..."></textarea>
+                    <div class="compare-cell row-lg cons-bg border-b border-red-100">
+                        <textarea v-model="machine.cons" @change="updateMachine(machine)" class="cell-input resize-none text-red-800" placeholder="輸入缺點..."></textarea>
                     </div>
 
-                    <!-- 備註 -->
                     <div class="compare-cell row-lg">
-                        <textarea v-model="machine.features" @change="updateMachine(machine)" class="cell-input resize-none p-1 text-xs leading-relaxed" placeholder="備註..."></textarea>
+                        <textarea v-model="machine.features" @change="updateMachine(machine)" class="cell-input resize-none text-gray-600" placeholder="備註..."></textarea>
+                    </div>
+
+                    <div class="compare-cell row-std bg-rose-50/10">
+                        <input v-model="machine.price" @change="updateMachine(machine)" class="cell-input text-rose-600 font-extrabold text-lg" placeholder="$">
                     </div>
 
                     <div class="compare-cell row-std">
-                        <input v-model="machine.price" @change="updateMachine(machine)" class="cell-input text-rose-500 font-bold" placeholder="$">
-                    </div>
-
-                    <!-- 操作 -->
-                    <div class="compare-cell row-std">
-                        <button @click="deleteMachine(machine)" class="text-gray-300 hover:text-red-500 w-full h-full"><i class="fas fa-trash-alt"></i></button>
+                        <button @click="deleteMachine(machine)" class="text-gray-300 hover:text-red-500 w-full h-full flex items-center justify-center"><i class="fas fa-trash-alt"></i></button>
                     </div>
                 </div>
 
-                <!-- 新增按鈕欄 (佔位) -->
+                <!-- 新增按鈕 -->
                 <div class="compare-data-col flex items-center justify-center bg-gray-50 border-r border-gray-100 min-h-full cursor-pointer hover:bg-gray-100 transition" @click="addNewMachine" style="min-width: 80px; max-width: 80px;">
-                    <div class="text-center text-gray-400">
-                        <i class="fas fa-plus-circle text-2xl mb-1"></i>
-                    </div>
+                    <div class="text-center text-gray-400"><i class="fas fa-plus-circle text-2xl mb-1"></i></div>
                 </div>
-
             </div>
         </div>
 
-        <!-- TAB 2: 紅黑榜 (保持不變) -->
+        <!-- TAB 2 & 3: (保持不變) -->
         <div v-if="currentTab === 'clinics'" class="p-4 space-y-4">
              <div class="flex gap-2 pb-2">
                 <button @click="clinicFilter = 'all'" :class="['flex-1 py-1 text-xs font-bold border rounded-full', clinicFilter==='all'?'bg-gray-800 text-white':'bg-white']">全部</button>
@@ -331,7 +327,6 @@
             </div>
         </div>
 
-        <!-- TAB 3: 紀錄 -->
         <div v-if="currentTab === 'records'" class="p-4 space-y-4">
              <div class="bg-white p-5 rounded-2xl card-shadow border border-gray-100">
                 <div class="flex gap-2 overflow-x-auto mb-3 pb-1 no-scrollbar">
