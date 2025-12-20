@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>北海道追愛：雲端同步版 ☁️</title>
+    <style>
+        :root {
+            --primary: #FF9AA2; /* 櫻花粉 */
+            --primary-dark: #FF808A;
+            --secondary: #B5EAD7; /* 淺綠 */
+            --accent: #FFDAC1; /* 杏色 */
+            --text: #4A4A4A;
+            --bg: #FFF9F9;
+            --white: #ffffff;
+            --gray: #f5f5f5;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            padding-bottom: 60px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: var(--white);
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary), #FFB7B2);
+            padding: 25px 20px;
+            color: white;
+            text-align: center;
+            border-bottom-left-radius: 25px;
+            border-bottom-right-radius: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(255, 154, 162, 0.3);
+            position: relative;
+        }
+
+        h1 { margin: 0; font-size: 1.5rem; font-weight: 700; }
+        .subtitle { font-size: 0.9rem; opacity: 0.95; margin-top: 5px; }
+        
+        .cloud-status {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 0.8rem;
+            background: rgba(255,255,255,0.2);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            padding: 0 15px;
+            gap: 10px;
+            margin-bottom: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--white);
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: var(--gray);
+            border-radius: 12px;
+            font-size: 1rem;
+            color: #888;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 10px rgba(255, 154, 162, 0.4);
+        }
+
+        /* Views */
+        .view { display: none; padding: 0 20px; animation: fadeIn 0.3s ease; }
+        .view.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Checklist Styles --- */
+        .progress-container {
+            background: #eee;
+            border-radius: 10px;
+            height: 12px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+        .progress-text {
+            text-align: right; font-size: 0.85rem; color: var(--primary);
+            font-weight: bold; margin-bottom: 15px;
+        }
+        .input-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        input[type="text"] {
+            flex: 1; padding: 12px; border: 2px solid #eee; border-radius: 12px;
+            font-size: 1rem; outline: none;
+        }
+        input[type="text"]:focus { border-color: var(--primary); }
+        button.add-btn {
+            background: var(--primary); color: white; border: none; width: 45px;
+            border-radius: 12px; font-size: 1.5rem; cursor: pointer;
+        }
+        button.add-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+        ul { list-style: none; padding: 0; }
+        li {
+            background: white; border: 1px solid #f5f5f5; margin-bottom: 8px;
+            padding: 12px 15px; border-radius: 12px; display: flex;
+            align-items: center; justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: opacity 0.3s;
+        }
+        li.completed .text { text-decoration: line-through; color: #bbb; }
+        .check-area { display: flex; align-items: center; gap: 12px; flex: 1; cursor: pointer; }
+        .custom-checkbox {
+            width: 22px; height: 22px; border: 2px solid var(--primary);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            transition: all 0.2s;
+        }
+        li.completed .custom-checkbox { background: var(--primary); }
+        li.completed .custom-checkbox::after { content: '✓'; color: white; font-size: 14px; }
+        .tag { font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; background: #eee; color: #666; margin-bottom: 4px; display: inline-block; }
+        .item-text-wrapper { display: flex; flex-direction: column; }
+        .delete-btn { background: none; border: none; color: #eee; font-size: 1.5rem; padding: 0 10px; cursor: pointer; }
+        .delete-btn:hover { color: var(--primary); }
+
+        /* --- Accordion Guide Styles --- */
+        details {
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        details[open] {
+            border-color: var(--secondary);
+            box-shadow: 0 4px 12px rgba(181, 234, 215, 0.4);
+        }
+
+        summary {
+            padding: 15px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fff;
+        }
+
+        summary::-webkit-details-marker { display: none; }
+        summary::after { content: '+'; font-size: 1.5rem; color: var(--primary); font-weight: 300; }
+        details[open] summary::after { content: '-'; }
+        details[open] summary { border-bottom: 1px solid #f0f0f0; background: #fafafa;}
+
+        .step-content { padding: 20px; background: #fff; }
+        .guide-step { position: relative; padding-left: 20px; margin-bottom: 15px; border-left: 2px solid #eee; }
+        .guide-step strong { display: block; color: #333; margin-bottom: 4px; }
+        .guide-step p { margin: 0; font-size: 0.95rem; color: #666; }
+        
+        .highlight-box {
+            background: #FFF5F5;
+            border-left: 4px solid var(--primary);
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 0.9rem;
+            color: #555;
+            border-radius: 4px;
+        }
+
+        .vjw-guide {
+            background: #F0F7FF;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+            border: 1px solid #BEE3F8;
+        }
+
+        .reset-btn { color: #999; background: none; border: 1px solid #ddd; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; cursor: pointer; margin-top: 30px; display: block; margin-left: auto; margin-right: auto;}
+        
+        /* Loading Overlay */
+        #loadingOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 2000;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            color: var(--primary);
+        }
+
+        /* Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 200; }
+        .modal { background: white; padding: 25px; border-radius: 15px; width: 80%; max-width: 320px; text-align: center; }
+        .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+        .btn { padding: 10px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; flex: 1; }
+        .btn-confirm { background: var(--primary); color: white; }
+        .btn-cancel { background: #eee; color: #666; }
+
+    </style>
+</head>
+<body>
+
+<div id="loadingOverlay">
+    <h2>☁️ 連線中...</h2>
+    <p>正在同步雲端資料庫</p>
+</div>
+
+<div class="container">
+    <header>
+        <h1>✈️ 北海道追愛：雲端版</h1>
+        <div class="subtitle">資料自動備份，換手機也能看！</div>
+        <div class="cloud-status" id="cloudStatus">連線中...</div>
+    </header>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('checklist')">✅ 準備清單</button>
+        <button class="tab-btn" onclick="switchTab('guide')">📘 全程攻略</button>
+    </div>
+
+    <!-- View 1: Checklist -->
+    <div id="view-checklist" class="view active">
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="progress-text" id="progressText">準備進度：0%</div>
+
+        <div class="input-group">
+            <input type="text" id="itemInput" placeholder="新增待辦事項...">
+            <button class="add-btn" id="addBtn" disabled>+</button>
+        </div>
+
+        <ul id="itemList">
+            <!-- Items injected by JS -->
+        </ul>
+
+        <button class="reset-btn" onclick="showResetModal()">⚠️ 恢復預設清單</button>
+    </div>
+
+    <!-- View 2: Full Guide -->
+    <div id="view-guide" class="view">
+        <p style="text-align: center; color: #666; font-size: 0.9rem; margin-bottom: 20px;">👇 點擊標題展開步驟 👇</p>
+
+        <!-- Stage 1 -->
+        <details open>
+            <summary>第 1 階段：出發前準備</summary>
+            <div class="step-content">
+                <div class="guide-step">
+                    <strong>1. 檢查護照</strong>
+                    <p>確認效期還有 6 個月以上。</p>
+                </div>
+                <div class="guide-step">
+                    <strong>2. 填寫 Visit Japan Web (VJW)</strong>
+                    <p>這最重要！出發前幾天一定要做。</p>
+                    <div class="vjw-guide">
+                        <strong>📌 VJW 填寫重點 (住男友家)：</strong><br>
+                        <ul>
+                            <li><strong>郵遞區號：</strong>問男友 (如 060-0001)</li>
+                            <li><strong>地址：</strong>填完整英文地址</li>
+                            <li><strong>住宿名稱：</strong>填男友名字 (Mr. XXX's House)</li>
+                            <li><strong>電話：</strong>填男友手機</li>
+                        </ul>
+                        <br>
+                        <strong>👉 最後一定要截圖那個黃/藍色的 QR Code！</strong>
+                    </div>
+                </div>
+                <div class="guide-step">
+                    <strong>3. 備份資料</strong>
+                    <p>把男友電話、地址、回程機票資訊都截圖存手機。</p>
+                </div>
+            </div>
+        </details>
+
+        <!-- Stage 2 -->
+        <details>
+            <summary>第 2 階段：整理行李 (冬天版)</summary>
+            <div class="step-content">
+                <div class="highlight-box">
+                    💡 口訣：外厚內薄！室內暖氣很強，不要穿太難脫的高領毛衣。
+                </div>
+                <div class="guide-step">
+                    <strong>1. 必備衣物</strong>
+                    <p>長版羽絨外套、發熱衣、防滑防水雪靴(最重要)、毛帽、圍巾、手套(最好防水)。</p>
+                </div>
+                <div class="guide-step">
+                    <strong>2. 液體與電池</strong>
+                    <p>👉 <strong>行動電源：</strong>一定要放隨身包包 (不可託運)。</p>
+                    <p>👉 <strong>超過100ml液體：</strong>一定要放行李箱託運。</p>
+                </div>
+            </div>
+        </details>
+
+        <!-- Stage 3 -->
+        <details>
+            <summary>第 3 階段：台灣機場出發 🇹🇼</summary>
+            <div class="step-content">
+                <div class="highlight-box">
+                    🕒 建議起飛前 2.5 ~ 3 小時抵達機場。
+                </div>
+                <div class="guide-step">
+                    <strong>1. 報到 (Check-in)</strong>
+                    <p>找航空櫃台，給護照，掛大行李箱。</p>
+                    <p><i>確認行李箱過了X光機再離開櫃台。</i></p>
+                </div>
+                <div class="guide-step">
+                    <strong>2. 安全檢查 (Security)</strong>
+                    <p>排隊檢查隨身包。</p>
+                    <p>👉 水壺的水要倒掉！筆電、平板拿出來。</p>
+                </div>
+                <div class="guide-step">
+                    <strong>3. 證照查驗 (Immigration)</strong>
+                    <p>走「自動通關」閘門，刷護照、看鏡頭，通過！</p>
+                </div>
+                <div class="guide-step">
+                    <strong>4. 去登機門 (Gate)</strong>
+                    <p>看登機證上的 Gate 號碼，去那邊等飛機。</p>
+                </div>
+            </div>
+        </details>
+
+        <!-- Stage 4 -->
+        <details>
+            <summary>第 4 階段：抵達日本 (最緊張的！)</summary>
+            <div class="step-content">
+                <div class="highlight-box">
+                    不要怕，跟著指標「到着 (Arrival)」走就好。
+                </div>
+                <div class="guide-step">
+                    <strong>1. 檢疫 (Quarantine)</strong>
+                    <p>通常走過去體溫沒問題就通過。</p>
+                </div>
+                <div class="guide-step">
+                    <strong>2. 入境審查 (Immigration)</strong>
+                    <p>走到外國人通道。</p>
+                    <p>👉 出示 <strong>VJW QR Code</strong> + 護照。</p>
+                    <p>👉 壓指紋、看鏡頭拍照。</p>
+                    <p>👉 問來幹嘛？回答 "Sightseeing" (觀光)。</p>
+                </div>
+                <div class="guide-step">
+                    <strong>3. 拿行李 (Baggage)</strong>
+                    <p>看螢幕找航班號碼，去轉盤拿行李。</p>
+                </div>
+                <div class="guide-step">
+                    <strong>4. 稅關檢查 (Customs)</strong>
+                    <p>推著行李往出口走。</p>
+                    <p>👉 再次掃描 <strong>VJW QR Code</strong> (走電子申報通道)。</p>
+                </div>
+                <div class="guide-step">
+                    <strong>🎉 成功入境！</strong>
+                    <p>門打開，就可以去找男友了！</p>
+                </div>
+            </div>
+        </details>
+
+        <!-- Stage 5 -->
+        <details>
+            <summary>第 5 階段：快樂回台灣 🏠</summary>
+            <div class="step-content">
+                <div class="guide-step">
+                    <strong>1. 到日本機場</strong>
+                    <p>流程跟台灣一樣：Check-in -> 安檢 -> 出境審查。</p>
+                </div>
+                <div class="guide-step">
+                    <strong>2. 抵達台灣</strong>
+                    <p>下飛機 -> 走自動通關入境 -> 拿行李。</p>
+                </div>
+                <div class="highlight-box">
+                    🚨 <strong>絕對不可以帶：</strong><br>
+                    新鮮水果、蔬菜、肉類製品 (火腿、香腸、沒熟的蛋)。<br>
+                    被抓到罰錢罰很重喔！
+                </div>
+            </div>
+        </details>
+
+    </div>
+</div>
+
+<!-- Modal -->
+<div id="confirmModal" class="modal-overlay">
+    <div class="modal">
+        <h3>⚠️ 確定重置？</h3>
+        <p style="color:#666; font-size: 0.9rem; margin-bottom: 20px;">這會刪除妳所有的雲端紀錄，恢復成預設值。</p>
+        <div class="modal-btns">
+            <button class="btn btn-cancel" onclick="closeModal()">取消</button>
+            <button class="btn btn-confirm" onclick="confirmReset()">確定重置</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    // 1. Import Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // 2. Configuration (User Provided)
+    const firebaseConfig = {
+        apiKey: "AIzaSyDFUGYOobmVxYFQMBYz1iQ4z1HIrdbTi8Q",
+        authDomain: "travel-55c4b.firebaseapp.com",
+        databaseURL: "https://travel-55c4b-default-rtdb.firebaseio.com",
+        projectId: "travel-55c4b",
+        storageBucket: "travel-55c4b.firebasestorage.app",
+        messagingSenderId: "925227625640",
+        appId: "1:925227625640:web:7966e45422a9979ff8a69d",
+        measurementId: "G-N5V8NBGEHZ"
+    };
+
+    // 3. Initialize
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Default Data
+    const defaultData = [
+        { text: "檢查護照效期 (6個月以上)", done: false, cat: "必備" },
+        { text: "填寫 Visit Japan Web (取得QR Code)", done: false, cat: "必備" },
+        { text: "截圖：男友地址、電話、VJW QR", done: false, cat: "必備" },
+        { text: "買網卡/開漫遊", done: false, cat: "網路" },
+        { text: "換日幣 & 準備信用卡", done: false, cat: "錢包" },
+        { text: "羽絨外套 (蓋屁股)", done: false, cat: "衣物" },
+        { text: "防水雪靴 + 厚襪子", done: false, cat: "衣物" },
+        { text: "手套、圍巾、毛帽", done: false, cat: "衣物" },
+        { text: "身體乳液、護唇膏", done: false, cat: "保養" },
+        { text: "行動電源 (放隨身包)", done: false, cat: "隨身" },
+        { text: "感冒藥/止痛藥", done: false, cat: "隨身" }
+    ];
+
+    // DOM Elements
+    const itemList = document.getElementById('itemList');
+    const input = document.getElementById('itemInput');
+    const addBtn = document.getElementById('addBtn');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    const modal = document.getElementById('confirmModal');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const cloudStatus = document.getElementById('cloudStatus');
+
+    let currentUser = null;
+    let localItems = [];
+
+    // 4. Authentication & Data Listener
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            currentUser = user;
+            cloudStatus.innerText = "☁️ 已連線";
+            addBtn.disabled = false;
+            
+            // Listen to data
+            const q = query(collection(db, 'users', user.uid, 'checklist'), orderBy('createdAt', 'desc'));
+            
+            onSnapshot(q, async (snapshot) => {
+                localItems = [];
+                snapshot.forEach((doc) => {
+                    localItems.push({ id: doc.id, ...doc.data() });
+                });
+
+                // If empty (first login), load defaults
+                if (localItems.length === 0 && !snapshot.metadata.hasPendingWrites) {
+                     await loadDefaults(user.uid);
+                } else {
+                    render(localItems);
+                    loadingOverlay.style.display = 'none';
+                }
+            });
+
+        } else {
+            // Sign in anonymously if not signed in
+            try {
+                await signInAnonymously(auth);
+            } catch (error) {
+                console.error("Auth Error:", error);
+                alert("連線失敗，請檢查網路");
+            }
+        }
+    });
+
+    // Helper: Load Defaults
+    async function loadDefaults(uid) {
+        const batch = writeBatch(db);
+        defaultData.forEach(item => {
+            const docRef = doc(collection(db, 'users', uid, 'checklist'));
+            batch.set(docRef, { ...item, createdAt: serverTimestamp() });
+        });
+        await batch.commit();
+    }
+
+    // 5. Render
+    function render(items) {
+        itemList.innerHTML = '';
+        let completedCount = 0;
+
+        items.forEach((item) => {
+            if(item.done) completedCount++;
+            
+            const li = document.createElement('li');
+            li.className = item.done ? 'completed' : '';
+            
+            li.innerHTML = `
+                <div class="check-area" onclick="toggleItem('${item.id}', ${item.done})">
+                    <div class="custom-checkbox"></div>
+                    <div class="item-text-wrapper">
+                        ${item.cat ? `<span class="tag">${item.cat}</span>` : ''}
+                        <span class="text">${item.text}</span>
+                    </div>
+                </div>
+                <button class="delete-btn" onclick="deleteItem('${item.id}')">×</button>
+            `;
+            itemList.appendChild(li);
+        });
+
+        const percent = items.length === 0 ? 0 : Math.round((completedCount / items.length) * 100);
+        progressBar.style.width = percent + '%';
+        progressText.innerText = `準備進度：${percent}%`;
+    }
+
+    // 6. Actions (Interact with Firestore)
+    window.toggleItem = async (id, currentStatus) => {
+        if(!currentUser) return;
+        const itemRef = doc(db, 'users', currentUser.uid, 'checklist', id);
+        await updateDoc(itemRef, { done: !currentStatus });
+    }
+
+    window.deleteItem = async (id) => {
+        if(!currentUser) return;
+        if(confirm('確定要刪除這個項目嗎？')) {
+            await deleteDoc(doc(db, 'users', currentUser.uid, 'checklist', id));
+        }
+    }
+
+    async function addItem() {
+        if(!currentUser) return;
+        const text = input.value.trim();
+        if (text) {
+            await addDoc(collection(db, 'users', currentUser.uid, 'checklist'), {
+                text: text,
+                done: false,
+                cat: "新增",
+                createdAt: serverTimestamp()
+            });
+            input.value = '';
+        }
+    }
+
+    // Modal & Reset Logic
+    window.showResetModal = () => modal.style.display = 'flex';
+    window.closeModal = () => modal.style.display = 'none';
+    
+    window.confirmReset = async () => {
+        if(!currentUser) return;
+        closeModal();
+        loadingOverlay.style.display = 'flex';
+        loadingOverlay.innerHTML = "<h2>🔄 重置中...</h2>";
+        
+        // Delete all existing
+        const q = query(collection(db, 'users', currentUser.uid, 'checklist'));
+        const snapshot = await getDocs(q);
+        const batch = writeBatch(db);
+        snapshot.forEach(doc => {
+            batch.delete(doc.ref);
+        });
+        await batch.commit();
+        
+        // Load defaults will be triggered by onSnapshot automatically if array is empty? 
+        // No, because we handle that in onSnapshot logic, but let's force it to be safe or just let the empty snapshot trigger it.
+        // Actually, our onSnapshot logic adds defaults if empty. 
+        // So deleting everything will trigger "empty" snapshot -> adds defaults.
+        
+        // Give a small delay for UI
+        setTimeout(() => {
+             loadingOverlay.style.display = 'none';
+        }, 1000);
+    }
+
+    // Tab Logic (Same as before)
+    window.switchTab = function(tabName) {
+        document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById(`view-${tabName}`).classList.add('active');
+        
+        const btns = document.querySelectorAll('.tab-btn');
+        if(tabName === 'checklist') btns[0].classList.add('active');
+        else btns[1].classList.add('active');
+    }
+
+    // Init
+    addBtn.addEventListener('click', addItem);
+    input.addEventListener('keypress', (e) => { if (e.key === 'Enter') addItem(); });
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+</script>
+</body>
+</html>
