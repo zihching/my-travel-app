@@ -65,16 +65,22 @@
         h1 { margin: 0; font-size: 1.4rem; font-weight: 700; }
         .subtitle { font-size: 0.85rem; opacity: 0.95; margin-top: 5px; font-weight: bold; background: rgba(255,255,255,0.2); display: inline-block; padding: 2px 10px; border-radius: 10px;}
         
-        .trip-code-display {
+        .share-btn {
             position: absolute;
             top: 15px;
             right: 15px;
-            font-size: 0.75rem;
-            background: rgba(0,0,0,0.15);
-            padding: 4px 8px;
-            border-radius: 8px;
+            font-size: 0.8rem;
+            background: rgba(255,255,255,0.3);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.6);
+            padding: 4px 10px;
+            border-radius: 15px;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
+        .share-btn:active { background: rgba(255,255,255,0.5); }
 
         /* Navigation Tabs (Bottom Fixed) */
         .bottom-nav {
@@ -303,10 +309,10 @@
 <!-- Trip Code Modal (First Load) -->
 <div id="tripCodeModal" class="modal-overlay" style="display:flex;">
     <div class="modal">
-        <h3>🔗 設定旅伴連線碼</h3>
-        <p style="font-size:0.9rem; color:#666; margin-bottom:15px;">為了讓妹妹也能看到，請設定一個簡單的密碼 (例如: honey2025)</p>
-        <input type="text" id="tripCodeInput" placeholder="輸入連線碼..." style="width:100%; margin-bottom:15px; text-align:center; font-weight:bold;">
-        <button class="btn btn-confirm" onclick="setTripCode()">開始規劃！</button>
+        <h3>🔗 建立旅伴連線</h3>
+        <p style="font-size:0.9rem; color:#666; margin-bottom:15px;">這是妳跟妹妹的專屬房間，不用記密碼，把網址傳給她就好！</p>
+        <input type="text" id="tripCodeInput" value="1025" style="width:100%; margin-bottom:15px; text-align:center; font-weight:bold; color: #4A4A4A; font-size: 1.2rem;">
+        <button class="btn btn-confirm" onclick="setTripCode()">🚀 開始規劃</button>
     </div>
 </div>
 
@@ -314,7 +320,9 @@
     <header>
         <h1>✈️ 北海道 (姊妹旅行)</h1>
         <div class="subtitle">1/20 (一) ~ 1/25 (六) | 6天5夜</div>
-        <div class="trip-code-display" id="displayCode" onclick="changeTripCode()">連線碼: ???</div>
+        <button class="share-btn" onclick="shareLink()">
+            🔗 傳給妹妹
+        </button>
     </header>
 
     <!-- View 1: Checklist -->
@@ -490,8 +498,12 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    let tripId = localStorage.getItem('hokkaidoTripId');
+    let tripId = null;
     let currentUser = null;
+
+    // Check for ID in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const idFromUrl = urlParams.get('id');
 
     // DOM Elements
     const views = {
@@ -506,7 +518,6 @@
     const loadingOverlay = document.getElementById('loadingOverlay');
     const tripCodeModal = document.getElementById('tripCodeModal');
     const tripCodeInput = document.getElementById('tripCodeInput');
-    const displayCode = document.getElementById('displayCode');
 
     // Default Items
     const defaultData = [
@@ -534,11 +545,21 @@
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             currentUser = user;
-            if (tripId) {
-                initTrip(tripId);
+            
+            // Priority: URL > LocalStorage > Modal
+            if (idFromUrl) {
+                // If URL has ID, use it and save it
+                localStorage.setItem('hokkaidoTripId', idFromUrl);
+                initTrip(idFromUrl);
             } else {
-                loadingOverlay.style.display = 'none';
-                tripCodeModal.style.display = 'flex';
+                const storedId = localStorage.getItem('hokkaidoTripId');
+                if (storedId) {
+                    initTrip(storedId);
+                } else {
+                    // No ID found, show modal to create/enter one
+                    loadingOverlay.style.display = 'none';
+                    tripCodeModal.style.display = 'flex';
+                }
             }
         } else {
             signInAnonymously(auth).catch(e => alert("連線失敗: " + e.message));
@@ -549,22 +570,56 @@
         const code = tripCodeInput.value.trim();
         if(!code) return alert("請輸入連線碼");
         localStorage.setItem('hokkaidoTripId', code);
-        tripId = code;
+        
+        // Update URL safely with try-catch for sandbox environments
+        try {
+            const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?id=' + code;
+            window.history.pushState({path:newUrl},'',newUrl);
+        } catch (e) {
+            console.log("History API not supported in this environment");
+        }
+        
         tripCodeModal.style.display = 'none';
         loadingOverlay.style.display = 'flex';
         initTrip(code);
     }
-
-    window.changeTripCode = function() {
-        if(confirm('要換一個連線碼嗎？目前的畫面會重新整理。')) {
-            localStorage.removeItem('hokkaidoTripId');
-            location.reload();
+    
+    window.shareLink = function() {
+        if(!tripId) return;
+        const url = window.location.href.split('?')[0] + '?id=' + tripId; // Construct URL manually
+        
+        // Try native share
+        if (navigator.share) {
+            navigator.share({
+                title: '北海道之旅',
+                text: '這是我整理的清單跟記帳，點開就可以看囉！',
+                url: url
+            }).catch(console.error);
+        } else {
+            // Fallback to clipboard
+            const tempInput = document.createElement("input");
+            tempInput.value = url;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+            alert("網址已複製！貼給妹妹就可以囉 ❤️");
         }
     }
 
     function initTrip(id) {
-        displayCode.innerText = `連線碼: ${id}`;
+        tripId = id;
         
+        // Try to update URL history if possible, silence error if blocked
+        try {
+            if (!window.location.search.includes(id)) {
+                 const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?id=' + id;
+                 window.history.replaceState({path:newUrl},'',newUrl);
+            }
+        } catch(e) {
+            console.log("History API not supported in this environment");
+        }
+
         // Checklist Listener
         const qCheck = query(collection(db, 'trips', id, 'checklist'), orderBy('createdAt', 'desc'));
         onSnapshot(qCheck, (snapshot) => {
@@ -575,6 +630,7 @@
             } else {
                 renderList(items);
                 loadingOverlay.style.display = 'none';
+                tripCodeModal.style.display = 'none';
             }
         });
 
