@@ -209,6 +209,28 @@
             margin-top: 8px;
             font-size: 0.9rem;
         }
+        
+        .distance-tip {
+            background: #FFFBEB;
+            border: 1px solid #FCD34D;
+            color: #B45309;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .hotel-recommendation {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            border-top: 1px dashed #ccc;
+            padding-top: 8px;
+        }
+        .hotel-recommendation li {
+            border: none;
+            padding: 4px 0;
+            box-shadow: none;
+        }
 
         /* --- Expense Styles --- */
         .expense-card {
@@ -317,33 +339,36 @@
 
         <!-- Stage 1 -->
         <details open>
-            <summary>第 1 階段：機票 & 住宿 (目前進度)</summary>
+            <summary>第 1 階段：機票 & 住宿 (全部搞定!)</summary>
             <div class="step-content">
                 <div class="guide-step">
                     <strong>1. 機票已確認！(1/20出發)</strong>
                     <p>去程長榮 + 回程酷航。</p>
                     <div class="price-guide">
-                        <strong>💰 記帳小幫手：</strong><br>
-                        妳先刷了 $41,042。<br>
-                        👉 記得在「分帳」頁面記上一筆！
+                        <strong>💰 總金額記帳：</strong><br>
+                        機票+住宿妳先刷了：<br>
+                        <span style="font-size:1.2rem; font-weight:bold; color:#059669;">$47,911</span><br>
+                        👉 妹妹每人應付：$23,956
                     </div>
                 </div>
                 
                 <div class="love-tip" style="background:#F0F9FF; border-color:#BAE6FD; color:#0369A1;">
-                    <strong>🏨 住宿拼圖 (趕快訂！)</strong><br>
+                    <strong>🏨 住宿拼圖 (全破關!)</strong><br>
                     <div class="location-tip">
-                        ❌ <strong>請避開 Moio Homestay</strong> (太遠了!)<br>
-                        ✅ <strong>請鎖定：札幌車站 (Sapporo St.)</strong>、<strong>大通 (Odori)</strong>、<strong>薄野 (Susukino)</strong>。
+                        ✅ <strong>1/20：Livemax Sapporo Ekimae</strong><br>
+                        (離車站走路約 10 分，記得走地下道)<br>
+                        ✅ <strong>1/21~23：星野 Resonare</strong> (蜂蜜訂)<br>
+                        ✅ <strong>1/23~25：Sapporo Stripe Residence</strong><br>
+                        (條紋住宅飯店，房間大、適合整理行李！)<br>
                     </div>
-                    <ul style="padding-left: 20px; margin: 8px 0; font-size: 0.9rem;">
-                        <li><strong>1/20 (第一晚)：</strong><span style="color:#DC2626; font-weight:bold;">缺！</span><br>👉 訂「札幌車站」附近 (隔天方便去Tomamu)。</li>
-                        <li><strong>1/21~1/23 (兩晚)：</strong><span style="color:#059669; font-weight:bold;">OK！</span><br>👉 蜂蜜訂了「星野 Resonare」。</li>
-                        <li><strong>1/23~1/25 (最後兩晚)：</strong><span style="color:#DC2626; font-weight:bold;">缺！</span><br>👉 訂「狸小路/大通」附近 (方便逛街)。</li>
-                    </ul>
                 </div>
+                
                 <div class="guide-step">
-                    <strong>3. 填寫 VJW</strong>
-                    <p>妹妹也要自己填一份喔！</p>
+                    <strong>3. 填寫 VJW (地址備忘錄)</strong>
+                    <ul style="padding-left:20px; font-size:0.9rem;">
+                        <li><strong>第一晚：</strong>Hotel Livemax Sapporo Ekimae</li>
+                        <li><strong>最後兩晚：</strong>Sapporo Stripe Residence Hotel</li>
+                    </ul>
                 </div>
             </div>
         </details>
@@ -485,8 +510,9 @@
 
     // Default Items
     const defaultData = [
-        { text: "預訂1/20 札幌雙人房 (靠近車站)", done: false, cat: "最優先" },
-        { text: "預訂1/23~1/25 札幌雙人房 (靠近狸小路)", done: false, cat: "最優先" },
+        { text: "跟妹妹收錢 (機+酒共 $23,956)", done: false, cat: "記帳", class: "money" },
+        { text: "1/20 住宿已訂 (Livemax)", done: true, cat: "最優先" },
+        { text: "1/23~25 住宿已訂 (Stripe)", done: true, cat: "最優先" },
         { text: "修改 VJW 資料 (妹妹也要填)", done: false, cat: "必備" },
         { text: "檢查護照效期 (2本)", done: false, cat: "必備" },
         { text: "免洗內褲/一般內褲", done: false, cat: "必備" },
@@ -568,11 +594,25 @@
             batch.set(docRef, { ...item, createdAt: serverTimestamp() });
         });
         
-        // Add Flight Expense automatically if empty
-        const expRef = doc(collection(db, 'trips', id, 'expenses'));
-        batch.set(expRef, {
+        // Expenses
+        const expRef1 = doc(collection(db, 'trips', id, 'expenses'));
+        batch.set(expRef1, {
             name: "機票 (2人份)",
             cost: 41042,
+            payer: "me",
+            createdAt: serverTimestamp()
+        });
+        const expRef2 = doc(collection(db, 'trips', id, 'expenses'));
+        batch.set(expRef2, {
+            name: "住宿 (Livemax 1/20)",
+            cost: 1714,
+            payer: "me",
+            createdAt: serverTimestamp()
+        });
+        const expRef3 = doc(collection(db, 'trips', id, 'expenses'));
+        batch.set(expRef3, {
+            name: "住宿 (Stripe 1/23-25)",
+            cost: 5155,
             payer: "me",
             createdAt: serverTimestamp()
         });
@@ -588,11 +628,15 @@
             if(item.done) completed++;
             const li = document.createElement('li');
             li.className = item.done ? 'completed' : '';
+            
+            // Check for special class
+            const tagClass = item.class ? item.class : (item.cat === '最優先' ? 'urgent' : '');
+            
             li.innerHTML = `
                 <div class="check-area" onclick="toggleItem('${item.id}', ${item.done})">
                     <div class="custom-checkbox"></div>
                     <div class="item-text-wrapper">
-                        ${item.cat ? `<span class="tag ${item.cat === '最優先' ? 'urgent' : ''}">${item.cat}</span>` : ''}
+                        ${item.cat ? `<span class="tag ${tagClass}">${item.cat}</span>` : ''}
                         <span class="text">${item.text}</span>
                     </div>
                 </div>
