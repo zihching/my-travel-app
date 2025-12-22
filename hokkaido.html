@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>北海道 ✈️</title>
+    <title>北海道 ✈️ (姊妹安心版)</title>
     <style>
         :root {
             --primary: #FF9AA2; /* 櫻花粉 */
@@ -24,6 +24,12 @@
             --love-text: #D63384;
             --money: #F0FDF4; /* 金錢綠 */
             --money-text: #166534;
+            --shop: #FFF7ED; /* 購物橘 */
+            --shop-text: #C2410C;
+            --zoo: #E0E7FF; /* 動物園藍紫 */
+            --zoo-text: #4338CA;
+            --food: #FEF3C7; /* 美食黃 */
+            --food-text: #92400E;
         }
 
         * {
@@ -106,7 +112,7 @@
             flex-direction: column;
             align-items: center;
             gap: 4px;
-            width: 33%;
+            width: 25%;
             cursor: pointer;
         }
 
@@ -205,6 +211,9 @@
         .love-tip { background: var(--love); color: var(--love-text); padding: 15px; border-radius: 10px; margin-top: 10px; font-size: 0.95rem; border: 1px solid #F8B4D9; }
         .uniqlo-tip { border: 2px solid #E60012; color: #E60012; background: #fff; padding: 10px; border-radius: 8px; margin-top: 10px; font-weight: bold; font-size: 0.9rem; }
         .laundry-tip { background: #F0FFF4; border: 1px solid #C6F6D5; color: #2F855A; padding: 12px; border-radius: 8px; margin-top: 12px; font-size: 0.9rem; }
+        .shopping-tip { background: var(--shop); border: 1px solid #FDBA74; color: var(--shop-text); padding: 15px; border-radius: 10px; margin-top: 10px; font-size: 0.95rem; }
+        .zoo-tip { background: var(--zoo); border: 1px solid #A5B4FC; color: var(--zoo-text); padding: 15px; border-radius: 10px; margin-top: 10px; font-size: 0.95rem; }
+        .food-tip { background: var(--food); border: 1px solid #FCD34D; color: var(--food-text); padding: 15px; border-radius: 10px; margin-top: 10px; font-size: 0.95rem; }
 
         .location-tip {
             background: #E0F2FE;
@@ -236,6 +245,70 @@
             border: none;
             padding: 4px 0;
             box-shadow: none;
+        }
+        
+        .airport-steps {
+            list-style: none;
+            padding: 0;
+            margin-top: 10px;
+        }
+        .airport-steps li {
+            position: relative;
+            padding-left: 30px;
+            margin-bottom: 12px;
+            border: none;
+            box-shadow: none;
+        }
+        .airport-steps li::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 8px;
+            width: 10px;
+            height: 10px;
+            background: var(--primary);
+            border-radius: 50%;
+        }
+        .airport-steps li::after {
+            content: '';
+            position: absolute;
+            left: 12px;
+            top: 20px;
+            width: 2px;
+            height: 100%;
+            background: #eee;
+        }
+        .airport-steps li:last-child::after { display: none; }
+        
+        /* New: VJW Copy Data */
+        .vjw-data {
+            background: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 5px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            border: 1px solid #ddd;
+            color: #333;
+            user-select: all; /* Easier selection */
+        }
+        .vjw-label {
+            color: #666;
+            font-size: 0.8rem;
+            display: block;
+            margin-bottom: 2px;
+            font-weight: bold;
+            margin-top: 12px;
+        }
+        
+        .tip-box {
+            background: #f0f9ff;
+            border-left: 4px solid #0ea5e9;
+            padding: 8px 12px;
+            margin-top: 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: #0c4a6e;
         }
 
         /* --- Expense Styles --- */
@@ -341,41 +414,367 @@
         <button class="reset-btn" onclick="showResetModal()">⚠️ 重置清單</button>
     </div>
 
-    <!-- View 2: Guide -->
+    <!-- View 2: Itinerary -->
+    <div id="view-itinerary" class="view">
+        
+        <!-- Day 1 -->
+        <details open>
+            <summary>1/20 (一) 出發 & 壽司</summary>
+            <div class="step-content">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <span class="time-label">07:00</span>
+                        <div class="event-card">
+                            <div class="event-title">桃園機場報到</div>
+                            <div class="event-desc">長榮航空櫃台，掛行李、拿登機證。</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-label">09:30</span>
+                        <div class="event-card">
+                            <div class="event-title">✈️ 起飛</div>
+                            <div class="event-desc">睡覺補眠，準備迎接雪國！</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-label">14:05</span>
+                        <div class="event-card">
+                            <div class="event-title">抵達新千歲機場</div>
+                            <div class="event-desc">過VJW海關、拿行李、上廁所。</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-label">15:00</span>
+                        <div class="event-card">
+                            <div class="event-title">搭 JR 去札幌</div>
+                            <div class="event-desc">搭乘「快速 Airport」號 (約40分)。</div>
+                            <div class="tip-box">
+                                💡 <strong>移動技巧：</strong><br>
+                                車站人多，如果自由席沒位子，可以去「U-Seat (指定席)」車廂，加幾百日幣就有位子坐，不用罰站 40 分鐘。
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-label">16:00</span>
+                        <div class="event-card" style="background:#FEF3C7; border-color:#FCD34D;">
+                            <div class="event-title">🍣 根室花丸 (必吃!)</div>
+                            <div class="event-desc">一到札幌車站先去 Stellar Place 6F 抽號碼牌！</div>
+                            <div class="tip-box">
+                                💡 <strong>排隊備案：</strong><br>
+                                如果花丸要等 3 小時以上，可以改吃同樓層的<strong>「十勝豚丼」</strong>，也是北海道必吃美食！
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-label">19:00</span>
+                        <div class="event-card">
+                            <div class="event-title">Check-in Livemax</div>
+                            <div class="event-desc">走路去飯店，早點休息。</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <!-- Day 2 -->
+        <details>
+            <summary>1/21 (二) 前往 Tomamu</summary>
+            <div class="step-content">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <span class="time-label">08:00</span>
+                        <div class="event-card">
+                            <div class="event-title">大丸百貨買便當</div>
+                            <div class="event-desc">去大丸百貨 B1 地下街買「火車便當」帶上車吃！</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-label">09:00</span>
+                        <div class="event-card">
+                            <div class="event-title">搭 JR 特急</div>
+                            <div class="event-desc">往「帶廣/釧路」方向 (十勝號/大空號)。</div>
+                            <div class="tip-box">
+                                💡 <strong>重要：</strong><br>
+                                這班車人很多，建議先買好「指定席」車票，不然拖著行李沒位子會很慘。
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-label">11:00</span>
+                        <div class="event-card">
+                            <div class="event-title">抵達 Tomamu 站</div>
+                            <div class="event-desc">搭飯店接駁車去 Resonare。</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-label">12:00</span>
+                        <div class="event-card">
+                            <div class="event-title">💖 找蜂蜜！</div>
+                            <div class="event-desc">放行李、吃飯、參觀度假村。</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-label">晚上</span>
+                        <div class="event-card" style="background:#FCE7F3; border-color:#FBCFE8;">
+                            <div class="event-title">🌲 精靈露台 (富良野)</div>
+                            <div class="event-desc">浪漫約會！記得穿暖一點拍照。</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <!-- Day 3 -->
+        <details>
+            <summary>1/22 (三) 滑雪 & 帝王蟹</summary>
+            <div class="step-content">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <span class="time-label">白天</span>
+                        <div class="event-card">
+                            <div class="event-title">⛷️ 滑雪體驗</div>
+                            <div class="event-desc">看蜂蜜帥氣教學，或是玩雪上活動。</div>
+                            <div class="tip-box">
+                                💡 <strong>怕冷的話：</strong><br>
+                                可以去「微笑海灘 (Mina-Mina Beach)」，那是室內溫水游泳池，超暖和！
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-label">17:00</span>
+                        <div class="event-card" style="background:#FEF3C7; border-color:#FCD34D;">
+                            <div class="event-title">🦀 Buffet Dining hal</div>
+                            <div class="event-desc">帝王蟹、鮭魚卵吃到飽！(記得確認訂位)</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-label">20:00</span>
+                        <div class="event-card">
+                            <div class="event-title">愛絲冰城 (Ice Village)</div>
+                            <div class="event-desc">如果不怕冷可以去逛逛冰屋。</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <!-- Day 4 -->
+        <details>
+            <summary>1/23 (四) 回札幌 & 逛街</summary>
+            <div class="step-content">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <span class="time-label">11:00</span>
+                        <div class="event-card">
+                            <div class="event-title">退房 & 搭 JR</div>
+                            <div class="event-desc">搭車回札幌車站 (約 13:00 到)。</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-label">14:00</span>
+                        <div class="event-card">
+                            <div class="event-title">Check-in Stripe Hotel</div>
+                            <div class="event-desc">放行李，準備戰鬥。</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-label">15:00</span>
+                        <div class="event-card">
+                            <div class="event-title">🚕 搭計程車去狸小路</div>
+                            <div class="event-desc">不要走路！直接搭車去買藥妝。</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-label">19:00</span>
+                        <div class="event-card">
+                            <div class="event-title">晚餐：湯咖哩</div>
+                            <div class="event-desc">GARAKU 或 Suage+。</div>
+                            <div class="tip-box">
+                                💡 <strong>點餐密技：</strong><br>
+                                湯咖哩可以選辣度，建議選 3~4 號 (小辣/中辣) 最好吃！可以加點一份「起司飯」。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <!-- Day 5 -->
+        <details>
+            <summary>1/24 (五) 企鵝散步 🐧</summary>
+            <div class="step-content">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <span class="time-label">08:00</span>
+                        <div class="event-card">
+                            <div class="event-title">一日遊巴士集合</div>
+                            <div class="event-desc">通常在札幌車站北口集合 (看憑證)。</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-label">11:00</span>
+                        <div class="event-card" style="background:#E0E7FF; border-color:#A5B4FC;">
+                            <div class="event-title">🐧 旭山動物園</div>
+                            <div class="event-desc">必看企鵝散步！跟北極熊拍照。</div>
+                            <div class="tip-box">
+                                💡 <strong>保暖警告：</strong><br>
+                                動物園在山上，比札幌冷很多！請把暖暖包貼在手機和肚子上。
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-label">18:00</span>
+                        <div class="event-card">
+                            <div class="event-title">回到札幌</div>
+                            <div class="event-desc">去唐吉訶德做最後補貨 (記得用優惠券)。</div>
+                            <div class="tip-box">
+                                💡 <strong>免稅提醒：</strong><br>
+                                結帳記得走「Tax Free」櫃台，護照一定要帶！
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </details>
+        
+        <!-- Day 6 -->
+        <details>
+            <summary>1/25 (六) 回家囉</summary>
+            <div class="step-content">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <span class="time-label">10:00</span>
+                        <div class="event-card">
+                            <div class="event-title">退房</div>
+                            <div class="event-desc">檢查東西有沒有帶齊！</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-label">10:30</span>
+                        <div class="event-card">
+                            <div class="event-title">搭車去機場</div>
+                            <div class="event-desc">計程車 -> 札幌車站 -> JR 機場線。</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-label">11:30</span>
+                        <div class="event-card" style="background:#FCE7F3; border-color:#FBCFE8;">
+                            <div class="event-title">🛍️ 機場國內線大採購</div>
+                            <div class="event-desc">先別去國際線！「國內線航廈 2F」才是甜點天堂。</div>
+                            <div class="tip-box">
+                                💡 <strong>必買清單：</strong><br>
+                                1. Kinotoya 起司塔 (現烤超好吃)<br>
+                                2. 北菓樓 夢不思議泡芙<br>
+                                3. 美瑛選果 玉米麵包 (要排隊)
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-label">14:00</span>
+                        <div class="event-card">
+                            <div class="event-title">酷航櫃台報到 (國際線)</div>
+                            <div class="event-desc">把戰利品都託運！(起飛前2小時要報到)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+    </div>
+
+    <!-- View 3: Guide (Reference Info) -->
     <div id="view-guide" class="view">
         <p style="text-align: center; color: #666; font-size: 0.9rem; margin-bottom: 20px;">👇 點擊標題展開步驟 👇</p>
 
         <!-- Stage 1 -->
-        <details open>
-            <summary>第 1 階段：機票 & 住宿 (全部搞定!)</summary>
+        <details>
+            <summary>第 1 階段：機票 & 住宿 (已完成!)</summary>
             <div class="step-content">
                 <div class="guide-step">
-                    <strong>1. 機票已確認！(1/20出發)</strong>
+                    <strong>1. 機票確認！(1/20出發)</strong>
                     <p>去程長榮 + 回程酷航。</p>
                     <div class="price-guide">
                         <strong>💰 總金額記帳：</strong><br>
-                        機票+住宿妳先刷了：<br>
-                        <span style="font-size:1.2rem; font-weight:bold; color:#059669;">$47,911</span><br>
-                        👉 妹妹每人應付：$23,956
+                        妳先刷了 $47,911。<br>
+                        👉 妹妹應付：$23,956 (記得收!)
                     </div>
                 </div>
                 
                 <div class="love-tip" style="background:#F0F9FF; border-color:#BAE6FD; color:#0369A1;">
-                    <strong>🏨 住宿拼圖 (全破關!)</strong><br>
+                    <strong>🏨 住宿拼圖 (全滿!)</strong><br>
                     <div class="location-tip">
                         ✅ <strong>1/20：Livemax Sapporo Ekimae</strong><br>
-                        (離車站走路約 10 分，記得走地下道)<br>
                         ✅ <strong>1/21~23：星野 Resonare</strong> (蜂蜜訂)<br>
                         ✅ <strong>1/23~25：Sapporo Stripe Residence</strong><br>
-                        (條紋住宅飯店，房間大、適合整理行李！)<br>
                     </div>
+                </div>
+            </div>
+        </details>
+
+        <!-- VJW Guide -->
+        <details>
+            <summary>📋 必填：Visit Japan Web (VJW)</summary>
+            <div class="step-content">
+                <div class="guide-step">
+                    <strong>重要：外國人入境紀錄</strong>
+                    <p style="color:#059669; font-weight:bold;">✅ 恭喜！妳已拿到 QR Code (通關密碼)！</p>
+                    <p>記得截圖存手機，也提醒妹妹趕快填寫喔。</p>
+                    
+                    <div class="vjw-guide">
+                        <div style="background:#fff; border-bottom:2px dashed #ddd; padding-bottom:10px; margin-bottom:10px;">
+                            <strong>🏠 1. 住宿資訊 (給妹妹填寫用)</strong><br>
+                            
+                            <span class="vjw-label">郵遞區號 (Post Code)</span>
+                            <div class="vjw-data">060-0806</div>
+
+                            <span class="vjw-label">都道府縣</span>
+                            <div class="vjw-data">HOKKAIDO</div>
+                            
+                            <span class="vjw-label">市區町村</span>
+                            <div class="vjw-data">SAPPORO SHI KITA KU</div>
+                            
+                            <span class="vjw-label">町名番地</span>
+                            <div class="vjw-data">10-7, Kita 6 Jonishi</div>
+                            
+                            <span class="vjw-label">飯店名稱</span>
+                            <div class="vjw-data">Hotel Livemax Sapporo Ekimae</div>
+                            
+                            <span class="vjw-label">電話號碼</span>
+                            <div class="vjw-data">0117371000</div>
+                        </div>
+
+                        <div style="background:#f9f9f9; padding-top:10px;">
+                            <strong>📝 備用：Stripe Residence 資料</strong><br>
+                            <span style="font-size:0.8rem; color:#666;">(如果海關問妳後面住哪，給他看這個)</span>
+                            
+                            <span class="vjw-label">地址</span>
+                            <div class="vjw-data">6-2-26, Kita 7-jo Nishi, Kita-ku, Sapporo</div>
+                            
+                            <span class="vjw-label">郵遞區號</span>
+                            <div class="vjw-data">060-0807</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <!-- New: Airport Guide -->
+        <details>
+            <summary>✈️ 必看：機場搭機特訓</summary>
+            <div class="step-content">
+                <div class="highlight-box" style="background: #FDF2F8; border-color: #F472B6; color: #BE185D;">
+                    <strong>別緊張！妳只要帶「護照」就好！</strong><br>
+                    機票都在護照裡，不用領實體票。
                 </div>
                 
                 <div class="guide-step">
-                    <strong>3. 填寫 VJW (地址備忘錄)</strong>
-                    <ul style="padding-left:20px; font-size:0.9rem;">
-                        <li><strong>第一晚：</strong>Hotel Livemax Sapporo Ekimae</li>
-                        <li><strong>最後兩晚：</strong>Sapporo Stripe Residence Hotel</li>
+                    <strong>1/20 當天流程 (傻瓜版)：</strong>
+                    <ul class="airport-steps">
+                        <li><strong>07:00 抵達桃機：</strong> 看螢幕找「長榮航空」櫃台。</li>
+                        <li><strong>07:30 報到：</strong> 把「護照」給地勤，託運行李。</li>
+                        <li><strong>拿到登機證：</strong> 地勤會給妳一張紙卡(Boarding Pass)，上面有登機門號碼。</li>
+                        <li><strong>08:00 安檢/通關：</strong> 隨身水倒掉，走自動通關(刷臉)。</li>
+                        <li><strong>09:00 登機門：</strong> 走到指定的登機門等待，準備起飛！</li>
                     </ul>
                 </div>
             </div>
@@ -389,40 +788,35 @@
                     <strong>💖 蜂蜜買單！行李箱留空！</strong><br>
                     去程穿著「加絨棉褲」最舒服！
                 </div>
-                <div class="highlight-box">
-                    💡 出發穿搭：發熱衣+衛衣+羽絨外套+棉褲+雪靴。
-                </div>
                 <div class="guide-step">
                     <strong>必備衣物：</strong>
                     <p>長版羽絨外套x1、防滑雪靴x1、毛衣x2、亮色圍巾x1、毛帽手套。</p>
                     <div class="uniqlo-tip">
                         🔥 必買：Uniqlo「超極暖 (Ultra Warm)」發熱衣+褲各一件！
                     </div>
-                    <div class="laundry-tip">
-                        💡 <strong>不洗衣服大法：</strong><br>
-                        發熱褲內穿一般內褲，5天不用洗。
-                    </div>
                 </div>
             </div>
         </details>
 
-        <!-- Stage 3-5 -->
+        <!-- Shopping Guide -->
         <details>
-            <summary>第 3-5 階段：出發與回程</summary>
+            <summary>🛍️ 逛街 & 景點指南</summary>
             <div class="step-content">
-                <div class="guide-step">
-                    <strong>1/20 出發 (09:30 起飛)</strong>
-                    <p>建議 07:00 到桃園機場。</p>
+                <div class="shopping-tip">
+                    <strong>🛒 狸小路省錢攻略：</strong><br>
+                    1. <strong>計程車戰術：</strong> 飯店去狸小路請搭計程車 ($1200日幣/2人)，不要走路！<br>
+                    2. <strong>優惠券：</strong> 結帳前搜尋「唐吉訶德 優惠券」給店員掃，再省5%。
                 </div>
-                <div class="guide-step">
-                    <strong>1/25 回程 (酷航)</strong>
-                    <p>記得託運額度要買夠裝戰利品！</p>
+                <div class="zoo-tip" style="margin-top:10px;">
+                    <strong>🐧 旭川動物園重點：</strong><br>
+                    必看：企鵝散步 (11:00 & 14:30)。<br>
+                    交通：跟一日遊巴士團最方便。
                 </div>
             </div>
         </details>
     </div>
 
-    <!-- View 3: Expenses -->
+    <!-- View 4: Expenses -->
     <div id="view-expenses" class="view">
         <div class="expense-card">
             <div>目前的結算</div>
@@ -455,6 +849,9 @@
     <div class="bottom-nav">
         <button class="nav-btn active" onclick="switchTab('checklist')">
             <span>✅</span> 清單
+        </button>
+        <button class="nav-btn" onclick="switchTab('itinerary')">
+            <span>🗓️</span> 行程
         </button>
         <button class="nav-btn" onclick="switchTab('guide')">
             <span>📘</span> 攻略
@@ -508,6 +905,7 @@
     // DOM Elements
     const views = {
         checklist: document.getElementById('view-checklist'),
+        itinerary: document.getElementById('view-itinerary'),
         guide: document.getElementById('view-guide'),
         expenses: document.getElementById('view-expenses')
     };
@@ -521,13 +919,20 @@
 
     // Default Items
     const defaultData = [
+        { text: "確認 1/22 hal 餐廳訂位", done: false, cat: "必備" },
+        { text: "去吃根室花丸 (記得先抽號碼牌)", done: false, cat: "必吃" },
+        { text: "逛 Disney Store (Stellar Place 5F)", done: false, cat: "必逛" },
+        { text: "截圖存檔：VJW QR Code (最重要!)", done: true, cat: "最優先" },
+        { text: "下載唐吉訶德/藥妝優惠券", done: false, cat: "必備" },
+        { text: "預訂旭川動物園一日遊 (KKday/Klook)", done: false, cat: "必備" },
         { text: "跟妹妹收錢 (機+酒共 $23,956)", done: false, cat: "記帳", class: "money" },
         { text: "1/20 住宿已訂 (Livemax)", done: true, cat: "最優先" },
         { text: "1/23~25 住宿已訂 (Stripe)", done: true, cat: "最優先" },
-        { text: "修改 VJW 資料 (妹妹也要填)", done: false, cat: "必備" },
+        { text: "機票已訂 (1/20出發)", done: true, cat: "最優先" },
+        { text: "修改 VJW 資料 (妹妹也要填)", done: true, cat: "必備" },
         { text: "檢查護照效期 (2本)", done: false, cat: "必備" },
         { text: "免洗內褲/一般內褲", done: false, cat: "必備" },
-        { text: "截圖：機票、飯店", done: false, cat: "必備" },
+        { text: "截圖：機票、飯店", done: true, cat: "必備" },
         { text: "買網卡 (2人份)", done: false, cat: "網路" },
         { text: "發熱褲 (Uniqlo超極暖)", done: false, cat: "衣物" },
         { text: "發熱衣 (Uniqlo超極暖)", done: false, cat: "衣物" },
@@ -538,7 +943,9 @@
         { text: "毛帽、手套", done: false, cat: "衣物" },
         { text: "身體乳液、護唇膏", done: false, cat: "保養" },
         { text: "行動電源", done: false, cat: "隨身" },
-        { text: "感冒藥/止痛藥", done: false, cat: "隨身" }
+        { text: "感冒藥/止痛藥", done: false, cat: "隨身" },
+        { text: "出發前24小時：手機充飽電", done: false, cat: "最後確認" },
+        { text: "出發前24小時：關窗、倒垃圾", done: false, cat: "最後確認" }
     ];
 
     // Auth & Init
@@ -571,7 +978,6 @@
         if(!code) return alert("請輸入連線碼");
         localStorage.setItem('hokkaidoTripId', code);
         
-        // Update URL safely with try-catch for sandbox environments
         try {
             const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?id=' + code;
             window.history.pushState({path:newUrl},'',newUrl);
@@ -610,7 +1016,6 @@
     function initTrip(id) {
         tripId = id;
         
-        // Try to update URL history if possible, silence error if blocked
         try {
             if (!window.location.search.includes(id)) {
                  const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?id=' + id;
@@ -791,7 +1196,7 @@
         
         views[tabName].classList.add('active');
         // Find index
-        const idx = ['checklist', 'guide', 'expenses'].indexOf(tabName);
+        const idx = ['checklist', 'itinerary', 'guide', 'expenses'].indexOf(tabName);
         if(idx !== -1) navBtns[idx].classList.add('active');
     }
 
