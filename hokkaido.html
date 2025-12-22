@@ -150,7 +150,7 @@
             font-weight: bold; margin-bottom: 15px;
         }
         .input-group { display: flex; gap: 10px; margin-bottom: 20px; }
-        input[type="text"], input[type="number"] {
+        input[type="text"], input[type="number"], input[type="date"] {
             flex: 1; padding: 12px; border: 2px solid #eee; border-radius: 12px;
             font-size: 1rem; outline: none;
         }
@@ -311,6 +311,65 @@
             color: #0c4a6e;
         }
 
+        /* --- Itinerary Styles --- */
+        .timeline {
+            position: relative;
+            padding-left: 20px;
+            border-left: 2px solid #eee;
+            margin-left: 10px;
+        }
+        .timeline-item {
+            margin-bottom: 25px;
+            position: relative;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -26px;
+            top: 5px;
+            width: 10px;
+            height: 10px;
+            background: var(--primary);
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        .time-label {
+            font-size: 0.85rem;
+            color: #999;
+            font-weight: bold;
+            margin-bottom: 4px;
+            display: block;
+        }
+        .event-card {
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        .event-title {
+            font-weight: bold;
+            color: #333;
+            font-size: 1rem;
+        }
+        .event-desc {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 4px;
+        }
+        /* New: Price Tag */
+        .price-tag {
+            display: inline-block;
+            background-color: #ecfccb;
+            color: #365314;
+            font-size: 0.8rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin-top: 6px;
+            font-weight: bold;
+            border: 1px solid #d9f99d;
+        }
+
         /* --- Expense Styles --- */
         .expense-card {
             background: linear-gradient(135deg, #10B981, #059669);
@@ -330,6 +389,19 @@
             display: flex; flex-direction: column; gap: 10px;
         }
         .form-row { display: flex; gap: 10px; }
+        
+        .currency-select {
+            display: flex; gap: 5px; margin-bottom: 10px;
+        }
+        .curr-label {
+            flex: 1; text-align: center; padding: 8px; border: 1px solid #ddd;
+            border-radius: 8px; cursor: pointer; font-size: 0.9rem; color: #666;
+        }
+        .curr-radio { display: none; }
+        .curr-radio:checked + .curr-label {
+            background: #3B82F6; color: white; border-color: #3B82F6;
+        }
+
         .payer-select {
             display: flex; gap: 10px;
         }
@@ -347,10 +419,12 @@
             display: flex; justify-content: space-between; align-items: center;
         }
         .expense-info { flex: 1; }
-        .expense-amt { font-weight: bold; color: #333; }
+        .expense-amt { font-weight: bold; color: #333; font-size: 0.95rem; }
+        .original-curr { font-size: 0.75rem; color: #888; display: block; }
         .expense-payer { font-size: 0.8rem; padding: 2px 6px; border-radius: 4px; margin-right: 8px; }
         .payer-me { background: #FFB7B2; color: #fff; }
         .payer-sis { background: #B5EAD7; color: #065F46; }
+        .expense-date { font-size: 0.75rem; color: #999; margin-right: 8px; font-weight: normal; }
 
         /* Modal */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 2000; }
@@ -427,6 +501,7 @@
                         <div class="event-card">
                             <div class="event-title">桃園機場報到</div>
                             <div class="event-desc">長榮航空櫃台，掛行李、拿登機證。</div>
+                            <span class="price-tag">💰 機場捷運：約 $160/人</span>
                         </div>
                     </div>
                     <div class="timeline-item">
@@ -450,8 +525,9 @@
                             <div class="event-desc">搭乘「快速 Airport」號 (約40分)。</div>
                             <div class="tip-box">
                                 💡 <strong>移動技巧：</strong><br>
-                                車站人多，如果自由席沒位子，可以去「U-Seat (指定席)」車廂，加幾百日幣就有位子坐，不用罰站 40 分鐘。
+                                車站人多，如果自由席沒位子，可以去「U-Seat (指定席)」車廂，加幾百日幣就有位子坐。
                             </div>
+                            <span class="price-tag">💰 車資：1,150円 (約 $253 台幣)</span>
                         </div>
                     </div>
                     <div class="timeline-item">
@@ -461,8 +537,9 @@
                             <div class="event-desc">一到札幌車站先去 Stellar Place 6F 抽號碼牌！</div>
                             <div class="tip-box">
                                 💡 <strong>排隊備案：</strong><br>
-                                如果花丸要等 3 小時以上，可以改吃同樓層的<strong>「十勝豚丼」</strong>，也是北海道必吃美食！
+                                如果花丸要等 3 小時以上，可以改吃同樓層的<strong>「十勝豚丼」</strong>。
                             </div>
+                            <span class="price-tag">💰 壽司預算：約 3,000円 (約 $660 台幣)</span>
                         </div>
                     </div>
                     <div class="timeline-item">
@@ -486,6 +563,7 @@
                         <div class="event-card">
                             <div class="event-title">大丸百貨買便當</div>
                             <div class="event-desc">去大丸百貨 B1 地下街買「火車便當」帶上車吃！</div>
+                            <span class="price-tag">💰 便當預算：約 1,200円 (約 $265 台幣)</span>
                         </div>
                     </div>
                     <div class="timeline-item">
@@ -495,8 +573,9 @@
                             <div class="event-desc">往「帶廣/釧路」方向 (十勝號/大空號)。</div>
                             <div class="tip-box">
                                 💡 <strong>重要：</strong><br>
-                                這班車人很多，建議先買好「指定席」車票，不然拖著行李沒位子會很慘。
+                                建議買「指定席」車票，不然拖著行李沒位子會很慘。
                             </div>
+                            <span class="price-tag">💰 車資：約 5,500円 (約 $1,210 台幣)</span>
                         </div>
                     </div>
                     <div class="timeline-item">
@@ -518,6 +597,7 @@
                         <div class="event-card" style="background:#FCE7F3; border-color:#FBCFE8;">
                             <div class="event-title">🌲 精靈露台 (富良野)</div>
                             <div class="event-desc">浪漫約會！記得穿暖一點拍照。</div>
+                            <span class="price-tag">💰 門票：免費</span>
                         </div>
                     </div>
                 </div>
@@ -536,7 +616,7 @@
                             <div class="event-desc">看蜂蜜帥氣教學，或是玩雪上活動。</div>
                             <div class="tip-box">
                                 💡 <strong>怕冷的話：</strong><br>
-                                可以去「微笑海灘 (Mina-Mina Beach)」，那是室內溫水游泳池，超暖和！
+                                可以去「微笑海灘」，那是室內溫水游泳池，超暖和！
                             </div>
                         </div>
                     </div>
@@ -545,6 +625,7 @@
                         <div class="event-card" style="background:#FEF3C7; border-color:#FCD34D;">
                             <div class="event-title">🦀 Buffet Dining hal</div>
                             <div class="event-desc">帝王蟹、鮭魚卵吃到飽！(記得確認訂位)</div>
+                            <span class="price-tag">💰 晚餐：約 5,500円 (約 $1,210 台幣)</span>
                         </div>
                     </div>
                     <div class="timeline-item">
@@ -552,6 +633,7 @@
                         <div class="event-card">
                             <div class="event-title">愛絲冰城 (Ice Village)</div>
                             <div class="event-desc">如果不怕冷可以去逛逛冰屋。</div>
+                            <span class="price-tag">💰 門票：600円 (約 $130 台幣)</span>
                         </div>
                     </div>
                 </div>
@@ -568,6 +650,7 @@
                         <div class="event-card">
                             <div class="event-title">退房 & 搭 JR</div>
                             <div class="event-desc">搭車回札幌車站 (約 13:00 到)。</div>
+                            <span class="price-tag">💰 車資：約 5,500円 (約 $1,210 台幣)</span>
                         </div>
                     </div>
                     <div class="timeline-item">
@@ -575,6 +658,7 @@
                         <div class="event-card">
                             <div class="event-title">Check-in Stripe Hotel</div>
                             <div class="event-desc">放行李，準備戰鬥。</div>
+                            <span class="price-tag">💰 計程車去飯店：約 600円/人 (約 $130 台幣)</span>
                         </div>
                     </div>
                     <div class="timeline-item">
@@ -582,6 +666,7 @@
                         <div class="event-card">
                             <div class="event-title">🚕 搭計程車去狸小路</div>
                             <div class="event-desc">不要走路！直接搭車去買藥妝。</div>
+                            <span class="price-tag">💰 計程車去逛街：約 600円/人 (約 $130 台幣)</span>
                         </div>
                     </div>
                     <div class="timeline-item">
@@ -591,8 +676,9 @@
                             <div class="event-desc">GARAKU 或 Suage+。</div>
                             <div class="tip-box">
                                 💡 <strong>點餐密技：</strong><br>
-                                湯咖哩可以選辣度，建議選 3~4 號 (小辣/中辣) 最好吃！可以加點一份「起司飯」。
+                                湯咖哩可以選辣度，建議選 3~4 號 (小辣/中辣) 最好吃！
                             </div>
+                            <span class="price-tag">💰 餐費：約 1,800円 (約 $400 台幣)</span>
                         </div>
                     </div>
                 </div>
@@ -609,6 +695,7 @@
                         <div class="event-card">
                             <div class="event-title">一日遊巴士集合</div>
                             <div class="event-desc">通常在札幌車站北口集合 (看憑證)。</div>
+                            <span class="price-tag">💰 團費：約 $1,800 台幣 (已預訂)</span>
                         </div>
                     </div>
                     <div class="timeline-item">
@@ -654,6 +741,7 @@
                         <div class="event-card">
                             <div class="event-title">搭車去機場</div>
                             <div class="event-desc">計程車 -> 札幌車站 -> JR 機場線。</div>
+                            <span class="price-tag">💰 交通：約 1,800円 (約 $400 台幣)</span>
                         </div>
                     </div>
                     <div class="timeline-item">
@@ -798,19 +886,41 @@
             </div>
         </details>
 
-        <!-- Shopping Guide -->
+        <!-- Asahikawa Guide -->
         <details>
-            <summary>🛍️ 逛街 & 景點指南</summary>
+            <summary>🐧 第 5 階段：1/23~24 札幌+旭川</summary>
             <div class="step-content">
-                <div class="shopping-tip">
-                    <strong>🛒 狸小路省錢攻略：</strong><br>
+                <div class="guide-step">
+                    <strong>1/23 (四) 移動日 & 逛街</strong>
+                    <p>中午退房回札幌 ➔ Check-in Stripe Hotel ➔ 晚上衝狸小路 (買藥妝/唐吉訶德)。</p>
+                </div>
+
+                <div class="zoo-tip">
+                    <strong>🐧 1/24 (五) 旭川動物園一日遊</strong><br>
+                    <span style="font-size:0.9rem;">
+                    <strong>推薦：</strong>直接訂「一日遊巴士團」(KKday/Klook)。<br>
+                    <strong>優點：</strong>不用自己轉車，上車睡覺下車看企鵝！<br>
+                    <strong>必看：</strong>企鵝散步 (11:00 & 14:30)。
+                    </span>
+                </div>
+
+                <div class="shopping-tip" style="margin-top:10px;">
+                    <strong>🛍️ 狸小路省錢攻略：</strong><br>
                     1. <strong>計程車戰術：</strong> 飯店去狸小路請搭計程車 ($1200日幣/2人)，不要走路！<br>
                     2. <strong>優惠券：</strong> 結帳前搜尋「唐吉訶德 優惠券」給店員掃，再省5%。
                 </div>
-                <div class="zoo-tip" style="margin-top:10px;">
-                    <strong>🐧 旭川動物園重點：</strong><br>
-                    必看：企鵝散步 (11:00 & 14:30)。<br>
-                    交通：跟一日遊巴士團最方便。
+            </div>
+        </details>
+
+        <!-- Return Guide -->
+        <details>
+            <summary>🏠 第 6 階段：1/25 快樂回家</summary>
+            <div class="step-content">
+                <div class="guide-step">
+                    <strong>1/25 回程重點：</strong>
+                    <p>1. <strong>早上 11:00 前</strong> 退房。</p>
+                    <p>2. 搭計程車去札幌車站，轉搭 <strong>JR 快速機場線 (Rapid Airport)</strong> 去機場。</p>
+                    <p>3. <strong>找酷航 (Scoot)</strong> 櫃台掛行李。</p>
                 </div>
             </div>
         </details>
@@ -828,8 +938,21 @@
         </div>
 
         <div class="expense-form">
-            <input type="text" id="expName" placeholder="項目 (例如: 機票、晚餐)">
-            <input type="number" id="expCost" placeholder="金額 (NTD)">
+            <input type="date" id="expDate" style="padding: 12px; border: 2px solid #eee; border-radius: 12px; outline: none; width: 100%;">
+            <input type="text" id="expName" placeholder="項目 (例如: 晚餐)">
+            <input type="number" id="expCost" placeholder="金額">
+            
+            <div class="currency-select">
+                <input type="radio" name="currency" id="currTWD" value="TWD" class="curr-radio" onchange="toggleRateTip()" checked>
+                <label class="curr-label" for="currTWD">🇹🇼 台幣</label>
+                
+                <input type="radio" name="currency" id="currJPY" value="JPY" class="curr-radio" onchange="toggleRateTip()">
+                <label class="curr-label" for="currJPY">🇯🇵 日幣</label>
+            </div>
+            <div id="rateTip" style="font-size:0.8rem; color:#666; margin-bottom:10px; display:none; text-align:center;">
+                * 自動以匯率 0.22 換算為台幣
+            </div>
+
             <div class="payer-select">
                 <input type="radio" name="payer" id="payMe" value="me" checked>
                 <label class="radio-label" for="payMe">我先付</label>
@@ -1013,6 +1136,11 @@
         }
     }
 
+    window.toggleRateTip = function() {
+        const isJPY = document.getElementById('currJPY').checked;
+        document.getElementById('rateTip').style.display = isJPY ? 'block' : 'none';
+    }
+
     function initTrip(id) {
         tripId = id;
         
@@ -1024,6 +1152,10 @@
         } catch(e) {
             console.log("History API not supported in this environment");
         }
+        
+        // Set default date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('expDate').value = today;
 
         // Checklist Listener
         const qCheck = query(collection(db, 'trips', id, 'checklist'), orderBy('createdAt', 'desc'));
@@ -1060,21 +1192,27 @@
         batch.set(expRef1, {
             name: "機票 (2人份)",
             cost: 41042,
+            currency: "TWD",
             payer: "me",
+            date: "2025-01-20",
             createdAt: serverTimestamp()
         });
         const expRef2 = doc(collection(db, 'trips', id, 'expenses'));
         batch.set(expRef2, {
             name: "住宿 (Livemax 1/20)",
             cost: 1714,
+            currency: "TWD",
             payer: "me",
+            date: "2025-01-20",
             createdAt: serverTimestamp()
         });
         const expRef3 = doc(collection(db, 'trips', id, 'expenses'));
         batch.set(expRef3, {
             name: "住宿 (Stripe 1/23-25)",
             cost: 5155,
+            currency: "TWD",
             payer: "me",
+            date: "2025-01-23",
             createdAt: serverTimestamp()
         });
 
@@ -1117,20 +1255,34 @@
         let totalSis = 0;
 
         exps.forEach(exp => {
-            const cost = parseFloat(exp.cost);
-            if(exp.payer === 'me') totalMe += cost;
-            else totalSis += cost;
+            const rawCost = parseFloat(exp.cost);
+            let displayCost = rawCost;
+            let displayCurr = "TWD";
+            let accountingCost = rawCost;
+
+            if(exp.currency === 'JPY') {
+                displayCurr = "JPY";
+                accountingCost = Math.round(rawCost * 0.22);
+            }
+
+            if(exp.payer === 'me') totalMe += accountingCost;
+            else totalSis += accountingCost;
+            
+            // Format Date
+            const dateStr = exp.date ? new Date(exp.date).toLocaleDateString('zh-TW', {month:'numeric', day:'numeric'}) : '';
 
             const li = document.createElement('li');
             li.innerHTML = `
                 <div class="expense-info">
+                    ${dateStr ? `<span class="expense-date">${dateStr}</span>` : ''}
                     <span class="expense-payer ${exp.payer==='me'?'payer-me':'payer-sis'}">${exp.payer==='me'?'我':'妹'}</span>
                     <span>${exp.name}</span>
                 </div>
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <span class="expense-amt">$${cost.toLocaleString()}</span>
-                    <button class="delete-btn" style="color:#ccc; font-size:1.2rem;" onclick="deleteItem('${exp.id}', 'expenses')">×</button>
+                <div style="text-align:right;">
+                    <div class="expense-amt">$${accountingCost.toLocaleString()}</div>
+                    ${exp.currency === 'JPY' ? `<span class="original-curr">(${rawCost.toLocaleString()}円)</span>` : ''}
                 </div>
+                <button class="delete-btn" style="color:#ccc; font-size:1.2rem; margin-left:10px;" onclick="deleteItem('${exp.id}', 'expenses')">×</button>
             `;
             expenseList.appendChild(li);
         });
@@ -1153,13 +1305,15 @@
     }
 
     window.addExpense = async () => {
+        const date = document.getElementById('expDate').value;
         const name = document.getElementById('expName').value.trim();
         const cost = parseFloat(document.getElementById('expCost').value);
         const payer = document.querySelector('input[name="payer"]:checked').value;
+        const currency = document.querySelector('input[name="currency"]:checked').value;
 
         if(name && cost) {
             await addDoc(collection(db, 'trips', tripId, 'expenses'), {
-                name, cost, payer, createdAt: serverTimestamp()
+                date, name, cost, currency, payer, createdAt: serverTimestamp()
             });
             document.getElementById('expName').value = '';
             document.getElementById('expCost').value = '';
