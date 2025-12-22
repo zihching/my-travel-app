@@ -22,6 +22,8 @@
             --cold-text: #0369A1;
             --love: #FFF0F5; /* 戀愛粉 */
             --love-text: #D63384;
+            --money: #F0FDF4; /* 金錢綠 */
+            --money-text: #166534;
         }
 
         * {
@@ -36,7 +38,7 @@
             margin: 0;
             padding: 0;
             line-height: 1.6;
-            padding-bottom: 60px;
+            padding-bottom: 80px; /* Space for bottom nav */
         }
 
         .container {
@@ -45,65 +47,67 @@
             background: var(--white);
             min-height: 100vh;
             box-shadow: 0 0 20px rgba(0,0,0,0.05);
+            padding-bottom: 20px;
         }
 
         /* Header */
         header {
             background: linear-gradient(135deg, var(--primary), #FFB7B2);
-            padding: 25px 20px;
+            padding: 20px;
             color: white;
             text-align: center;
             border-bottom-left-radius: 25px;
             border-bottom-right-radius: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 10px rgba(255, 154, 162, 0.3);
+            margin-bottom: 15px;
             position: relative;
         }
 
-        h1 { margin: 0; font-size: 1.5rem; font-weight: 700; }
-        .subtitle { font-size: 0.95rem; opacity: 0.95; margin-top: 5px; font-weight: bold; background: rgba(255,255,255,0.2); display: inline-block; padding: 2px 10px; border-radius: 10px;}
+        h1 { margin: 0; font-size: 1.4rem; font-weight: 700; }
+        .subtitle { font-size: 0.85rem; opacity: 0.95; margin-top: 5px; font-weight: bold; background: rgba(255,255,255,0.2); display: inline-block; padding: 2px 10px; border-radius: 10px;}
         
-        .cloud-status {
+        .trip-code-display {
             position: absolute;
-            top: 10px;
+            top: 15px;
             right: 15px;
-            font-size: 0.8rem;
-            background: rgba(255,255,255,0.2);
-            padding: 2px 8px;
-            border-radius: 10px;
-        }
-
-        /* Tabs */
-        .tabs {
-            display: flex;
-            padding: 0 15px;
-            gap: 10px;
-            margin-bottom: 20px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: var(--white);
-            padding-top: 10px;
-            padding-bottom: 10px;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            background: var(--gray);
-            border-radius: 12px;
-            font-size: 1rem;
-            color: #888;
-            font-weight: bold;
+            font-size: 0.75rem;
+            background: rgba(0,0,0,0.15);
+            padding: 4px 8px;
+            border-radius: 8px;
             cursor: pointer;
-            transition: all 0.3s ease;
         }
 
-        .tab-btn.active {
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 4px 10px rgba(255, 154, 162, 0.4);
+        /* Navigation Tabs (Bottom Fixed) */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: #999;
+            font-size: 0.75rem;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            width: 33%;
+            cursor: pointer;
+        }
+
+        .nav-btn span { font-size: 1.2rem; }
+        
+        .nav-btn.active {
+            color: var(--primary);
         }
 
         /* Views */
@@ -134,11 +138,11 @@
             font-weight: bold; margin-bottom: 15px;
         }
         .input-group { display: flex; gap: 10px; margin-bottom: 20px; }
-        input[type="text"] {
+        input[type="text"], input[type="number"] {
             flex: 1; padding: 12px; border: 2px solid #eee; border-radius: 12px;
             font-size: 1rem; outline: none;
         }
-        input[type="text"]:focus { border-color: var(--primary); }
+        input:focus { border-color: var(--primary); }
         button.add-btn {
             background: var(--primary); color: white; border: none; width: 45px;
             border-radius: 12px; font-size: 1.5rem; cursor: pointer;
@@ -164,175 +168,132 @@
         li.completed .custom-checkbox::after { content: '✓'; color: white; font-size: 14px; }
         .tag { font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; background: #eee; color: #666; margin-bottom: 4px; display: inline-block; }
         .tag.urgent { background: #FFB7B2; color: #fff; font-weight: bold; }
+        .tag.money { background: #D1FAE5; color: #065F46; font-weight: bold; }
         .item-text-wrapper { display: flex; flex-direction: column; }
         .delete-btn { background: none; border: none; color: #eee; font-size: 1.5rem; padding: 0 10px; cursor: pointer; }
         .delete-btn:hover { color: var(--primary); }
 
-        /* --- Accordion Guide Styles --- */
+        /* --- Guide Styles --- */
         details {
-            background: white;
-            border: 1px solid #eee;
-            border-radius: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-            overflow: hidden;
-            transition: all 0.3s;
+            background: white; border: 1px solid #eee; border-radius: 15px;
+            margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            overflow: hidden; transition: all 0.3s;
         }
-
-        details[open] {
-            border-color: var(--secondary);
-            box-shadow: 0 4px 12px rgba(181, 234, 215, 0.4);
-        }
-
+        details[open] { border-color: var(--secondary); box-shadow: 0 4px 12px rgba(181, 234, 215, 0.4); }
         summary {
-            padding: 15px;
-            font-weight: bold;
-            font-size: 1.1rem;
-            cursor: pointer;
-            list-style: none;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            padding: 15px; font-weight: bold; font-size: 1.1rem; cursor: pointer;
+            list-style: none; display: flex; align-items: center; justify-content: space-between;
             background: #fff;
         }
-
         summary::-webkit-details-marker { display: none; }
         summary::after { content: '+'; font-size: 1.5rem; color: var(--primary); font-weight: 300; }
         details[open] summary::after { content: '-'; }
-        details[open] summary { border-bottom: 1px solid #f0f0f0; background: #fafafa;}
-
+        
         .step-content { padding: 20px; background: #fff; }
         .guide-step { position: relative; padding-left: 20px; margin-bottom: 15px; border-left: 2px solid #eee; }
         .guide-step strong { display: block; color: #333; margin-bottom: 4px; }
         .guide-step p { margin: 0; font-size: 0.95rem; color: #666; }
-        
-        .highlight-box {
-            background: #FFF5F5;
-            border-left: 4px solid var(--primary);
-            padding: 10px;
-            margin: 10px 0;
-            font-size: 0.9rem;
-            color: #555;
-            border-radius: 4px;
-        }
+        .highlight-box { background: #FFF5F5; border-left: 4px solid var(--primary); padding: 10px; margin: 10px 0; font-size: 0.9rem; color: #555; border-radius: 4px; }
+        .vjw-guide { background: #F0F7FF; padding: 15px; border-radius: 10px; margin-top: 10px; border: 1px solid #BEE3F8; }
+        .price-guide { background: var(--money); color: var(--money-text); padding: 15px; border-radius: 10px; margin-top: 10px; font-size: 0.95rem; border: 1px solid #86EFAC; }
+        .love-tip { background: var(--love); color: var(--love-text); padding: 15px; border-radius: 10px; margin-top: 10px; font-size: 0.95rem; border: 1px solid #F8B4D9; }
+        .uniqlo-tip { border: 2px solid #E60012; color: #E60012; background: #fff; padding: 10px; border-radius: 8px; margin-top: 10px; font-weight: bold; font-size: 0.9rem; }
+        .laundry-tip { background: #F0FFF4; border: 1px solid #C6F6D5; color: #2F855A; padding: 12px; border-radius: 8px; margin-top: 12px; font-size: 0.9rem; }
 
-        .vjw-guide {
-            background: #F0F7FF;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 10px;
-            border: 1px solid #BEE3F8;
-        }
-
-        .money-saving-tip {
-            background: var(--warning);
-            color: var(--warning-text);
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 10px;
-            font-size: 0.95rem;
-            border: 1px solid #FDBA74;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-
-        .love-tip {
-            background: var(--love);
-            color: var(--love-text);
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 10px;
-            font-size: 0.95rem;
-            border: 1px solid #F8B4D9;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-
-        .danger-alert {
-            background: var(--danger);
-            color: var(--danger-text);
-            padding: 10px;
+        .location-tip {
+            background: #E0F2FE;
+            border: 1px solid #7DD3FC;
+            color: #0C4A6E;
+            padding: 12px;
             border-radius: 8px;
             margin-top: 8px;
             font-size: 0.9rem;
-            font-weight: bold;
-            border: 1px solid #FCA5A5;
         }
 
-        .weather-card {
-            background: var(--cold);
-            color: var(--cold-text);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #BAE6FD;
+        /* --- Expense Styles --- */
+        .expense-card {
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
             text-align: center;
         }
-
-        .weather-temp {
-            font-size: 1.8rem;
-            font-weight: bold;
-            margin: 10px 0;
-        }
+        .expense-result { font-size: 1.5rem; font-weight: bold; margin: 10px 0; }
+        .expense-detail { font-size: 0.9rem; opacity: 0.9; display: flex; justify-content: space-around; margin-top: 10px; }
         
-        .uniqlo-tip {
-            border: 2px solid #E60012; /* Uniqlo Red */
-            color: #E60012;
-            background: #fff;
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 10px;
-            font-weight: bold;
-            font-size: 0.9rem;
+        .expense-form {
+            background: white; border: 1px solid #eee; padding: 15px;
+            border-radius: 15px; margin-bottom: 20px;
+            display: flex; flex-direction: column; gap: 10px;
         }
-        
-        .laundry-tip {
-            background: #F0FFF4;
-            border: 1px solid #C6F6D5;
-            color: #2F855A;
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 12px;
-            font-size: 0.9rem;
+        .form-row { display: flex; gap: 10px; }
+        .payer-select {
+            display: flex; gap: 10px;
+        }
+        .radio-label {
+            flex: 1; text-align: center; padding: 10px;
+            border: 1px solid #ddd; border-radius: 10px; cursor: pointer;
+            font-weight: bold; color: #666; font-size: 0.9rem;
+        }
+        input[type="radio"] { display: none; }
+        input[type="radio"]:checked + .radio-label {
+            background: var(--primary); color: white; border-color: var(--primary);
         }
 
-        .reset-btn { color: #999; background: none; border: 1px solid #ddd; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; cursor: pointer; margin-top: 30px; display: block; margin-left: auto; margin-right: auto;}
-        
-        /* Loading Overlay */
-        #loadingOverlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: white; z-index: 2000;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            color: var(--primary);
+        .expense-list li {
+            display: flex; justify-content: space-between; align-items: center;
         }
+        .expense-info { flex: 1; }
+        .expense-amt { font-weight: bold; color: #333; }
+        .expense-payer { font-size: 0.8rem; padding: 2px 6px; border-radius: 4px; margin-right: 8px; }
+        .payer-me { background: #FFB7B2; color: #fff; }
+        .payer-sis { background: #B5EAD7; color: #065F46; }
 
         /* Modal */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 200; }
-        .modal { background: white; padding: 25px; border-radius: 15px; width: 80%; max-width: 320px; text-align: center; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 2000; }
+        .modal { background: white; padding: 25px; border-radius: 15px; width: 80%; max-width: 320px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .modal h3 { color: var(--primary); margin-top: 0;}
         .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
         .btn { padding: 10px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; flex: 1; }
         .btn-confirm { background: var(--primary); color: white; }
         .btn-cancel { background: #eee; color: #666; }
+
+        .reset-btn { color: #999; background: none; border: 1px solid #ddd; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; cursor: pointer; margin-top: 30px; display: block; margin-left: auto; margin-right: auto;}
+        
+        #loadingOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 3000;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            color: var(--primary);
+        }
 
     </style>
 </head>
 <body>
 
 <div id="loadingOverlay">
-    <h2>☁️ 連線中...</h2>
-    <p>正在同步雲端資料庫</p>
+    <h2>☁️ 雲端同步中...</h2>
+</div>
+
+<!-- Trip Code Modal (First Load) -->
+<div id="tripCodeModal" class="modal-overlay" style="display:flex;">
+    <div class="modal">
+        <h3>🔗 設定旅伴連線碼</h3>
+        <p style="font-size:0.9rem; color:#666; margin-bottom:15px;">為了讓妹妹也能看到，請設定一個簡單的密碼 (例如: honey2025)</p>
+        <input type="text" id="tripCodeInput" placeholder="輸入連線碼..." style="width:100%; margin-bottom:15px; text-align:center; font-weight:bold;">
+        <button class="btn btn-confirm" onclick="setTripCode()">開始規劃！</button>
+    </div>
 </div>
 
 <div class="container">
     <header>
-        <h1>✈️ 北海道</h1>
-        <div class="subtitle">1/21 (二) ~ 1/25 (六) | 5天4夜</div>
-        <div class="cloud-status" id="cloudStatus">連線中...</div>
+        <h1>✈️ 北海道 (姊妹旅行)</h1>
+        <div class="subtitle">1/20 (一) ~ 1/25 (六) | 6天5夜</div>
+        <div class="trip-code-display" id="displayCode" onclick="changeTripCode()">連線碼: ???</div>
     </header>
-
-    <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('checklist')">✅ 準備清單</button>
-        <button class="tab-btn" onclick="switchTab('guide')">📘 全程攻略</button>
-    </div>
 
     <!-- View 1: Checklist -->
     <div id="view-checklist" class="view active">
@@ -343,212 +304,140 @@
 
         <div class="input-group">
             <input type="text" id="itemInput" placeholder="新增待辦事項...">
-            <button class="add-btn" id="addBtn" disabled>+</button>
+            <button class="add-btn" id="addBtn">+</button>
         </div>
 
-        <ul id="itemList">
-            <!-- Items injected by JS -->
-        </ul>
-
-        <button class="reset-btn" onclick="showResetModal()">⚠️ 恢復預設清單</button>
+        <ul id="itemList"></ul>
+        <button class="reset-btn" onclick="showResetModal()">⚠️ 重置清單</button>
     </div>
 
-    <!-- View 2: Full Guide -->
+    <!-- View 2: Guide -->
     <div id="view-guide" class="view">
         <p style="text-align: center; color: #666; font-size: 0.9rem; margin-bottom: 20px;">👇 點擊標題展開步驟 👇</p>
 
         <!-- Stage 1 -->
         <details open>
-            <summary>第 1 階段：出發前準備</summary>
+            <summary>第 1 階段：機票 & 住宿 (目前進度)</summary>
             <div class="step-content">
                 <div class="guide-step">
-                    <strong>1. 檢查護照</strong>
-                    <p>確認效期還有 6 個月以上。</p>
-                </div>
-                <div class="guide-step" style="border-left-color: #FFB7B2;">
-                    <strong>2. 預訂機票 & 飯店 (最緊急!)</strong>
-                    <p><strong>蜂蜜</strong>的宿舍不能住！妳必須自己訂飯店。</p>
-                    <p>1月是滑雪旺季，住宿非常滿，<strong>現在立刻去訂房</strong>。</p>
-                    
-                    <!-- MONEY SAVING TIP -->
-                    <div class="money-saving-tip">
-                        <strong>💸 機票 3 萬太貴？轉機省錢法！</strong><br>
-                        <p style="margin-bottom:5px;">別買那種 20 小時的票，那是「隔夜轉機」！請試試看這樣買：</p>
-                        <ul style="padding-left: 20px; margin: 5px 0;">
-                            <li><strong>第一段：</strong>台北 -> 東京 (成田/羽田) <br><span style="color:#666; font-size:0.85rem;">(約 3-4 小時)</span></li>
-                            <li><strong>休息：</strong>預留 3-4 小時轉機 (吃個飯剛好)</li>
-                            <li><strong>第二段：</strong>東京 -> 札幌 (新千歲) <br><span style="color:#666; font-size:0.85rem;">(約 1.5 小時)</span></li>
-                        </ul>
-                        <div class="danger-alert">
-                            ⚠️ 新手注意：<br>
-                            1. 不要買到「換機場」的 (例如 成田飛來，卻要跑去羽田飛)。<br>
-                            2. 總時長 8-10 小時最安全，超過 15 小時的不要買！
-                        </div>
-                    </div>
-
-                </div>
-                <div class="guide-step">
-                    <strong>3. 修改 Visit Japan Web (VJW)</strong>
-                    <p>填寫的地址必須是「妳訂的飯店地址」。</p>
-                    <div class="vjw-guide">
-                        <strong>📌 VJW 填寫重點 (住飯店)：</strong><br>
-                        <ul>
-                            <li><strong>抵達日期：</strong>1月21日</li>
-                            <li><strong>地址/電話：</strong>填飯店的資料</li>
-                            <li><strong>住宿名稱：</strong>填飯店的英文名字</li>
-                        </ul>
-                        <br>
-                        <strong>⚠️ 千萬不要填蜂蜜的宿舍地址 (會被卡關)。</strong>
+                    <strong>1. 機票已確認！(1/20出發)</strong>
+                    <p>去程長榮 + 回程酷航。</p>
+                    <div class="price-guide">
+                        <strong>💰 記帳小幫手：</strong><br>
+                        妳先刷了 $41,042。<br>
+                        👉 記得在「分帳」頁面記上一筆！
                     </div>
                 </div>
+                
+                <div class="love-tip" style="background:#F0F9FF; border-color:#BAE6FD; color:#0369A1;">
+                    <strong>🏨 住宿拼圖 (趕快訂！)</strong><br>
+                    <div class="location-tip">
+                        ❌ <strong>請避開 Moio Homestay</strong> (太遠了!)<br>
+                        ✅ <strong>請鎖定：札幌車站 (Sapporo St.)</strong>、<strong>大通 (Odori)</strong>、<strong>薄野 (Susukino)</strong>。
+                    </div>
+                    <ul style="padding-left: 20px; margin: 8px 0; font-size: 0.9rem;">
+                        <li><strong>1/20 (第一晚)：</strong><span style="color:#DC2626; font-weight:bold;">缺！</span><br>👉 訂「札幌車站」附近 (隔天方便去Tomamu)。</li>
+                        <li><strong>1/21~1/23 (兩晚)：</strong><span style="color:#059669; font-weight:bold;">OK！</span><br>👉 蜂蜜訂了「星野 Resonare」。</li>
+                        <li><strong>1/23~1/25 (最後兩晚)：</strong><span style="color:#DC2626; font-weight:bold;">缺！</span><br>👉 訂「狸小路/大通」附近 (方便逛街)。</li>
+                    </ul>
+                </div>
                 <div class="guide-step">
-                    <strong>4. 備份資料</strong>
-                    <p>截圖：飯店訂房紀錄、飯店地址電話、回程機票。</p>
+                    <strong>3. 填寫 VJW</strong>
+                    <p>妹妹也要自己填一份喔！</p>
                 </div>
             </div>
         </details>
 
         <!-- Stage 2 -->
         <details>
-            <summary>第 2 階段：整理行李 (甜心減量版 ❤️)</summary>
+            <summary>第 2 階段：行李 (姊妹減量版)</summary>
             <div class="step-content">
-                
-                <!-- LOVE TIP -->
                 <div class="love-tip">
-                    <strong>💖 蜂蜜說要買給妳！行李箱要留空！</strong><br>
-                    既然去日本會買新衣服，<strong>行李帶最少就好</strong>。<br>
-                    去程穿著那件「加絨棉褲」最舒服，把牛仔褲忘了吧！
+                    <strong>💖 蜂蜜買單！行李箱留空！</strong><br>
+                    去程穿著「加絨棉褲」最舒服！
                 </div>
-
                 <div class="highlight-box">
-                    💡 出發穿搭建議：<br>
-                    上身：發熱衣 + 舒服衛衣 + 羽絨外套<br>
-                    下身：<strong>加絨棉褲</strong> (飛機上超好睡)<br>
-                    配件：雪靴、圍巾、毛帽
+                    💡 出發穿搭：發熱衣+衛衣+羽絨外套+棉褲+雪靴。
                 </div>
-
                 <div class="guide-step">
-                    <strong>1. 必備衣物 (5天極簡版)</strong>
-                    <p>長版羽絨外套 x1 (穿著去)</p>
-                    <p>防滑防水雪靴 x1 (穿著去)</p>
-                    <p>中層毛衣/刷毛外套 x2 (替換穿)</p>
-                    <p>亮色圍巾 x1 (拍照好看!)</p>
-                    <p>毛帽、手套</p>
-                    
-                    <!-- UNIQLO TIP -->
+                    <strong>必備衣物：</strong>
+                    <p>長版羽絨外套x1、防滑雪靴x1、毛衣x2、亮色圍巾x1、毛帽手套。</p>
                     <div class="uniqlo-tip">
-                        🔥 Uniqlo 採購清單 (建議數量)：<br>
-                        1. <strong>超極暖發熱衣 (Ultra Warm)</strong> x 1<br>
-                        2. <strong>超極暖內搭褲 (Ultra Warm)</strong> x 1<br>
-                        <span style="font-weight:normal; font-size:0.85rem; color:#333;">這兩件當作「第二層皮膚」，不用買多！</span>
+                        🔥 必買：Uniqlo「超極暖 (Ultra Warm)」發熱衣+褲各一件！
                     </div>
-
-                    <!-- LAUNDRY TIP -->
                     <div class="laundry-tip">
-                        <strong>💡 省錢衛生術：</strong><br>
-                        發熱褲裡面穿一般內褲，發熱衣外面噴止汗劑，晚上掛起來通風。<br>
-                        5天4夜完全不用洗，不用怕髒！
+                        💡 <strong>不洗衣服大法：</strong><br>
+                        發熱褲內穿一般內褲，5天不用洗。
                     </div>
-
-                </div>
-                <div class="guide-step">
-                    <strong>2. 手機保命招</strong>
-                    <p>👉 <strong>手機會凍到自動關機！</strong></p>
-                    <p>一定要準備「暖暖包」貼在手機背面，或是不用時把手機放在靠近身體的內側口袋保溫。</p>
                 </div>
             </div>
         </details>
 
-        <!-- Stage 3 -->
+        <!-- Stage 3-5 -->
         <details>
-            <summary>第 3 階段：1/21 台灣機場出發 🇹🇼</summary>
-            <div class="step-content">
-                <div class="highlight-box">
-                    🕒 雖然避開過年，但剛好是<strong>寒假第一週</strong>，建議提早 2.5~3 小時到機場。
-                </div>
-                <div class="guide-step">
-                    <strong>1. 報到 (Check-in)</strong>
-                    <p>找航空櫃台，給護照，掛大行李箱。</p>
-                    <p><i>確認行李箱過了X光機再離開櫃台。</i></p>
-                </div>
-                <div class="guide-step">
-                    <strong>2. 安全檢查 (Security)</strong>
-                    <p>排隊檢查隨身包。</p>
-                    <p>👉 水壺的水要倒掉！筆電、平板拿出來。</p>
-                </div>
-                <div class="guide-step">
-                    <strong>3. 證照查驗 (Immigration)</strong>
-                    <p>走「自動通關」閘門，刷護照、看鏡頭，通過！</p>
-                </div>
-                <div class="guide-step">
-                    <strong>4. 去登機門 (Gate)</strong>
-                    <p>看登機證上的 Gate 號碼，去那邊等飛機。</p>
-                </div>
-            </div>
-        </details>
-
-        <!-- Stage 4 -->
-        <details>
-            <summary>第 4 階段：抵達日本 (最緊張的！)</summary>
-            <div class="step-content">
-                <div class="highlight-box">
-                    不要怕，跟著指標「到着 (Arrival)」走就好。
-                </div>
-                <div class="guide-step">
-                    <strong>1. 檢疫 (Quarantine)</strong>
-                    <p>通常走過去體溫沒問題就通過。</p>
-                </div>
-                <div class="guide-step">
-                    <strong>2. 入境審查 (Immigration)</strong>
-                    <p>走到外國人通道。</p>
-                    <p>👉 出示 <strong>VJW QR Code</strong> + 護照。</p>
-                    <p>👉 壓指紋、看鏡頭拍照。</p>
-                    <p>👉 問來幹嘛？回答 "Sightseeing" (觀光)。</p>
-                </div>
-                <div class="guide-step">
-                    <strong>3. 拿行李 (Baggage)</strong>
-                    <p>看螢幕找航班號碼，去轉盤拿行李。</p>
-                </div>
-                <div class="guide-step">
-                    <strong>4. 稅關檢查 (Customs)</strong>
-                    <p>推著行李往出口走。</p>
-                    <p>👉 再次掃描 <strong>VJW QR Code</strong> (走電子申報通道)。</p>
-                </div>
-                <div class="guide-step">
-                    <strong>🎉 成功入境！</strong>
-                    <p>門打開，就可以去搭車找<strong>蜂蜜</strong>了！</p>
-                </div>
-            </div>
-        </details>
-
-        <!-- Stage 5 -->
-        <details>
-            <summary>第 5 階段：1/25 快樂回台灣 🏠</summary>
+            <summary>第 3-5 階段：出發與回程</summary>
             <div class="step-content">
                 <div class="guide-step">
-                    <strong>1. 到日本機場</strong>
-                    <p>流程跟台灣一樣：Check-in -> 安檢 -> 出境審查。</p>
+                    <strong>1/20 出發 (09:30 起飛)</strong>
+                    <p>建議 07:00 到桃園機場。</p>
                 </div>
                 <div class="guide-step">
-                    <strong>2. 抵達台灣</strong>
-                    <p>下飛機 -> 走自動通關入境 -> 拿行李。</p>
-                </div>
-                <div class="highlight-box">
-                    🚨 <strong>絕對不可以帶：</strong><br>
-                    新鮮水果、蔬菜、肉類製品 (火腿、香腸、沒熟的蛋)。<br>
-                    被抓到罰錢罰很重喔！
+                    <strong>1/25 回程 (酷航)</strong>
+                    <p>記得託運額度要買夠裝戰利品！</p>
                 </div>
             </div>
         </details>
-
     </div>
+
+    <!-- View 3: Expenses -->
+    <div id="view-expenses" class="view">
+        <div class="expense-card">
+            <div>目前的結算</div>
+            <div class="expense-result" id="settlementText">計算中...</div>
+            <div class="expense-detail">
+                <span>我付了: $<span id="totalMe">0</span></span>
+                <span>妹付了: $<span id="totalSis">0</span></span>
+            </div>
+        </div>
+
+        <div class="expense-form">
+            <input type="text" id="expName" placeholder="項目 (例如: 機票、晚餐)">
+            <input type="number" id="expCost" placeholder="金額 (NTD)">
+            <div class="payer-select">
+                <input type="radio" name="payer" id="payMe" value="me" checked>
+                <label class="radio-label" for="payMe">我先付</label>
+                
+                <input type="radio" name="payer" id="paySis" value="sis">
+                <label class="radio-label" for="paySis">妹妹先付</label>
+            </div>
+            <button class="add-btn" onclick="addExpense()" style="width:100%; font-size:1rem; padding:10px;">＋ 新增支出</button>
+        </div>
+
+        <ul id="expenseList" class="expense-list">
+            <!-- Expenses injected here -->
+        </ul>
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+        <button class="nav-btn active" onclick="switchTab('checklist')">
+            <span>✅</span> 清單
+        </button>
+        <button class="nav-btn" onclick="switchTab('guide')">
+            <span>📘</span> 攻略
+        </button>
+        <button class="nav-btn" onclick="switchTab('expenses')">
+            <span>💸</span> 分帳
+        </button>
+    </div>
+
 </div>
 
-<!-- Modal -->
+<!-- Reset Modal -->
 <div id="confirmModal" class="modal-overlay">
     <div class="modal">
         <h3>⚠️ 確定重置？</h3>
-        <p style="color:#666; font-size: 0.9rem; margin-bottom: 20px;">這會刪除妳所有的雲端紀錄，恢復成預設值。</p>
+        <p style="color:#666; font-size: 0.9rem; margin-bottom: 20px;">這會刪除所有紀錄 (包含分帳)！</p>
         <div class="modal-btns">
             <button class="btn btn-cancel" onclick="closeModal()">取消</button>
             <button class="btn btn-confirm" onclick="confirmReset()">確定重置</button>
@@ -557,12 +446,10 @@
 </div>
 
 <script type="module">
-    // 1. Import Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // 2. Configuration (User Provided)
     const firebaseConfig = {
         apiKey: "AIzaSyDFUGYOobmVxYFQMBYz1iQ4z1HIrdbTi8Q",
         authDomain: "travel-55c4b.firebaseapp.com",
@@ -574,106 +461,133 @@
         measurementId: "G-N5V8NBGEHZ"
     };
 
-    // 3. Initialize
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // Default Data
-    // Updated to reflect HOTEL requirement
+    let tripId = localStorage.getItem('hokkaidoTripId');
+    let currentUser = null;
+
+    // DOM Elements
+    const views = {
+        checklist: document.getElementById('view-checklist'),
+        guide: document.getElementById('view-guide'),
+        expenses: document.getElementById('view-expenses')
+    };
+    const navBtns = document.querySelectorAll('.nav-btn');
+    const itemList = document.getElementById('itemList');
+    const expenseList = document.getElementById('expenseList');
+    const itemInput = document.getElementById('itemInput');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const tripCodeModal = document.getElementById('tripCodeModal');
+    const tripCodeInput = document.getElementById('tripCodeInput');
+    const displayCode = document.getElementById('displayCode');
+
+    // Default Items
     const defaultData = [
-        { text: "預訂機票 (確認轉機時間!!)", done: false, cat: "最優先" },
-        { text: "預訂飯店 (蜂蜜宿舍不能住)", done: false, cat: "最優先" },
-        { text: "行李箱清空一半 (裝新衣服!)", done: false, cat: "最優先" },
-        { text: "修改 VJW 資料 (填入飯店地址)", done: false, cat: "必備" },
-        { text: "檢查護照效期 (6個月以上)", done: false, cat: "必備" },
-        { text: "免洗內褲/一般內褲 (穿在發熱褲內)", done: false, cat: "必備" },
-        { text: "截圖：飯店訂房紀錄、飯店電話", done: false, cat: "必備" },
-        { text: "買網卡/開漫遊", done: false, cat: "網路" },
-        { text: "換日幣 & 準備信用卡", done: false, cat: "錢包" },
-        { text: "發熱褲 (Uniqlo超極暖x1)", done: false, cat: "衣物" },
-        { text: "發熱衣 (Uniqlo超極暖x1)", done: false, cat: "衣物" },
+        { text: "預訂1/20 札幌雙人房 (靠近車站)", done: false, cat: "最優先" },
+        { text: "預訂1/23~1/25 札幌雙人房 (靠近狸小路)", done: false, cat: "最優先" },
+        { text: "修改 VJW 資料 (妹妹也要填)", done: false, cat: "必備" },
+        { text: "檢查護照效期 (2本)", done: false, cat: "必備" },
+        { text: "免洗內褲/一般內褲", done: false, cat: "必備" },
+        { text: "截圖：機票、飯店", done: false, cat: "必備" },
+        { text: "買網卡 (2人份)", done: false, cat: "網路" },
+        { text: "發熱褲 (Uniqlo超極暖)", done: false, cat: "衣物" },
+        { text: "發熱衣 (Uniqlo超極暖)", done: false, cat: "衣物" },
         { text: "加絨棉褲 (穿著去)", done: false, cat: "衣物" },
-        { text: "亮色圍巾 (拍照用)", done: false, cat: "衣物" },
-        { text: "羽絨外套 (蓋屁股)", done: false, cat: "衣物" },
-        { text: "防水雪靴 + 厚襪子", done: false, cat: "衣物" },
-        { text: "手套、毛帽", done: false, cat: "衣物" },
+        { text: "亮色圍巾", done: false, cat: "衣物" },
+        { text: "羽絨外套", done: false, cat: "衣物" },
+        { text: "防水雪靴", done: false, cat: "衣物" },
+        { text: "毛帽、手套", done: false, cat: "衣物" },
         { text: "身體乳液、護唇膏", done: false, cat: "保養" },
-        { text: "行動電源 (放隨身包)", done: false, cat: "隨身" },
+        { text: "行動電源", done: false, cat: "隨身" },
         { text: "感冒藥/止痛藥", done: false, cat: "隨身" }
     ];
 
-    // DOM Elements
-    const itemList = document.getElementById('itemList');
-    const input = document.getElementById('itemInput');
-    const addBtn = document.getElementById('addBtn');
-    const progressBar = document.getElementById('progressBar');
-    const progressText = document.getElementById('progressText');
-    const modal = document.getElementById('confirmModal');
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    const cloudStatus = document.getElementById('cloudStatus');
-
-    let currentUser = null;
-    let localItems = [];
-
-    // 4. Authentication & Data Listener
+    // Auth & Init
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             currentUser = user;
-            cloudStatus.innerText = "☁️ 已連線";
-            addBtn.disabled = false;
-            
-            // Listen to data
-            const q = query(collection(db, 'users', user.uid, 'checklist'), orderBy('createdAt', 'desc'));
-            
-            onSnapshot(q, async (snapshot) => {
-                localItems = [];
-                snapshot.forEach((doc) => {
-                    localItems.push({ id: doc.id, ...doc.data() });
-                });
-
-                // If empty (first login), load defaults
-                if (localItems.length === 0 && !snapshot.metadata.hasPendingWrites) {
-                     await loadDefaults(user.uid);
-                } else {
-                    render(localItems);
-                    loadingOverlay.style.display = 'none';
-                }
-            });
-
-        } else {
-            // Sign in anonymously if not signed in
-            try {
-                await signInAnonymously(auth);
-            } catch (error) {
-                console.error("Auth Error:", error);
-                alert("連線失敗，請檢查網路");
+            if (tripId) {
+                initTrip(tripId);
+            } else {
+                loadingOverlay.style.display = 'none';
+                tripCodeModal.style.display = 'flex';
             }
+        } else {
+            signInAnonymously(auth).catch(e => alert("連線失敗: " + e.message));
         }
     });
 
-    // Helper: Load Defaults
-    async function loadDefaults(uid) {
-        const batch = writeBatch(db);
-        for (let i = defaultData.length - 1; i >= 0; i--) {
-            const item = defaultData[i];
-            const docRef = doc(collection(db, 'users', uid, 'checklist'));
-            batch.set(docRef, { ...item, createdAt: serverTimestamp() });
+    window.setTripCode = function() {
+        const code = tripCodeInput.value.trim();
+        if(!code) return alert("請輸入連線碼");
+        localStorage.setItem('hokkaidoTripId', code);
+        tripId = code;
+        tripCodeModal.style.display = 'none';
+        loadingOverlay.style.display = 'flex';
+        initTrip(code);
+    }
+
+    window.changeTripCode = function() {
+        if(confirm('要換一個連線碼嗎？目前的畫面會重新整理。')) {
+            localStorage.removeItem('hokkaidoTripId');
+            location.reload();
         }
+    }
+
+    function initTrip(id) {
+        displayCode.innerText = `連線碼: ${id}`;
+        
+        // Checklist Listener
+        const qCheck = query(collection(db, 'trips', id, 'checklist'), orderBy('createdAt', 'desc'));
+        onSnapshot(qCheck, (snapshot) => {
+            const items = [];
+            snapshot.forEach(doc => items.push({id: doc.id, ...doc.data()}));
+            if (items.length === 0 && !snapshot.metadata.hasPendingWrites) {
+                loadDefaults(id);
+            } else {
+                renderList(items);
+                loadingOverlay.style.display = 'none';
+            }
+        });
+
+        // Expense Listener
+        const qExp = query(collection(db, 'trips', id, 'expenses'), orderBy('createdAt', 'desc'));
+        onSnapshot(qExp, (snapshot) => {
+            const exps = [];
+            snapshot.forEach(doc => exps.push({id: doc.id, ...doc.data()}));
+            renderExpenses(exps);
+        });
+    }
+
+    async function loadDefaults(id) {
+        const batch = writeBatch(db);
+        defaultData.forEach(item => {
+            const docRef = doc(collection(db, 'trips', id, 'checklist'));
+            batch.set(docRef, { ...item, createdAt: serverTimestamp() });
+        });
+        
+        // Add Flight Expense automatically if empty
+        const expRef = doc(collection(db, 'trips', id, 'expenses'));
+        batch.set(expRef, {
+            name: "機票 (2人份)",
+            cost: 41042,
+            payer: "me",
+            createdAt: serverTimestamp()
+        });
+
         await batch.commit();
     }
 
-    // 5. Render
-    function render(items) {
+    // --- Checklist Logic ---
+    function renderList(items) {
         itemList.innerHTML = '';
-        let completedCount = 0;
-
-        items.forEach((item) => {
-            if(item.done) completedCount++;
-            
+        let completed = 0;
+        items.forEach(item => {
+            if(item.done) completed++;
             const li = document.createElement('li');
             li.className = item.done ? 'completed' : '';
-            
             li.innerHTML = `
                 <div class="check-area" onclick="toggleItem('${item.id}', ${item.done})">
                     <div class="custom-checkbox"></div>
@@ -682,83 +596,123 @@
                         <span class="text">${item.text}</span>
                     </div>
                 </div>
-                <button class="delete-btn" onclick="deleteItem('${item.id}')">×</button>
+                <button class="delete-btn" onclick="deleteItem('${item.id}', 'checklist')">×</button>
             `;
             itemList.appendChild(li);
         });
-
-        const percent = items.length === 0 ? 0 : Math.round((completedCount / items.length) * 100);
-        progressBar.style.width = percent + '%';
-        progressText.innerText = `準備進度：${percent}%`;
+        const percent = items.length ? Math.round((completed/items.length)*100) : 0;
+        document.getElementById('progressBar').style.width = percent + '%';
+        document.getElementById('progressText').innerText = `準備進度：${percent}%`;
     }
 
-    // 6. Actions (Interact with Firestore)
-    window.toggleItem = async (id, currentStatus) => {
-        if(!currentUser) return;
-        const itemRef = doc(db, 'users', currentUser.uid, 'checklist', id);
-        await updateDoc(itemRef, { done: !currentStatus });
-    }
+    // --- Expense Logic ---
+    function renderExpenses(exps) {
+        expenseList.innerHTML = '';
+        let totalMe = 0;
+        let totalSis = 0;
 
-    window.deleteItem = async (id) => {
-        if(!currentUser) return;
-        if(confirm('確定要刪除這個項目嗎？')) {
-            await deleteDoc(doc(db, 'users', currentUser.uid, 'checklist', id));
+        exps.forEach(exp => {
+            const cost = parseFloat(exp.cost);
+            if(exp.payer === 'me') totalMe += cost;
+            else totalSis += cost;
+
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <div class="expense-info">
+                    <span class="expense-payer ${exp.payer==='me'?'payer-me':'payer-sis'}">${exp.payer==='me'?'我':'妹'}</span>
+                    <span>${exp.name}</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span class="expense-amt">$${cost.toLocaleString()}</span>
+                    <button class="delete-btn" style="color:#ccc; font-size:1.2rem;" onclick="deleteItem('${exp.id}', 'expenses')">×</button>
+                </div>
+            `;
+            expenseList.appendChild(li);
+        });
+
+        document.getElementById('totalMe').innerText = totalMe.toLocaleString();
+        document.getElementById('totalSis').innerText = totalSis.toLocaleString();
+
+        const total = totalMe + totalSis;
+        const half = total / 2;
+        const diff = totalMe - half; // If positive, Sister owes Me.
+
+        const resultEl = document.getElementById('settlementText');
+        if (Math.abs(diff) < 1) {
+            resultEl.innerText = "目前平手！";
+        } else if (diff > 0) {
+            resultEl.innerText = `妹 ➔ 給妳 $${Math.floor(diff).toLocaleString()}`;
+        } else {
+            resultEl.innerText = `妳 ➔ 給妹 $${Math.floor(Math.abs(diff)).toLocaleString()}`;
         }
     }
 
-    async function addItem() {
-        if(!currentUser) return;
-        const text = input.value.trim();
-        if (text) {
-            await addDoc(collection(db, 'users', currentUser.uid, 'checklist'), {
-                text: text,
-                done: false,
-                cat: "新增",
-                createdAt: serverTimestamp()
+    window.addExpense = async () => {
+        const name = document.getElementById('expName').value.trim();
+        const cost = parseFloat(document.getElementById('expCost').value);
+        const payer = document.querySelector('input[name="payer"]:checked').value;
+
+        if(name && cost) {
+            await addDoc(collection(db, 'trips', tripId, 'expenses'), {
+                name, cost, payer, createdAt: serverTimestamp()
             });
-            input.value = '';
+            document.getElementById('expName').value = '';
+            document.getElementById('expCost').value = '';
+        } else {
+            alert("請輸入項目和金額");
         }
     }
 
-    // Modal & Reset Logic
-    window.showResetModal = () => modal.style.display = 'flex';
-    window.closeModal = () => modal.style.display = 'none';
+    // --- Shared Actions ---
+    window.toggleItem = async (id, status) => {
+        await updateDoc(doc(db, 'trips', tripId, 'checklist', id), { done: !status });
+    }
+
+    window.deleteItem = async (id, col) => {
+        if(confirm('確定刪除？')) {
+            await deleteDoc(doc(db, 'trips', tripId, col, id));
+        }
+    }
+
+    document.getElementById('addBtn').addEventListener('click', async () => {
+        const text = itemInput.value.trim();
+        if(text) {
+            await addDoc(collection(db, 'trips', tripId, 'checklist'), {
+                text, done: false, cat: '新增', createdAt: serverTimestamp()
+            });
+            itemInput.value = '';
+        }
+    });
+
+    // --- UI Logic ---
+    window.switchTab = function(tabName) {
+        Object.values(views).forEach(el => el.classList.remove('active'));
+        navBtns.forEach(el => el.classList.remove('active'));
+        
+        views[tabName].classList.add('active');
+        // Find index
+        const idx = ['checklist', 'guide', 'expenses'].indexOf(tabName);
+        if(idx !== -1) navBtns[idx].classList.add('active');
+    }
+
+    window.showResetModal = () => document.getElementById('confirmModal').style.display = 'flex';
+    window.closeModal = () => document.getElementById('confirmModal').style.display = 'none';
     
     window.confirmReset = async () => {
-        if(!currentUser) return;
         closeModal();
         loadingOverlay.style.display = 'flex';
-        loadingOverlay.innerHTML = "<h2>🔄 重置中...</h2>";
+        // Delete checklist
+        const q1 = await getDocs(collection(db, 'trips', tripId, 'checklist'));
+        q1.forEach(d => deleteDoc(d.ref));
+        // Delete expenses
+        const q2 = await getDocs(collection(db, 'trips', tripId, 'expenses'));
+        q2.forEach(d => deleteDoc(d.ref));
         
-        // Delete all existing
-        const q = query(collection(db, 'users', currentUser.uid, 'checklist'));
-        const snapshot = await getDocs(q);
-        const batch = writeBatch(db);
-        snapshot.forEach(doc => {
-            batch.delete(doc.ref);
-        });
-        await batch.commit();
-        
-        setTimeout(() => {
-             loadingOverlay.style.display = 'none';
-        }, 1500);
+        // Reload will happen via snapshot listener (empty array -> load defaults)
     }
 
-    // Tab Logic
-    window.switchTab = function(tabName) {
-        document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-        document.getElementById(`view-${tabName}`).classList.add('active');
-        
-        const btns = document.querySelectorAll('.tab-btn');
-        if(tabName === 'checklist') btns[0].classList.add('active');
-        else btns[1].classList.add('active');
-    }
-
-    // Init
-    addBtn.addEventListener('click', addItem);
-    input.addEventListener('keypress', (e) => { if (e.key === 'Enter') addItem(); });
-    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    // Enter key for inputs
+    itemInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') document.getElementById('addBtn').click(); });
 
 </script>
 </body>
