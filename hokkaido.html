@@ -110,7 +110,7 @@
             background: none;
             border: none;
             color: #999;
-            font-size: 0.65rem; /* Smaller font for 5 items */
+            font-size: 0.65rem;
             font-weight: bold;
             display: flex;
             flex-direction: column;
@@ -189,6 +189,7 @@
         .tag.gift { background: #FAE8FF; color: #86198F; font-weight: bold; }
         .tag.food { background: #FEF3C7; color: #92400E; font-weight: bold; }
         .tag.spot { background: #E0E7FF; color: #4338CA; font-weight: bold; }
+        .tag.gear { background: #F1F5F9; color: #475569; font-weight: bold; }
         .item-text-wrapper { display: flex; flex-direction: column; }
         .delete-btn { background: none; border: none; color: #eee; font-size: 1.5rem; padding: 0 10px; cursor: pointer; }
         .delete-btn:hover { color: var(--primary); }
@@ -390,6 +391,9 @@
         .gear-name { font-weight: bold; color: var(--gear-text); font-size: 1.1rem; }
         .gear-addr { font-size: 0.85rem; color: #666; margin: 5px 0; display: block; }
         .gear-price { display: inline-block; background: #fff; padding: 2px 8px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 0.8rem; font-weight: bold; color: #334155; margin-top: 5px;}
+        .budget-table { width: 100%; font-size: 0.9rem; margin-top: 10px; border-collapse: collapse; }
+        .budget-table th, .budget-table td { text-align: left; padding: 6px; border-bottom: 1px solid #eee; }
+        .budget-table th { color: #666; }
 
         /* --- Expense Styles --- */
         .expense-card {
@@ -700,11 +704,35 @@
             <strong style="font-size:1.1rem;">💡 結論：去迪卡儂買！</strong>
             <p style="font-size:0.9rem; margin-top:8px; opacity:0.9;">
                 <strong>1. 價格戰：</strong><br>
-                • 星野租借：2天約 $2,400 (花錢租空氣)<br>
-                • 買迪卡儂：整套約 $3,500 (衣服是妳的)<br>
-                <strong>2. 未來性：</strong><br>
-                • 沒愛上滑雪 ➔ 當寒流騎車外套 (回本)<br>
-                • 愛上滑雪 ➔ 當耐操練習衣 (不浪費)
+                • 星野租借：2天約 $2,400 (租空氣)<br>
+                • 買迪卡儂：整套約 $6,200 (含襪/手套)<br>
+            </p>
+            <table class="budget-table" style="color:white; margin-top:10px;">
+                <tr><td>雪衣外套</td><td>$2,500</td></tr>
+                <tr><td>雪褲</td><td>$1,500</td></tr>
+                <tr><td>手套+內手套</td><td>$800</td></tr>
+                <tr><td>雪襪</td><td>$300</td></tr>
+                <tr><td>Uniqlo發熱衣x2</td><td>$2,000</td></tr>
+            </table>
+         </div>
+         
+         <div class="gear-card" style="background:#FFF7ED; border-color:#FED7AA;">
+            <span class="gear-name">🏢 迪卡儂 (Decathlon) 必買清單</span>
+            <div class="gear-price">預算：整套約 $5,000</div>
+            <p style="font-size:0.85rem; margin-top:10px; color:#C2410C;">
+                <strong>⚠️ 檢查這 2 點：</strong><br>
+                1. <strong>要有「雪裙」：</strong> 外套內側腰部有一圈防滑束帶。<br>
+                2. <strong>要有「袖口票卡袋」：</strong> 左手袖口的小拉鍊袋。<br>
+                3. <strong>內手套 (重要!)：</strong> 滑手機不用脫手套，手不會凍僵。
+            </p>
+         </div>
+         
+         <div class="gear-card">
+            <span class="gear-name">🏅 大有運動 (Dayou Sports)</span>
+            <span class="gear-addr">新北市汐止區福德二路219號4樓</span>
+            <div class="gear-price">$ (2,000~4,000)</div>
+            <p style="font-size:0.85rem; margin-top:5px; color:#666;">
+                高 CP 值選擇，款式比迪卡儂多一點。
             </p>
          </div>
 
@@ -713,22 +741,7 @@
             <span class="gear-addr">京站/信義A11/南港CityLink皆有櫃</span>
             <div class="gear-price">$$ (4,000~8,000)</div>
             <p style="font-size:0.85rem; margin-top:5px; color:#666;">
-                <strong>推薦原因：</strong><br>
-                1. 亞洲版型：對台灣女生身材很友善。<br>
-                2. 輕量保暖：他們的羽絨跟防風外套很強，平日穿也不突兀。<br>
-                3. 價格合理：比歐美滑雪牌便宜，比迪卡儂高級。
-            </p>
-         </div>
-
-         <div class="gear-card" style="background:#FFF7ED; border-color:#FED7AA;">
-            <span class="gear-name">🏢 迪卡儂 (Decathlon) 挑選攻略</span>
-            <div class="gear-price">預算：外套+褲子約 $3,000~$4,000</div>
-            <p style="font-size:0.85rem; margin-top:10px; color:#C2410C;">
-                <strong>⚠️ 千萬別買錯！檢查這 2 點：</strong><br>
-                1. <strong>要有「雪裙」：</strong> 外套內側腰部有一圈防滑束帶 (跌倒雪不會灌進身體)。<br>
-                2. <strong>要有「袖口票卡袋」：</strong> 左手袖口的小拉鍊袋 (感應纜車票用)。<br>
-                <br>
-                *別買一般羽絨衣或雨衣，去滑雪區找 <strong>WEDZE</strong> 系列！
+                版型適合亞洲人，平日穿也好看。
             </p>
          </div>
 
@@ -737,29 +750,7 @@
          <div class="gear-card">
             <span class="gear-name">ALL RIDE (內湖)</span>
             <span class="gear-addr">114臺北市內湖區洲子街71號1樓</span>
-            <div class="gear-price">$$$ (9,000~15,000)</div>
-            <p style="font-size:0.85rem; margin-top:5px; color:#666;">風格超帥，滑雪教練都在這買。</p>
-         </div>
-
-         <div class="gear-card">
-            <span class="gear-name">GoFun Sports (中山)</span>
-            <span class="gear-addr">10491台北市中山區民生東路一段51號3樓</span>
-            <div class="gear-price">$$ (6,000~10,000)</div>
-            <p style="font-size:0.85rem; margin-top:5px; color:#666;">專業店員，機能性強。</p>
-         </div>
-
-         <div class="gear-card">
-            <span class="gear-name">王子登山 (中正)</span>
-            <span class="gear-addr">100台北市中正區南昌路二段112號1樓</span>
-            <div class="gear-price">$$-$$$ (範圍廣)</div>
-            <p style="font-size:0.85rem; margin-top:5px; color:#666;">傳統戶外店，可以挖寶。</p>
-         </div>
-
-         <div class="gear-card">
-            <span class="gear-name">滑遍天下 (文山)</span>
-            <span class="gear-addr">116台北市文山區辛亥路四段130巷3號</span>
-            <div class="gear-price">$$ (5,000~8,000)</div>
-            <p style="font-size:0.85rem; margin-top:5px; color:#666;">滑雪專門店。</p>
+            <div class="gear-price">$$$ (9,000~)</div>
          </div>
     </div>
     
@@ -782,8 +773,9 @@
                     <p>👉 <strong>推薦：</strong>義美小泡芙、黑糖薑茶磚、一條根貼布。</p>
                 </div>
                  <div class="guide-step">
-                    <strong>3. Kiehl's 護手霜</strong>
-                    <p>👉 <strong>用途：</strong>雪地乾燥風大，保護手裂。</p>
+                    <strong>3. 日本腳臭救星 (藥妝店買)</strong>
+                    <p>👉 <strong>推薦：</strong>Deonatulle 足指 Sara Sara Cream (除臭軟膏)。</p>
+                    <p style="font-size:0.85rem; color:#666;">(不要從台灣帶明礬粉，過海關會被查！)</p>
                 </div>
             </div>
          </details>
@@ -955,7 +947,7 @@
     const defaultData = [
         { text: "準備禮物：Brita濾水壺 (去日本Yodobashi買)", done: false, cat: "禮物", class: "gift" },
         { text: "準備禮物：一條根/黑糖薑茶", done: false, cat: "禮物", class: "gift" },
-        { text: "準備禮物：義美小泡芙 (台灣味)", done: false, cat: "禮物", class: "gift" },
+        { text: "準備禮物：日本腳臭藥膏 (日本買!)", done: false, cat: "禮物", class: "gift" },
         { text: "確認 1/22 hal 餐廳訂位", done: false, cat: "必備" },
         { text: "去吃根室花丸 (記得先抽號碼牌)", done: false, cat: "必吃" },
         { text: "逛 Disney Store (Stellar Place 5F)", done: false, cat: "必逛" },
@@ -971,13 +963,14 @@
         { text: "免洗內褲/一般內褲", done: false, cat: "必備" },
         { text: "截圖：機票、飯店", done: true, cat: "必備" },
         { text: "買網卡 (2人份)", done: false, cat: "網路" },
-        { text: "發熱褲 (Uniqlo超極暖)", done: false, cat: "衣物" },
-        { text: "發熱衣 (Uniqlo超極暖)", done: false, cat: "衣物" },
-        { text: "加絨棉褲 (穿著去)", done: false, cat: "衣物" },
-        { text: "亮色圍巾", done: false, cat: "衣物" },
-        { text: "羽絨外套", done: false, cat: "衣物" },
-        { text: "防水雪靴", done: false, cat: "衣物" },
-        { text: "毛帽、手套", done: false, cat: "衣物" },
+        { text: "發熱褲 (Uniqlo超極暖)", done: false, cat: "衣物", class: "gear" },
+        { text: "發熱衣 (Uniqlo超極暖)", done: false, cat: "衣物", class: "gear" },
+        { text: "加絨棉褲 (穿著去)", done: false, cat: "衣物", class: "gear" },
+        { text: "亮色圍巾", done: false, cat: "衣物", class: "gear" },
+        { text: "羽絨外套", done: false, cat: "衣物", class: "gear" },
+        { text: "防水雪靴", done: false, cat: "衣物", class: "gear" },
+        { text: "毛帽、手套", done: false, cat: "衣物", class: "gear" },
+        { text: "內手套", done: false, cat: "衣物", class: "gear" },
         { text: "身體乳液、護唇膏", done: false, cat: "保養" },
         { text: "行動電源", done: false, cat: "隨身" },
         { text: "感冒藥/止痛藥", done: false, cat: "隨身" },
