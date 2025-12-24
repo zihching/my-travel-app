@@ -34,6 +34,8 @@
             --gift-text: #86198F;
             --gear: #F1F5F9; /* 裝備灰 */
             --gear-text: #475569;
+            --night: #1E293B; /* 深夜藍 */
+            --night-text: #F8FAFC;
         }
 
         * {
@@ -224,6 +226,7 @@
         .zoo-tip { background: var(--zoo); border: 1px solid #A5B4FC; color: var(--zoo-text); padding: 15px; border-radius: 10px; margin-top: 10px; font-size: 0.95rem; }
         .food-tip { background: var(--food); border: 1px solid #FCD34D; color: var(--food-text); padding: 15px; border-radius: 10px; margin-top: 10px; font-size: 0.95rem; }
         .gift-tip { background: var(--gift); border: 1px solid #F0ABFC; color: var(--gift-text); padding: 15px; border-radius: 10px; margin-top: 10px; font-size: 0.95rem; }
+        .night-tip { background: var(--night); border: 1px solid #475569; color: var(--night-text); padding: 15px; border-radius: 10px; margin-top: 10px; font-size: 0.95rem; }
 
         .location-tip {
             background: #E0F2FE;
@@ -705,35 +708,32 @@
             <p style="font-size:0.9rem; margin-top:8px; opacity:0.9;">
                 <strong>1. 價格戰：</strong><br>
                 • 星野租借：2天約 $2,400 (租空氣)<br>
-                • 買迪卡儂：整套約 $6,200 (含襪/手套)<br>
+                • 買迪卡儂：整套約 $6,000 (衣服是妳的)<br>
+                <strong>2. 未來性：</strong><br>
+                • 沒愛上滑雪 ➔ 當寒流騎車外套 (回本)<br>
+                • 愛上滑雪 ➔ 當耐操練習衣 (不浪費)
             </p>
-            <table class="budget-table" style="color:white; margin-top:10px;">
-                <tr><td>雪衣外套</td><td>$2,500</td></tr>
-                <tr><td>雪褲</td><td>$1,500</td></tr>
-                <tr><td>手套+內手套</td><td>$800</td></tr>
-                <tr><td>雪襪</td><td>$300</td></tr>
-                <tr><td>Uniqlo發熱衣x2</td><td>$2,000</td></tr>
+         </div>
+
+         <!-- Detailed Budget Table (Restored & Enhanced) -->
+         <div class="gear-card" style="background:white; border: 2px solid #3B82F6;">
+            <span class="gear-name" style="color:#2563EB; border-bottom:1px solid #eee; padding-bottom:8px; display:block; margin-bottom:8px;">
+                💰 預算試算表 (高 CP 值版)
+            </span>
+            <table class="budget-table" style="color:#333; font-size:0.9rem; margin-bottom:0;">
+                <tr style="background:#f9fafb;"><th style="padding:8px;">項目</th><th style="padding:8px; text-align:right;">預估(台幣)</th></tr>
+                <tr><td style="padding:8px;">1. 雪衣 (要有雪裙)</td><td style="padding:8px; text-align:right;">$2,500</td></tr>
+                <tr><td style="padding:8px;">2. 雪褲 (黑色百搭)</td><td style="padding:8px; text-align:right;">$1,500</td></tr>
+                <tr><td style="padding:8px;">3. 手套 (外層防水)</td><td style="padding:8px; text-align:right;">$600</td></tr>
+                <tr><td style="padding:8px;">4. 內手套 (觸控用)</td><td style="padding:8px; text-align:right;">$200</td></tr>
+                <tr><td style="padding:8px;">5. 雪襪 (厚長筒)</td><td style="padding:8px; text-align:right;">$300</td></tr>
+                <tr><td style="padding:8px;">6. 脖圍 (不要圍巾)</td><td style="padding:8px; text-align:right;">$150</td></tr>
+                <tr><td style="padding:8px; color:#666;">7. 發熱衣褲 (Uniqlo)</td><td style="padding:8px; text-align:right; color:#666;">$2,000</td></tr>
+                <tr style="border-top:2px solid #eee; font-weight:bold;">
+                    <td style="padding:8px;">總計 (整套帶回家)</td>
+                    <td style="padding:8px; text-align:right; color:#2563EB;">約 $7,250</td>
+                </tr>
             </table>
-         </div>
-         
-         <div class="gear-card" style="background:#FFF7ED; border-color:#FED7AA;">
-            <span class="gear-name">🏢 迪卡儂 (Decathlon) 必買清單</span>
-            <div class="gear-price">預算：整套約 $5,000</div>
-            <p style="font-size:0.85rem; margin-top:10px; color:#C2410C;">
-                <strong>⚠️ 檢查這 2 點：</strong><br>
-                1. <strong>要有「雪裙」：</strong> 外套內側腰部有一圈防滑束帶。<br>
-                2. <strong>要有「袖口票卡袋」：</strong> 左手袖口的小拉鍊袋。<br>
-                3. <strong>內手套 (重要!)：</strong> 滑手機不用脫手套，手不會凍僵。
-            </p>
-         </div>
-         
-         <div class="gear-card">
-            <span class="gear-name">🏅 大有運動 (Dayou Sports)</span>
-            <span class="gear-addr">新北市汐止區福德二路219號4樓</span>
-            <div class="gear-price">$ (2,000~4,000)</div>
-            <p style="font-size:0.85rem; margin-top:5px; color:#666;">
-                高 CP 值選擇，款式比迪卡儂多一點。
-            </p>
          </div>
 
          <div class="gear-card">
@@ -741,7 +741,22 @@
             <span class="gear-addr">京站/信義A11/南港CityLink皆有櫃</span>
             <div class="gear-price">$$ (4,000~8,000)</div>
             <p style="font-size:0.85rem; margin-top:5px; color:#666;">
-                版型適合亞洲人，平日穿也好看。
+                <strong>推薦原因：</strong><br>
+                1. 亞洲版型：對台灣女生身材很友善。<br>
+                2. 輕量保暖：他們的羽絨跟防風外套很強，平日穿也不突兀。<br>
+                3. 價格合理：比歐美滑雪牌便宜，比迪卡儂高級。
+            </p>
+         </div>
+
+         <div class="gear-card" style="background:#FFF7ED; border-color:#FED7AA;">
+            <span class="gear-name">🏢 迪卡儂 (Decathlon) 挑選攻略</span>
+            <div class="gear-price">預算：外套+褲子約 $3,000~$4,000</div>
+            <p style="font-size:0.85rem; margin-top:10px; color:#C2410C;">
+                <strong>⚠️ 千萬別買錯！檢查這 2 點：</strong><br>
+                1. <strong>要有「雪裙」：</strong> 外套內側腰部有一圈防滑束帶 (跌倒雪不會灌進身體)。<br>
+                2. <strong>要有「袖口票卡袋」：</strong> 左手袖口的小拉鍊袋 (感應纜車票用)。<br>
+                <br>
+                *別買一般羽絨衣或雨衣，去滑雪區找 <strong>WEDZE</strong> 系列！
             </p>
          </div>
 
@@ -750,7 +765,29 @@
          <div class="gear-card">
             <span class="gear-name">ALL RIDE (內湖)</span>
             <span class="gear-addr">114臺北市內湖區洲子街71號1樓</span>
-            <div class="gear-price">$$$ (9,000~)</div>
+            <div class="gear-price">$$$ (9,000~15,000)</div>
+            <p style="font-size:0.85rem; margin-top:5px; color:#666;">風格超帥，滑雪教練都在這買。</p>
+         </div>
+
+         <div class="gear-card">
+            <span class="gear-name">GoFun Sports (中山)</span>
+            <span class="gear-addr">10491台北市中山區民生東路一段51號3樓</span>
+            <div class="gear-price">$$ (6,000~10,000)</div>
+            <p style="font-size:0.85rem; margin-top:5px; color:#666;">專業店員，機能性強。</p>
+         </div>
+
+         <div class="gear-card">
+            <span class="gear-name">王子登山 (中正)</span>
+            <span class="gear-addr">100台北市中正區南昌路二段112號1樓</span>
+            <div class="gear-price">$$-$$$ (範圍廣)</div>
+            <p style="font-size:0.85rem; margin-top:5px; color:#666;">傳統戶外店，可以挖寶。</p>
+         </div>
+
+         <div class="gear-card">
+            <span class="gear-name">滑遍天下 (文山)</span>
+            <span class="gear-addr">116台北市文山區辛亥路四段130巷3號</span>
+            <div class="gear-price">$$ (5,000~8,000)</div>
+            <p style="font-size:0.85rem; margin-top:5px; color:#666;">滑雪專門店。</p>
          </div>
     </div>
     
@@ -779,7 +816,32 @@
                 </div>
             </div>
          </details>
-         <!-- (Other guide sections omitted for brevity but would be present) -->
+         
+         <details>
+            <summary>🌙 深夜流浪指南 (NEW)</summary>
+            <div class="step-content">
+                <div class="night-tip">
+                    <strong>⚠️ 安全第一：</strong><br>
+                    北海道冬天半夜非常冷 (-10度)，且路面結冰超滑。<br>
+                    請穿暖、小心走路，盡量搭計程車。
+                </div>
+                
+                <div class="guide-step" style="margin-top:15px;">
+                    <strong>札幌市區 (Sapporo)</strong>
+                    <p>🏪 <strong>Mega 唐吉訶德 (狸小路)：</strong>24小時營業，半夜掃貨最爽。</p>
+                    <p>🍦 <strong>結尾聖代 (Shime Parfait)：</strong>許多店開到凌晨 2 點 (如 Parfaiteria PaL)。</p>
+                    <p>🎳 <strong>Round 1 (薄野)：</strong>24小時遊樂場，夾娃娃、保齡球。</p>
+                    <p>🍗 <strong>Seicomart：</strong>北海道神級超商，半夜去買 Hot Chef 炸雞當宵夜。</p>
+                </div>
+
+                <div class="guide-step">
+                    <strong>Tomamu 度假村</strong>
+                    <p>❄️ <strong>愛絲冰城：</strong>開到 22:00 (最後入場 21:30)。</p>
+                    <p>🏠 <strong>房間開趴：</strong>度假村半夜沒地方去，建議提早買好酒跟零食，在房間享受。</p>
+                </div>
+            </div>
+         </details>
+
          <details>
             <summary>📋 必填：Visit Japan Web (VJW)</summary>
             <div class="step-content">
