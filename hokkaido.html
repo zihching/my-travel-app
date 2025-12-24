@@ -118,7 +118,7 @@
             flex-direction: column;
             align-items: center;
             gap: 4px;
-            width: 20%; 
+            width: 16.66%; /* Fixed width for 6 items */
             cursor: pointer;
             padding: 5px 0;
         }
@@ -661,6 +661,7 @@
                          <div class="event-card">
                             <div class="event-title">大丸百貨買早餐</div>
                             <div class="event-desc">推薦「Donguri 麵包」或「Arinko 熱飯糰」！</div>
+                            <span class="price-tag">💰 預算：約 800円 (約 $175 台幣)</span>
                          </div>
                     </div>
                     <div class="timeline-item">
@@ -668,12 +669,16 @@
                         <div class="event-card">
                             <div class="event-title">搭 JR 特急</div>
                             <div class="event-desc">往「帶廣/釧路」方向 (十勝號/大空號)。</div>
+                            <div class="tip-box">
+                                💡 <strong>重要：</strong><br>
+                                建議買「指定席」車票，不然拖著行李沒位子會很慘。
+                            </div>
                              <span class="price-tag">💰 車資：約 5,500円 (約 $1,210 台幣)</span>
                         </div>
                     </div>
-                    <div class="timeline-item"><span class="time-label">11:00</span><div class="event-card"><div class="event-title">抵達 Tomamu</div></div></div>
+                    <div class="timeline-item"><span class="time-label">11:00</span><div class="event-card"><div class="event-title">抵達 Tomamu</div><div class="event-desc">搭飯店接駁車去 Resonare。</div></div></div>
                      <div class="timeline-item"><span class="time-label">12:00</span><div class="event-card"><div class="event-title">💖 找蜂蜜！</div></div></div>
-                      <div class="timeline-item"><span class="time-label">晚上</span><div class="event-card"><div class="event-title">🌲 精靈露台</div></div></div>
+                      <div class="timeline-item"><span class="time-label">晚上</span><div class="event-card" style="background:#FCE7F3; border-color:#FBCFE8;"><div class="event-title">🌲 精靈露台</div><div class="event-desc">浪漫約會！</div><span class="price-tag">💰 門票：免費</span></div></div>
                 </div>
             </div>
          </details>
@@ -681,8 +686,8 @@
             <summary>1/22 (三) 滑雪 & 帝王蟹</summary>
             <div class="step-content">
                  <div class="timeline">
-                    <div class="timeline-item"><span class="time-label">白天</span><div class="event-card"><div class="event-title">⛷️ 滑雪體驗</div></div></div>
-                    <div class="timeline-item"><span class="time-label">17:00</span><div class="event-card"><div class="event-title">🦀 Buffet Dining hal</div></div></div>
+                    <div class="timeline-item"><span class="time-label">白天</span><div class="event-card"><div class="event-title">⛷️ 滑雪體驗</div><div class="event-desc">看蜂蜜教學！</div></div></div>
+                    <div class="timeline-item"><span class="time-label">17:00</span><div class="event-card" style="background:#FEF3C7; border-color:#FCD34D;"><div class="event-title">🦀 Buffet Dining hal</div><div class="event-desc">帝王蟹吃到飽！</div><span class="price-tag">💰 晚餐：約 5,500円 (約 $1,210 台幣)</span></div></div>
                  </div>
             </div>
          </details>
@@ -690,10 +695,10 @@
             <summary>1/23 (四) 回札幌 & 逛街</summary>
             <div class="step-content">
                 <div class="timeline">
-                     <div class="timeline-item"><span class="time-label">11:00</span><div class="event-card"><div class="event-title">退房 & 搭 JR 回札幌</div></div></div>
-                     <div class="timeline-item"><span class="time-label">14:00</span><div class="event-card"><div class="event-title">Check-in Stripe Hotel</div></div></div>
-                     <div class="timeline-item"><span class="time-label">15:00</span><div class="event-card"><div class="event-title">🚕 搭計程車去狸小路</div></div></div>
-                     <div class="timeline-item"><span class="time-label">19:00</span><div class="event-card"><div class="event-title">晚餐：湯咖哩</div></div></div>
+                     <div class="timeline-item"><span class="time-label">11:00</span><div class="event-card"><div class="event-title">退房 & 搭 JR 回札幌</div><span class="price-tag">💰 車資：約 5,500円 (約 $1,210 台幣)</span></div></div>
+                     <div class="timeline-item"><span class="time-label">14:00</span><div class="event-card"><div class="event-title">Check-in Stripe Hotel</div><span class="price-tag">💰 計程車：約 600円/人 (約 $130 台幣)</span></div></div>
+                     <div class="timeline-item"><span class="time-label">15:00</span><div class="event-card"><div class="event-title">🚕 搭計程車去狸小路</div><span class="price-tag">💰 計程車：約 600円/人 (約 $130 台幣)</span></div></div>
+                     <div class="timeline-item"><span class="time-label">19:00</span><div class="event-card"><div class="event-title">晚餐：湯咖哩</div><span class="price-tag">💰 餐費：約 1,800円 (約 $400 台幣)</span></div></div>
                 </div>
             </div>
          </details>
@@ -701,8 +706,8 @@
             <summary>1/24 (五) 企鵝散步 🐧</summary>
             <div class="step-content">
                 <div class="timeline">
-                     <div class="timeline-item"><span class="time-label">08:00</span><div class="event-card"><div class="event-title">一日遊巴士集合</div></div></div>
-                     <div class="timeline-item"><span class="time-label">11:00</span><div class="event-card"><div class="event-title">🐧 旭山動物園</div></div></div>
+                     <div class="timeline-item"><span class="time-label">08:00</span><div class="event-card"><div class="event-title">一日遊巴士集合</div><span class="price-tag">💰 團費：約 $1,800 台幣 (已預訂)</span></div></div>
+                     <div class="timeline-item"><span class="time-label">11:00</span><div class="event-card" style="background:#E0E7FF; border-color:#A5B4FC;"><div class="event-title">🐧 旭山動物園</div><div class="event-desc">看企鵝！</div></div></div>
                      <div class="timeline-item"><span class="time-label">18:00</span><div class="event-card"><div class="event-title">回到札幌</div><div class="event-desc">去唐吉訶德做最後補貨。</div></div></div>
                 </div>
             </div>
@@ -712,8 +717,8 @@
             <div class="step-content">
                 <div class="timeline">
                      <div class="timeline-item"><span class="time-label">10:00</span><div class="event-card"><div class="event-title">退房</div></div></div>
-                     <div class="timeline-item"><span class="time-label">10:30</span><div class="event-card"><div class="event-title">搭車去機場</div></div></div>
-                     <div class="timeline-item"><span class="time-label">11:30</span><div class="event-card"><div class="event-title">🛍️ 機場國內線大採購</div></div></div>
+                     <div class="timeline-item"><span class="time-label">10:30</span><div class="event-card"><div class="event-title">搭車去機場</div><div class="event-desc">計程車 -> 札幌車站 -> JR 機場線。</div><span class="price-tag">💰 交通：約 1,800円 (約 $400 台幣)</span></div></div>
+                     <div class="timeline-item"><span class="time-label">11:30</span><div class="event-card" style="background:#FCE7F3; border-color:#FBCFE8;"><div class="event-title">🛍️ 機場國內線大採購</div><div class="event-desc">買伴手禮！</div></div></div>
                      <div class="timeline-item"><span class="time-label">14:00</span><div class="event-card"><div class="event-title">酷航櫃台報到</div></div></div>
                 </div>
             </div>
@@ -722,6 +727,20 @@
 
     <!-- View 3: Gear Guide (NEW) -->
     <div id="view-gear" class="view">
+         <p style="text-align: center; color: #666; font-size: 0.9rem; margin-bottom: 20px;">👇 新手雪衣決策：買 vs 租 👇</p>
+         
+         <div class="expense-card" style="background: linear-gradient(135deg, #3B82F6, #2563EB); text-align: left;">
+            <strong style="font-size:1.1rem;">💡 結論：去迪卡儂或大有買！</strong>
+            <p style="font-size:0.9rem; margin-top:8px; opacity:0.9;">
+                <strong>1. 價格戰：</strong><br>
+                • 星野租借：2天約 $2,400 (租空氣)<br>
+                • 買平價款：整套約 $3,000~$4,000 (衣服是妳的)<br>
+                <strong>2. 未來性：</strong><br>
+                • 沒愛上滑雪 ➔ 當寒流騎車外套 (回本)<br>
+                • 愛上滑雪 ➔ 當耐操練習衣 (不浪費)
+            </p>
+         </div>
+         
          <div class="gear-card" style="background:#FFF7ED; border-color:#FED7AA;">
             <span class="gear-name">🛒 現場挑選檢查表 (Checklist)</span>
             <p style="font-size:0.9rem; margin-top:10px;">請在店裡對照這張表：</p>
@@ -735,20 +754,6 @@
                 <tr><td><span class="check-icon">✅</span> 手套要是「防水」的 (非毛線)</td></tr>
                 <tr><td><span class="check-icon">✅</span> 買一副「觸控內手套」(滑手機用)</td></tr>
             </table>
-         </div>
-         
-         <p style="text-align: center; color: #666; font-size: 0.9rem; margin-bottom: 20px;">👇 新手雪衣決策：買 vs 租 👇</p>
-         
-         <div class="expense-card" style="background: linear-gradient(135deg, #3B82F6, #2563EB); text-align: left;">
-            <strong style="font-size:1.1rem;">💡 結論：去迪卡儂買！</strong>
-            <p style="font-size:0.9rem; margin-top:8px; opacity:0.9;">
-                <strong>1. 價格戰：</strong><br>
-                • 星野租借：2天約 $2,400 (租空氣)<br>
-                • 買平價款：整套約 $3,000~$4,000 (衣服是妳的)<br>
-                <strong>2. 未來性：</strong><br>
-                • 沒愛上滑雪 ➔ 當寒流騎車外套 (回本)<br>
-                • 愛上滑雪 ➔ 當耐操練習衣 (不浪費)
-            </p>
          </div>
 
          <!-- Detailed Budget Table (Restored & Enhanced) -->
@@ -773,14 +778,21 @@
          </div>
          
          <div class="gear-card" style="background:#FFF7ED; border-color:#FED7AA;">
+            <span class="gear-name">🏢 迪卡儂 (Decathlon) 必買清單</span>
+            <p style="font-size:0.85rem; margin-top:10px; color:#C2410C;">
+                <strong>⚠️ 檢查這 2 點：</strong><br>
+                1. <strong>要有「雪裙」：</strong> 外套內側腰部有一圈防滑束帶。<br>
+                2. <strong>要有「袖口票卡袋」：</strong> 左手袖口的小拉鍊袋。<br>
+                3. <strong>內手套 (重要!)：</strong> 滑手機不用脫手套，手不會凍僵。
+            </p>
+         </div>
+         
+         <div class="gear-card">
             <span class="gear-name">🏅 大有運動 (Dayou Sports)</span>
             <span class="gear-addr">新北市汐止區福德二路219號4樓 (或其他分店)</span>
             <div class="gear-price">$ (2,000~4,000)</div>
-            <p style="font-size:0.85rem; margin-top:5px; color:#C2410C;">
-                <strong>推薦原因：</strong><br>
-                1. 台灣高CP值品牌，價格跟迪卡儂差不多。<br>
-                2. 款式比較多樣，手套護具選擇多。<br>
-                3. 如果覺得迪卡儂太素，來這裡逛逛！
+            <p style="font-size:0.85rem; margin-top:5px; color:#666;">
+                高 CP 值選擇，款式比迪卡儂多一點。
             </p>
          </div>
 
@@ -789,19 +801,7 @@
             <span class="gear-addr">京站/信義A11/南港CityLink皆有櫃</span>
             <div class="gear-price">$$ (4,000~8,000)</div>
             <p style="font-size:0.85rem; margin-top:5px; color:#666;">
-                <strong>推薦原因：</strong><br>
-                1. 亞洲版型：對台灣女生身材很友善。<br>
-                2. 輕量保暖：他們的羽絨跟防風外套很強，平日穿也不突兀。<br>
-                3. 價格合理：比歐美滑雪牌便宜，比迪卡儂高級。
-            </p>
-         </div>
-
-         <div class="gear-card">
-            <span class="gear-name">🏢 迪卡儂 (Decathlon)</span>
-            <div class="gear-price">預算：外套+褲子約 $3,000~$4,000</div>
-            <p style="font-size:0.85rem; margin-top:5px; color:#666;">
-                <strong>⚠️ 別買錯系列：</strong><br>
-                請找 <strong>WEDZE</strong> 滑雪系列，不要買登山或健行系列 (不夠暖/不防水)。
+                版型適合亞洲人，平日穿也好看。
             </p>
          </div>
 
@@ -884,7 +884,42 @@
                             <span class="vjw-label">電話號碼</span>
                             <div class="vjw-data">0117371000</div>
                         </div>
+
+                        <div style="background:#f9f9f9; padding-top:10px;">
+                            <strong>📝 備用：Stripe Residence 資料</strong><br>
+                            <span style="font-size:0.8rem; color:#666;">(如果海關問妳後面住哪，給他看這個)</span>
+                            
+                            <span class="vjw-label">地址</span>
+                            <div class="vjw-data">6-2-26, Kita 7-jo Nishi, Kita-ku, Sapporo</div>
+                            
+                            <span class="vjw-label">郵遞區號</span>
+                            <div class="vjw-data">060-0807</div>
+                        </div>
                     </div>
+                </div>
+            </div>
+         </details>
+         <details>
+            <summary>🌙 深夜流浪指南</summary>
+            <div class="step-content">
+                <div class="night-tip">
+                    <strong>⚠️ 安全第一：</strong><br>
+                    北海道冬天半夜非常冷 (-10度)，且路面結冰超滑。<br>
+                    請穿暖、小心走路，盡量搭計程車。
+                </div>
+                
+                <div class="guide-step" style="margin-top:15px;">
+                    <strong>札幌市區 (Sapporo)</strong>
+                    <p>🏪 <strong>Mega 唐吉訶德 (狸小路)：</strong>24小時營業，半夜掃貨最爽。</p>
+                    <p>🍦 <strong>結尾聖代 (Shime Parfait)：</strong>許多店開到凌晨 2 點 (如 Parfaiteria PaL)。</p>
+                    <p>🎳 <strong>Round 1 (薄野)：</strong>24小時遊樂場，夾娃娃、保齡球。</p>
+                    <p>🍗 <strong>Seicomart：</strong>北海道神級超商，半夜去買 Hot Chef 炸雞當宵夜。</p>
+                </div>
+
+                <div class="guide-step">
+                    <strong>Tomamu 度假村</strong>
+                    <p>❄️ <strong>愛絲冰城：</strong>開到 22:00 (最後入場 21:30)。</p>
+                    <p>🏠 <strong>房間開趴：</strong>度假村半夜沒地方去，建議提早買好酒跟零食，在房間享受。</p>
                 </div>
             </div>
          </details>
@@ -897,6 +932,18 @@
         <div class="wishlist-section">
             <div class="wishlist-title">🍽️ 札幌必吃美食</div>
             <ul class="wish-list-container" id="wishlist-food"></ul>
+        </div>
+        
+        <div class="wishlist-section">
+            <div class="wishlist-title">🐺 特別體驗 (需預約)</div>
+            <ul class="wish-list-container">
+                 <li class="wish-item">
+                    <div class="wish-content">
+                        <span class="wish-name">哈士奇狗拉雪橇 <span class="tag spot">星野度假村</span></span>
+                        <span class="wish-desc">在 Tomamu 園區內，請蜂蜜幫忙問！</span>
+                    </div>
+                </li>
+            </ul>
         </div>
 
         <div class="wishlist-section">
@@ -1275,6 +1322,8 @@
     function renderWishlist(items) {
         const foodList = document.getElementById('wishlist-food');
         const spotList = document.getElementById('wishlist-spot');
+        const listContainer = document.querySelector('#view-wishlist .wishlist-section:nth-child(2) .wish-list-container'); 
+        
         foodList.innerHTML = '';
         spotList.innerHTML = '';
 
@@ -1401,13 +1450,17 @@
 
     // --- UI Logic ---
     window.switchTab = function(tabName) {
-        Object.values(views).forEach(el => el.classList.remove('active'));
+        Object.values(views).forEach(el => {
+            if(el) el.classList.remove('active');
+        });
         navBtns.forEach(el => el.classList.remove('active'));
         
-        views[tabName].classList.add('active');
+        if (views[tabName]) {
+            views[tabName].classList.add('active');
+        }
         // Find index
         const idx = ['checklist', 'itinerary', 'gear', 'wishlist', 'guide', 'expenses'].indexOf(tabName);
-        if(idx !== -1) navBtns[idx].classList.add('active');
+        if(idx !== -1 && navBtns[idx]) navBtns[idx].classList.add('active');
     }
 
     window.showResetModal = () => document.getElementById('confirmModal').style.display = 'flex';
