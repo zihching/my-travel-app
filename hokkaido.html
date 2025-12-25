@@ -233,7 +233,7 @@
         }
         summary::after { content: '🌸'; transition: transform 0.3s; font-size: 1.2rem; opacity: 0.5; }
         details[open] summary::after { transform: rotate(45deg); opacity: 1; }
-        .details-content { padding: 0 20px 25px; color: #6D4C41; font-size: 0.95rem; line-height: 1.8; border-top: 2px dashed #EFEBE9; }
+        .details-content { padding: 0 20px 25px; color: #6D4C41; font-size: 0.95rem; line-height: 1.8; border-top: 2px dashed #EFEBE9; white-space: pre-line;}
 
         /* --- Timeline (Itinerary) --- */
         .timeline { padding-left: 25px; border-left: 3px solid #EFEBE9; margin-left: 10px; margin-top: 20px; }
@@ -276,7 +276,7 @@
         .wish-check {
             width: 30px; height: 30px; border: 2px solid #D7CCC8; border-radius: 50%;
             margin-right: 15px; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; color: white; background: white; transition: all 0.2s;
+            cursor: pointer; color: white; background: white; transition: all 0.2s; flex-shrink: 0;
         }
         .wish-check.checked { background: var(--primary); border-color: var(--primary); }
         .tag.spot { background: var(--tag-spot); color: var(--text-info); font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; }
@@ -311,10 +311,10 @@
             background: var(--tag-info); color: var(--text-info); border-color: var(--text-info); transform: translateY(-1px);
         }
 
-        .expense-form {
+        .expense-form, .guide-form {
             background: white; border: 2px solid #FFF0F3; padding: 20px; border-radius: 20px; margin-bottom: 20px;
         }
-
+        
         .expense-item {
             padding: 18px; margin-bottom: 12px; background: white; border-radius: 20px;
             display: flex; justify-content: space-between; align-items: center; 
@@ -646,15 +646,37 @@
             </div>
         </details>
 
-        <!-- Wishlist -->
+        <!-- Wishlist (Add Feature) -->
         <div class="wishlist-title">✨ 願望清單 (必吃必去)</div>
+        
+        <div class="guide-form" style="background:#FFF; padding:15px; border-radius:15px; box-shadow:0 2px 8px rgba(0,0,0,0.05); margin-bottom:15px;">
+             <div class="input-group" style="margin-bottom:10px;">
+                <input type="text" id="wishName" placeholder="新增願望...">
+            </div>
+            <div style="display:flex; gap:10px; margin-bottom:10px;">
+                <label style="flex:1; text-align:center; padding:8px; background:#f9f9f9; border-radius:20px; cursor:pointer;"><input type="radio" name="wishType" value="food" checked> 🍽️ 吃</label>
+                <label style="flex:1; text-align:center; padding:8px; background:#f9f9f9; border-radius:20px; cursor:pointer;"><input type="radio" name="wishType" value="spot"> 📸 玩</label>
+            </div>
+            <button class="add-btn" style="width:100%; border-radius:10px; font-size:0.9rem; height:35px;" onclick="addWish()">加入清單</button>
+        </div>
+
         <ul id="wishlist-container" style="padding:0; list-style:none;"></ul>
     </div>
 
     <!-- TAB 3: 攻略 Guide -->
     <div id="view-guide" class="view">
         
-        <details open>
+        <!-- Add Guide Section -->
+        <div class="guide-form" style="margin-bottom:20px;">
+            <strong style="display:block; margin-bottom:10px; color:var(--text);">✨ 新增我的攻略</strong>
+            <input type="text" id="guideTitle" placeholder="標題 (如: 必買藥妝)" style="width:100%; margin-bottom:10px; padding:10px; border:2px solid #EFEBE9; border-radius:10px;">
+            <textarea id="guideContent" placeholder="內容..." style="width:100%; height:80px; padding:10px; border:2px solid #EFEBE9; border-radius:10px; resize:none; font-family:inherit;"></textarea>
+            <button onclick="addGuide()" style="width:100%; background:var(--secondary); color:white; border:none; padding:10px; border-radius:10px; font-weight:bold; margin-top:10px; cursor:pointer;">新增</button>
+        </div>
+
+        <div id="custom-guides-container"></div>
+        
+        <details>
             <summary>❄️ 雪衣裝備 (含預算)</summary>
             <div class="details-content">
                 <div class="tip-card info">
@@ -727,6 +749,30 @@
                         <strong>完美行 (WAmazing)：</strong> 重物/液體用 App 買，機場領。<br>
                         <hr style="border:0; border-top:1px dashed #eee; margin:10px 0;">
                         <strong>深夜美食：</strong> 結尾聖代 (Parfaiteria PaL)。
+                    </span>
+                </div>
+            </div>
+        </details>
+        
+        <details>
+            <summary>🚆 JR 搭車 & 買票教學</summary>
+            <div class="details-content">
+                <div class="tip-card info">
+                    <span class="tip-title">1. 機場 ↔ 札幌 (短程)</span>
+                    <span class="tip-content">
+                        💳 <strong>刷卡：</strong>西瓜卡 (Suica)、ICOCA 都可以！<br>
+                        🎫 <strong>買票：</strong>售票機選 1150 円。<br>
+                        🚅 <strong>車種：</strong>搭「快速 Airport」，每 12 分一班。<br>
+                        💰 <strong>儲值：</strong>先存 5,000円 就夠用。
+                    </span>
+                </div>
+                <div class="tip-card money">
+                    <span class="tip-title">2. 札幌 ↔ Tomamu (長程)</span>
+                    <span class="tip-content">
+                        ⚠️ <strong>不能刷西瓜卡！</strong><br>
+                        🎫 <strong>買票：</strong>去「綠色窗口」買實體票。<br>
+                        📝 <strong>口訣：</strong>我要買「乘車券 + 特急券」。<br>
+                        🚅 <strong>車種：</strong>特急 Tokachi (十勝) 或 Ozora (大空)。
                     </span>
                 </div>
             </div>
@@ -825,7 +871,7 @@
 
     // Default Data
     const defaultData = [
-        { text: "準備禮物：Brita濾水壺 (日本買)", done: false, cat: "禮物", class: "gift" },
+        { text: "準備禮物：Brita濾水壺 (去日本買)", done: false, cat: "禮物", class: "gift" },
         { text: "準備禮物：觸控內手套", done: false, cat: "禮物", class: "gift" },
         { text: "準備禮物：台灣零食", done: false, cat: "禮物", class: "gift" },
         { text: "確認 1/22 hal 餐廳訂位", done: false, cat: "必備" },
@@ -842,15 +888,15 @@
     ];
 
     const defaultWishlist = [
-        { name: "3COINS (APIA店)", desc: "300円雜貨", type: "spot", location: "札幌" },
-        { name: "成吉思汗烤肉 (達摩)", desc: "必吃羊肉", type: "food", location: "薄野" },
-        { name: "海鮮丼 (二條市場)", desc: "早餐吃海膽", type: "food", location: "二條市場" },
-        { name: "味噌拉麵 (信玄)", desc: "暖胃首選", type: "food", location: "薄野" },
-        { name: "結尾聖代 (PaL)", desc: "飯後甜點", type: "food", location: "薄野" },
-        { name: "旭川拉麵 (青葉)", desc: "醬油口味", type: "food", location: "旭川" },
-        { name: "哈士奇雪橇 (Tomamu)", desc: "需預約", type: "spot", location: "Tomamu" },
-        { name: "富良野起司工坊", desc: "吃披薩", type: "spot", location: "富良野" },
-        { name: "雪地摩托車 (富良野)", desc: "需預約", type: "spot", location: "富良野" }
+        { name: "成吉思汗烤肉 (達摩)", desc: "必吃羊肉", type: "food" },
+        { name: "海鮮丼 (二條市場)", desc: "早餐吃海膽", type: "food" },
+        { name: "味噌拉麵 (信玄)", desc: "暖胃首選", type: "food" },
+        { name: "結尾聖代 (PaL)", desc: "飯後甜點", type: "food" },
+        { name: "旭川拉麵 (青葉)", desc: "醬油口味", type: "food" },
+        { name: "哈士奇雪橇 (Tomamu)", desc: "需預約", type: "spot" },
+        { name: "富良野起司工坊", desc: "吃披薩", type: "spot" },
+        { name: "雪地摩托車 (富良野)", desc: "需預約", type: "spot" },
+        { name: "3COINS (APIA店)", desc: "300円雜貨", type: "spot" }
     ];
 
     // Auth
@@ -921,6 +967,33 @@
         }
     }
 
+    // Add Wish
+    window.addWish = async () => {
+        const name = document.getElementById('wishName').value.trim();
+        const type = document.querySelector('input[name="wishType"]:checked').value;
+        
+        if(name) {
+            await addDoc(collection(db, 'trips', tripId, 'wishlist'), {
+                name: name, desc: "自訂行程", type: type, done: false, createdAt: serverTimestamp()
+            });
+            document.getElementById('wishName').value = '';
+        }
+    }
+    
+    // Add Guide
+    window.addGuide = async () => {
+        const title = document.getElementById('guideTitle').value.trim();
+        const content = document.getElementById('guideContent').value.trim();
+        
+        if(title && content) {
+             await addDoc(collection(db, 'trips', tripId, 'guides'), {
+                title: title, content: content, createdAt: serverTimestamp()
+            });
+            document.getElementById('guideTitle').value = '';
+            document.getElementById('guideContent').value = '';
+        }
+    }
+
     function initTrip(id) {
         tripId = id;
         
@@ -938,7 +1011,7 @@
         });
 
         // Wishlist
-        onSnapshot(query(collection(db, 'trips', id, 'wishlist'), orderBy('name')), (snap) => {
+        onSnapshot(query(collection(db, 'trips', id, 'wishlist')), (snap) => {
             const items = [];
             snap.forEach(doc => items.push({id: doc.id, ...doc.data()}));
             if (items.length === 0 && !snap.metadata.hasPendingWrites) {
@@ -946,6 +1019,13 @@
             } else {
                 renderWishlist(items);
             }
+        });
+        
+        // Guides (Custom)
+        onSnapshot(query(collection(db, 'trips', id, 'guides'), orderBy('createdAt', 'desc')), (snap) => {
+            const items = [];
+            snap.forEach(doc => items.push({id: doc.id, ...doc.data()}));
+            renderGuides(items);
         });
 
         // Expenses
@@ -1031,8 +1111,27 @@
                 <div class="wish-check ${item.done ? 'checked' : ''}" onclick="toggleWishItem('${item.id}', ${item.done})">
                     ${item.done ? '✓' : ''}
                 </div>
+                <button class="delete-btn" style="margin-left:10px; font-size:1.1rem;" onclick="deleteItem('${item.id}', 'wishlist')">×</button>
             `;
             container.appendChild(li);
+        });
+    }
+    
+    // Render Custom Guides
+    function renderGuides(items) {
+        const container = document.getElementById('custom-guides-container');
+        if(!container) return;
+        container.innerHTML = '';
+        items.forEach(item => {
+            const details = document.createElement('details');
+            details.innerHTML = `
+                <summary>
+                    ${item.title} 
+                    <button onclick="event.preventDefault(); deleteItem('${item.id}', 'guides')" style="background:none; border:none; color:#FF8A80; font-weight:bold; cursor:pointer;">×</button>
+                </summary>
+                <div class="details-content">${item.content.replace(/\n/g, '<br>')}</div>
+            `;
+            container.appendChild(details);
         });
     }
 
@@ -1124,7 +1223,7 @@
     window.confirmReset = async () => {
         closeModal();
         document.getElementById('loadingOverlay').style.display = 'flex';
-        const cols = ['checklist', 'expenses', 'wishlist'];
+        const cols = ['checklist', 'expenses', 'wishlist', 'guides'];
         for(let col of cols) {
             const q = await getDocs(collection(db, 'trips', tripId, col));
             q.forEach(d => deleteDoc(d.ref));
