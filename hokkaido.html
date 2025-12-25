@@ -2,1019 +2,572 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>北海道 ✈️ (姊妹安心版)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>北海道 ✈️ (姊妹拿鐵版)</title>
+    
+    <!-- 引入可愛圓潤字體 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet">
+
     <style>
         :root {
-            --primary: #FF9AA2; /* 櫻花粉 */
-            --primary-dark: #FF808A;
-            --secondary: #B5EAD7; /* 淺綠 */
-            --accent: #FFDAC1; /* 杏色 */
-            --text: #4A4A4A;
-            --bg: #FFF9F9;
+            /* ☕️ 暖暖拿鐵配色 */
+            --primary: #BCAAA4;       /* 淺拿鐵 */
+            --primary-dark: #8D6E63;  /* 摩卡棕 */
+            --text: #5D4037;          /* 濃縮咖啡文字 */
+            --bg: #FDFBF7;            /* 燕麥奶背景 */
             --white: #ffffff;
-            --gray: #f5f5f5;
-            --warning: #FFF4E5;
-            --warning-text: #B45309;
-            --danger: #FEE2E2;
-            --danger-text: #991B1B;
-            --cold: #E0F2FE; /* 冰藍色 */
-            --cold-text: #0369A1;
-            --love: #FFF0F5; /* 戀愛粉 */
-            --love-text: #D63384;
-            --money: #F0FDF4; /* 金錢綠 */
-            --money-text: #166534;
-            --shop: #FFF7ED; /* 購物橘 */
-            --shop-text: #C2410C;
-            --zoo: #E0E7FF; /* 動物園藍紫 */
-            --zoo-text: #4338CA;
-            --food: #FEF3C7; /* 美食黃 */
-            --food-text: #92400E;
-            --gift: #FAE8FF; /* 禮物紫 */
-            --gift-text: #86198F;
-            --gear: #F1F5F9; /* 裝備灰 */
-            --gear-text: #475569;
-            --night: #1E293B; /* 深夜藍 */
-            --night-text: #F8FAFC;
+            --border: #EFEBE9;
+            
+            /* 功能標籤色 (柔和莫蘭迪) */
+            --tag-urgent: #FFEBEE; --text-urgent: #C62828; /* 紅: 重要 */
+            --tag-money: #E8F5E9; --text-money: #2E7D32;  /* 綠: 錢/預算 */
+            --tag-shop: #FFF8E1; --text-shop: #F57F17;    /* 黃: 購物/吃 */
+            --tag-info: #E3F2FD; --text-info: #1565C0;    /* 藍: 資訊/交通 */
+            --tag-gift: #F3E5F5; --text-gift: #7B1FA2;    /* 紫: 禮物 */
         }
 
-        * {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: "Zen Maru Gothic", "Microsoft JhengHei", sans-serif;
             background-color: var(--bg);
+            /* 淡淡的方格紙背景 */
+            background-image: 
+                linear-gradient(rgba(141, 110, 99, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(141, 110, 99, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
             color: var(--text);
             margin: 0;
             padding: 0;
             line-height: 1.6;
-            padding-bottom: 80px; /* Space for bottom nav */
+            padding-bottom: 100px; /* 留給底部選單 */
+            font-weight: 500;
         }
 
         .container {
             max-width: 600px;
             margin: 0 auto;
-            background: var(--white);
             min-height: 100vh;
-            box-shadow: 0 0 20px rgba(0,0,0,0.05);
-            padding-bottom: 20px;
         }
 
-        /* Header */
+        /* --- Header --- */
         header {
-            background: linear-gradient(135deg, var(--primary), #FFB7B2);
-            padding: 20px;
-            color: white;
-            text-align: center;
-            border-bottom-left-radius: 25px;
-            border-bottom-right-radius: 25px;
-            margin-bottom: 15px;
+            background: linear-gradient(135deg, #D7CCC8 0%, #F5F5F5 100%);
+            padding: 30px 25px 40px;
+            border-bottom-left-radius: 40px;
+            border-bottom-right-radius: 40px;
+            box-shadow: 0 10px 20px rgba(141, 110, 99, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             position: relative;
+            z-index: 10;
         }
 
-        h1 { margin: 0; font-size: 1.4rem; font-weight: 700; }
-        .subtitle { font-size: 0.85rem; opacity: 0.95; margin-top: 5px; font-weight: bold; background: rgba(255,255,255,0.2); display: inline-block; padding: 2px 10px; border-radius: 10px;}
+        .header-left h1 { 
+            margin: 0; font-size: 1.5rem; font-weight: 900; color: var(--text); letter-spacing: 1px;
+            text-shadow: 2px 2px 0px rgba(255,255,255,0.8);
+        }
+        .header-left .subtitle { 
+            font-size: 0.85rem; color: #8D6E63; margin-top: 5px; font-weight: 700;
+            background: rgba(255,255,255,0.6); padding: 4px 12px; border-radius: 20px; display: inline-block;
+        }
         
         .share-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            font-size: 0.8rem;
-            background: rgba(255,255,255,0.3);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.6);
-            padding: 4px 10px;
-            border-radius: 15px;
+            font-size: 0.85rem;
+            background: var(--white);
+            color: var(--primary-dark);
+            border: 2px solid rgba(141, 110, 99, 0.1);
+            padding: 8px 16px;
+            border-radius: 50px;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 4px;
+            font-weight: 800;
+            box-shadow: 0 4px 10px rgba(141, 110, 99, 0.1);
+            font-family: inherit;
         }
-        .share-btn:active { background: rgba(255,255,255,0.5); }
 
-        /* Navigation Tabs (Bottom Fixed) */
+        /* --- Navigation Tabs --- */
         .bottom-nav {
             position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: white;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            justify-content: space-between;
+            padding: 10px 25px;
+            border-radius: 60px;
+            box-shadow: 0 10px 40px rgba(93, 64, 55, 0.15);
             z-index: 1000;
+            border: 1px solid #EFEBE9;
         }
 
         .nav-btn {
             background: none;
             border: none;
-            color: #999;
-            font-size: 0.65rem;
-            font-weight: bold;
+            color: #D7CCC8;
+            font-size: 0.75rem;
+            font-family: inherit;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
-            width: 16.66%; /* Fixed width for 6 items */
+            justify-content: center;
+            gap: 2px;
             cursor: pointer;
-            padding: 5px 0;
+            width: 50px;
+            transition: all 0.3s;
+            font-weight: 700;
         }
 
-        .nav-btn span { font-size: 1.2rem; }
-        
-        .nav-btn.active {
-            color: var(--primary);
+        .nav-btn span { font-size: 1.4rem; transition: transform 0.2s; }
+        .nav-btn.active { color: var(--primary-dark); }
+        .nav-btn.active span { transform: translateY(-4px); }
+        .nav-btn.active::after {
+            content: ''; display: block; width: 6px; height: 6px; background: var(--primary-dark); border-radius: 50%; margin-top: 2px;
         }
 
-        /* Views */
-        .view { display: none; padding: 0 20px; animation: fadeIn 0.3s ease; }
+        /* --- Views --- */
+        .view { display: none; padding: 20px; animation: fadeIn 0.4s ease; }
         .view.active { display: block; }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
+            from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* --- Checklist Styles --- */
-        .progress-container {
-            background: #eee;
-            border-radius: 10px;
-            height: 12px;
-            overflow: hidden;
-            margin-bottom: 10px;
+        /* --- Common Components --- */
+        /* 💡 小提示卡片 */
+        .tip-card {
+            background: white; border-radius: 16px; padding: 15px; margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid var(--border);
+            position: relative; overflow: hidden;
         }
-        .progress-bar {
-            height: 100%;
-            background: var(--primary);
-            width: 0%;
-            transition: width 0.4s ease;
+        .tip-card::before {
+            content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px;
         }
-        .progress-text {
-            text-align: right; font-size: 0.85rem; color: var(--primary);
-            font-weight: bold; margin-bottom: 15px;
-        }
-        .input-group { display: flex; gap: 10px; margin-bottom: 20px; }
-        input[type="text"], input[type="number"], input[type="date"] {
-            flex: 1; padding: 12px; border: 2px solid #eee; border-radius: 12px;
-            font-size: 1rem; outline: none;
-        }
-        input:focus { border-color: var(--primary); }
-        button.add-btn {
-            background: var(--primary); color: white; border: none; width: 45px;
-            border-radius: 12px; font-size: 1.5rem; cursor: pointer;
-        }
-        button.add-btn:disabled { background: #ccc; cursor: not-allowed; }
+        .tip-card.info::before { background: var(--text-info); }
+        .tip-card.shop::before { background: var(--text-shop); }
+        .tip-card.gift::before { background: var(--text-gift); }
+        .tip-card.money::before { background: var(--text-money); }
+        
+        .tip-title { font-weight: 800; font-size: 1rem; margin-bottom: 5px; display: block; }
+        .tip-content { font-size: 0.9rem; color: #666; }
 
+        /* --- Tab 1: Checklist --- */
+        .progress-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; padding: 0 5px; }
+        .progress-title { font-size: 1.2rem; font-weight: 800; color: var(--text); }
+        .progress-text { font-size: 0.9rem; color: var(--primary-dark); font-weight: 800; }
+        .progress-bar-bg { background: #EFEBE9; height: 12px; border-radius: 6px; overflow: hidden; margin-bottom: 25px; }
+        .progress-bar { height: 100%; background: var(--primary-dark); width: 0%; transition: width 0.6s ease-out; border-radius: 6px; }
+        
+        .input-group { display: flex; gap: 10px; margin-bottom: 25px; }
+        input { 
+            flex: 1; padding: 14px 20px; border: 2px solid #EFEBE9; border-radius: 50px; 
+            font-size: 1rem; outline: none; background: #FFF; transition: all 0.3s;
+            color: var(--text); font-family: inherit; font-weight: 600;
+        }
+        input:focus { border-color: var(--primary); background: white; box-shadow: 0 4px 10px rgba(188, 170, 164, 0.2); }
+        
+        button.add-btn { 
+            background: var(--primary-dark); color: white; border: none; width: 52px; height: 52px; 
+            border-radius: 50%; font-size: 1.6rem; cursor: pointer; 
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 6px 15px rgba(141, 110, 99, 0.3);
+        }
+        
         ul { list-style: none; padding: 0; }
-        li {
-            background: white; border: 1px solid #f5f5f5; margin-bottom: 8px;
-            padding: 12px 15px; border-radius: 12px; display: flex;
-            align-items: center; justify-content: space-between;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-            transition: opacity 0.3s;
+        li.todo-item {
+            background: var(--white); border-radius: 20px; padding: 16px 20px; margin-bottom: 12px;
+            display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 4px 10px rgba(141, 110, 99, 0.03); transition: all 0.2s;
+            border: 2px solid transparent;
         }
-        li.completed .text { text-decoration: line-through; color: #bbb; }
-        .check-area { display: flex; align-items: center; gap: 12px; flex: 1; cursor: pointer; }
-        .custom-checkbox {
-            width: 22px; height: 22px; border: 2px solid var(--primary);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-            transition: all 0.2s;
+        .check-area { display: flex; align-items: center; gap: 15px; flex: 1; cursor: pointer; }
+        .checkbox {
+            width: 24px; height: 24px; border: 2px solid #D7CCC8;
+            border-radius: 8px; display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; background: white; transition: all 0.2s;
         }
-        li.completed .custom-checkbox { background: var(--primary); }
-        li.completed .custom-checkbox::after { content: '✓'; color: white; font-size: 14px; }
-        .tag { font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; background: #eee; color: #666; margin-bottom: 4px; display: inline-block; }
-        .tag.urgent { background: #FFB7B2; color: #fff; font-weight: bold; }
-        .tag.money { background: #D1FAE5; color: #065F46; font-weight: bold; }
-        .tag.gift { background: #FAE8FF; color: #86198F; font-weight: bold; }
-        .tag.food { background: #FEF3C7; color: #92400E; font-weight: bold; }
-        .tag.spot { background: #E0E7FF; color: #4338CA; font-weight: bold; }
-        .tag.gear { background: #F1F5F9; color: #475569; font-weight: bold; }
-        .item-text-wrapper { display: flex; flex-direction: column; }
-        .delete-btn { background: none; border: none; color: #eee; font-size: 1.5rem; padding: 0 10px; cursor: pointer; }
-        .delete-btn:hover { color: var(--primary); }
+        li.todo-item.completed .checkbox { background: var(--primary-dark); border-color: var(--primary-dark); }
+        li.todo-item.completed .checkbox::after { content: '✔'; color: white; font-size: 14px; }
+        li.todo-item.completed span { color: #D7CCC8; text-decoration: line-through; }
+        .delete-btn { background: none; border: none; color: #E0E0E0; font-size: 1.4rem; cursor: pointer; }
+        
+        .tag { font-size: 0.75rem; padding: 4px 12px; border-radius: 12px; margin-bottom: 4px; display: inline-block; font-weight: 800; letter-spacing: 0.5px; }
+        .tag.urgent { background: var(--tag-urgent); color: var(--text-urgent); }
+        .tag.money { background: var(--tag-money); color: var(--text-money); }
+        .tag.gift { background: var(--tag-gift); color: var(--text-gift); }
+        .tag.gear { background: #F5F5F5; color: #616161; }
 
-        /* --- Guide Styles --- */
-        details {
-            background: white; border: 1px solid #eee; border-radius: 15px;
-            margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-            overflow: hidden; transition: all 0.3s;
+        /* --- Accordion (Guide) --- */
+        details { 
+            background: white; border: 2px solid #FFF0F3; border-radius: 18px;
+            margin-bottom: 15px; overflow: hidden; transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
         }
-        details[open] { border-color: var(--secondary); box-shadow: 0 4px 12px rgba(181, 234, 215, 0.4); }
+        details[open] { border-color: var(--primary); }
         summary {
-            padding: 15px; font-weight: bold; font-size: 1.1rem; cursor: pointer;
-            list-style: none; display: flex; align-items: center; justify-content: space-between;
-            background: #fff;
-        }
-        summary::-webkit-details-marker { display: none; }
-        summary::after { content: '+'; font-size: 1.5rem; color: var(--primary); font-weight: 300; }
-        details[open] summary::after { content: '-'; }
-        
-        .step-content { padding: 20px; background: #fff; }
-        .guide-step { position: relative; padding-left: 20px; margin-bottom: 15px; border-left: 2px solid #eee; }
-        .guide-step strong { display: block; color: #333; margin-bottom: 4px; }
-        .guide-step p { margin: 0; font-size: 0.95rem; color: #666; }
-        .highlight-box { background: #FFF5F5; border-left: 4px solid var(--primary); padding: 10px; margin: 10px 0; font-size: 0.9rem; color: #555; border-radius: 4px; }
-        .vjw-guide { background: #F0F7FF; padding: 15px; border-radius: 10px; margin-top: 10px; border: 1px solid #BEE3F8; }
-        .price-guide { background: var(--money); color: var(--money-text); padding: 15px; border-radius: 10px; margin-top: 10px; font-size: 0.95rem; border: 1px solid #86EFAC; }
-        .love-tip { background: var(--love); color: var(--love-text); padding: 15px; border-radius: 10px; margin-top: 10px; font-size: 0.95rem; border: 1px solid #F8B4D9; }
-        .uniqlo-tip { border: 2px solid #E60012; color: #E60012; background: #fff; padding: 10px; border-radius: 8px; margin-top: 10px; font-weight: bold; font-size: 0.9rem; }
-        .laundry-tip { background: #F0FFF4; border: 1px solid #C6F6D5; color: #2F855A; padding: 12px; border-radius: 8px; margin-top: 12px; font-size: 0.9rem; }
-        .shopping-tip { background: var(--shop); border: 1px solid #FDBA74; color: var(--shop-text); padding: 15px; border-radius: 10px; margin-top: 10px; font-size: 0.95rem; }
-        .zoo-tip { background: var(--zoo); border: 1px solid #A5B4FC; color: var(--zoo-text); padding: 15px; border-radius: 10px; margin-top: 10px; font-size: 0.95rem; }
-        .food-tip { background: var(--food); border: 1px solid #FCD34D; color: var(--food-text); padding: 15px; border-radius: 10px; margin-top: 10px; font-size: 0.95rem; }
-        .gift-tip { background: var(--gift); border: 1px solid #F0ABFC; color: var(--gift-text); padding: 15px; border-radius: 10px; margin-top: 10px; font-size: 0.95rem; }
-        .night-tip { background: var(--night); border: 1px solid #475569; color: var(--night-text); padding: 15px; border-radius: 10px; margin-top: 10px; font-size: 0.95rem; }
-
-        .location-tip {
-            background: #E0F2FE;
-            border: 1px solid #7DD3FC;
-            color: #0C4A6E;
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 8px;
-            font-size: 0.9rem;
-        }
-        
-        .distance-tip {
-            background: #FFFBEB;
-            border: 1px solid #FCD34D;
-            color: #B45309;
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 8px;
-            font-size: 0.9rem;
-        }
-        
-        .hotel-recommendation {
-            margin-top: 10px;
-            font-size: 0.9rem;
-            border-top: 1px dashed #ccc;
-            padding-top: 8px;
-        }
-        .hotel-recommendation li {
-            border: none;
-            padding: 4px 0;
-            box-shadow: none;
-        }
-        
-        .airport-steps {
-            list-style: none;
-            padding: 0;
-            margin-top: 10px;
-        }
-        .airport-steps li {
-            position: relative;
-            padding-left: 30px;
-            margin-bottom: 12px;
-            border: none;
-            box-shadow: none;
-        }
-        .airport-steps li::before {
-            content: '';
-            position: absolute;
-            left: 8px;
-            top: 8px;
-            width: 10px;
-            height: 10px;
-            background: var(--primary);
-            border-radius: 50%;
-        }
-        .airport-steps li::after {
-            content: '';
-            position: absolute;
-            left: 12px;
-            top: 20px;
-            width: 2px;
-            height: 100%;
-            background: #eee;
-        }
-        .airport-steps li:last-child::after { display: none; }
-        
-        /* New: VJW Copy Data */
-        .vjw-data {
-            background: #fff;
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 5px;
-            font-family: monospace;
-            font-size: 0.9rem;
-            border: 1px solid #ddd;
-            color: #333;
-            user-select: all; /* Easier selection */
-        }
-        .vjw-label {
-            color: #666;
-            font-size: 0.8rem;
-            display: block;
-            margin-bottom: 2px;
-            font-weight: bold;
-            margin-top: 12px;
-        }
-        
-        .tip-box {
-            background: #f0f9ff;
-            border-left: 4px solid #0ea5e9;
-            padding: 8px 12px;
-            margin-top: 8px;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            color: #0c4a6e;
-        }
-        
-        .check-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9rem;
-            margin-bottom: 15px;
-        }
-        .check-table td {
-            border-bottom: 1px solid #eee;
-            padding: 10px 5px;
-        }
-        .check-icon {
-            color: #10B981;
-            font-weight: bold;
-            margin-right: 8px;
-        }
-        .fail-icon {
-            color: #EF4444;
-            font-weight: bold;
-            margin-right: 8px;
-        }
-
-        /* --- Itinerary Styles --- */
-        .timeline {
-            position: relative;
-            padding-left: 20px;
-            border-left: 2px solid #eee;
-            margin-left: 10px;
-        }
-        .timeline-item {
-            margin-bottom: 25px;
-            position: relative;
-        }
-        .timeline-item::before {
-            content: '';
-            position: absolute;
-            left: -26px;
-            top: 5px;
-            width: 10px;
-            height: 10px;
-            background: var(--primary);
-            border-radius: 50%;
-            border: 2px solid white;
-        }
-        .time-label {
-            font-size: 0.85rem;
-            color: #999;
-            font-weight: bold;
-            margin-bottom: 4px;
-            display: block;
-        }
-        .event-card {
-            background: white;
-            border: 1px solid #eee;
-            border-radius: 10px;
-            padding: 12px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-        }
-        .event-title {
-            font-weight: bold;
-            color: #333;
-            font-size: 1rem;
-        }
-        .event-desc {
-            font-size: 0.9rem;
-            color: #666;
-            margin-top: 4px;
-        }
-        /* New: Price Tag */
-        .price-tag {
-            display: inline-block;
-            background-color: #ecfccb;
-            color: #365314;
-            font-size: 0.8rem;
-            padding: 2px 8px;
-            border-radius: 12px;
-            margin-top: 6px;
-            font-weight: bold;
-            border: 1px solid #d9f99d;
-        }
-        
-        /* Gear Styles */
-        .gear-card {
-            background: var(--gear);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 12px;
-            border: 1px solid #e2e8f0;
-        }
-        .gear-name { font-weight: bold; color: var(--gear-text); font-size: 1.1rem; }
-        .gear-addr { font-size: 0.85rem; color: #666; margin: 5px 0; display: block; }
-        .gear-price { display: inline-block; background: #fff; padding: 2px 8px; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 0.8rem; font-weight: bold; color: #334155; margin-top: 5px;}
-        .budget-table { width: 100%; font-size: 0.9rem; margin-top: 10px; border-collapse: collapse; }
-        .budget-table th, .budget-table td { text-align: left; padding: 6px; border-bottom: 1px solid #eee; }
-        .budget-table th { color: #666; }
-
-        /* --- Expense Styles --- */
-        .expense-card {
-            background: linear-gradient(135deg, #10B981, #059669);
-            color: white;
-            padding: 20px;
-            border-radius: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
-            text-align: center;
-        }
-        .expense-result { font-size: 1.5rem; font-weight: bold; margin: 10px 0; }
-        .expense-detail { font-size: 0.9rem; opacity: 0.9; display: flex; justify-content: space-around; margin-top: 10px; }
-        
-        .expense-form {
-            background: white; border: 1px solid #eee; padding: 15px;
-            border-radius: 15px; margin-bottom: 20px;
-            display: flex; flex-direction: column; gap: 10px;
-        }
-        .form-row { display: flex; gap: 10px; }
-        
-        .currency-select {
-            display: flex; gap: 5px; margin-bottom: 10px;
-        }
-        .curr-label {
-            flex: 1; text-align: center; padding: 8px; border: 1px solid #ddd;
-            border-radius: 8px; cursor: pointer; font-size: 0.9rem; color: #666;
-        }
-        .curr-radio { display: none; }
-        .curr-radio:checked + .curr-label {
-            background: #3B82F6; color: white; border-color: #3B82F6;
-        }
-
-        .payer-select {
-            display: flex; gap: 10px;
-        }
-        .radio-label {
-            flex: 1; text-align: center; padding: 10px;
-            border: 1px solid #ddd; border-radius: 10px; cursor: pointer;
-            font-weight: bold; color: #666; font-size: 0.9rem;
-        }
-        input[type="radio"] { display: none; }
-        input[type="radio"]:checked + .radio-label {
-            background: var(--primary); color: white; border-color: var(--primary);
-        }
-
-        .expense-list li {
+            padding: 20px; font-weight: 700; cursor: pointer; list-style: none;
             display: flex; justify-content: space-between; align-items: center;
+            font-size: 1.1rem; color: var(--text);
         }
-        .expense-info { flex: 1; }
-        .expense-amt { font-weight: bold; color: #333; font-size: 0.95rem; }
-        .original-curr { font-size: 0.75rem; color: #888; display: block; }
-        .expense-payer { font-size: 0.8rem; padding: 2px 6px; border-radius: 4px; margin-right: 8px; }
-        .payer-me { background: #FFB7B2; color: #fff; }
-        .payer-sis { background: #B5EAD7; color: #065F46; }
-        .expense-date { font-size: 0.75rem; color: #999; margin-right: 8px; font-weight: normal; }
+        summary::after { content: '🌸'; transition: transform 0.3s; font-size: 1.2rem; opacity: 0.5; }
+        details[open] summary::after { transform: rotate(45deg); opacity: 1; }
+        .details-content { padding: 0 20px 25px; color: #6D4C41; font-size: 0.95rem; line-height: 1.8; border-top: 2px dashed #EFEBE9; }
+
+        /* --- Timeline (Itinerary) --- */
+        .timeline { padding-left: 25px; border-left: 3px solid #EFEBE9; margin-left: 10px; margin-top: 20px; }
+        .timeline-item { margin-bottom: 35px; position: relative; }
+        .timeline-item::before {
+            content: '❄️'; position: absolute; left: -34px; top: 6px; background: var(--bg);
+            width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--primary-dark);
+            display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent;
+        }
+        .time { font-size: 0.9rem; color: #A1887F; margin-bottom: 6px; display: block; font-weight: 800; letter-spacing: 1px; }
+        .event-card {
+            background: white; border-radius: 16px; padding: 18px; margin-top: 5px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid #f0f0f0;
+        }
+        .event-title { font-weight: 700; color: var(--text); font-size: 1.1rem; margin-bottom: 5px; }
+        .event-desc { font-size: 0.95rem; color: #795548; line-height: 1.6; }
         
-        /* Wishlist Styles */
-        .wishlist-section {
-            margin-bottom: 20px;
+        .price-tag {
+            display: inline-block; background: var(--tag-money); color: var(--text-money);
+            font-size: 0.8rem; padding: 4px 12px; border-radius: 20px; margin-top: 10px; font-weight: 800;
         }
-        .wishlist-title {
-            font-weight: bold;
-            color: var(--primary-dark);
-            margin-bottom: 10px;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 5px;
+
+        /* --- Budget Table --- */
+        .budget-table { width: 100%; font-size: 0.95rem; border-collapse: separate; border-spacing: 0 8px; margin-top: 10px; }
+        .budget-table td { padding: 12px 10px; background: #FAFAFA; border-bottom: 1px solid #eee; }
+        .budget-table tr:last-child td { font-weight: 800; color: var(--primary-dark); background: #EFEBE9; border-radius: 10px; }
+
+        /* --- Wishlist --- */
+        .wishlist-title { 
+            font-weight: 800; color: var(--text); margin: 40px 0 15px; font-size: 1.3rem; 
+            display: flex; align-items: center; gap: 10px; padding-left: 10px;
+            border-left: 6px solid var(--primary);
         }
         .wish-item {
-            background: white;
-            border: 1px solid #f0f0f0;
-            padding: 12px;
-            border-radius: 10px;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            background: white; border: 2px solid #F5F5F5; padding: 18px;
+            border-radius: 20px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;
         }
-        .wish-content { flex: 1; }
-        .wish-name { font-weight: bold; color: #333; display: block; }
-        .wish-desc { font-size: 0.8rem; color: #666; }
+        .wish-name { font-weight: 800; color: #5D4037; font-size: 1.05rem; }
+        .wish-desc { font-size: 0.9rem; color: #A1887F; margin-top: 4px; display: block;}
         .wish-check {
-            width: 24px; height: 24px;
-            border: 2px solid #ddd;
-            border-radius: 6px;
-            margin-right: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
+            width: 30px; height: 30px; border: 2px solid #D7CCC8; border-radius: 50%;
+            margin-right: 15px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: white; background: white; transition: all 0.2s;
         }
-        .wish-check.checked {
-            background: var(--primary);
-            border-color: var(--primary);
-            color: white;
+        .wish-check.checked { background: var(--primary); border-color: var(--primary); }
+
+        /* --- Tab 4: Expense (FIXED) --- */
+        .expense-card {
+            background: linear-gradient(135deg, #BCAAA4, #8D6E63);
+            color: white; padding: 30px; border-radius: 30px; text-align: center; margin-bottom: 25px;
+            box-shadow: 0 10px 25px rgba(141, 110, 99, 0.3); border: none;
         }
+        .expense-result { font-size: 2.2rem; font-weight: 900; margin: 10px 0; letter-spacing: 1px; }
+        .expense-detail { font-size: 1rem; opacity: 0.9; margin-top: 10px; font-weight: 600; }
+        
+        .radio-group { display: flex; gap: 12px; margin-bottom: 20px; }
+        
+        /* 隱藏原生 radio，改用 label 樣式 */
+        input[type="radio"] { display: none; }
+        
+        /* 預設樣式 */
+        .radio-label {
+            flex: 1; text-align: center; padding: 12px; cursor: pointer; font-size: 1rem;
+            background: #FAFAFA; color: #999; border-radius: 50px; transition: all 0.3s; font-weight: 700;
+            border: 2px solid transparent; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        /* 選中樣式 (利用 :checked + label) */
+        input[name="currency"]:checked + .radio-label { 
+            background: var(--tag-money); color: var(--text-money); border-color: var(--text-money); transform: translateY(-2px);
+        }
+        input[name="payer"]:checked + .radio-label { 
+            background: var(--tag-info); color: var(--text-info); border-color: var(--text-info); transform: translateY(-2px);
+        }
+
+        .expense-form {
+            background: white; border: 2px solid #FFF0F3; padding: 20px; border-radius: 20px; margin-bottom: 20px;
+        }
+
+        .expense-item {
+            padding: 18px; margin-bottom: 12px; background: white; border-radius: 20px;
+            display: flex; justify-content: space-between; align-items: center; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid #f5f5f5;
+        }
+        .expense-who-tag { font-size: 0.8rem; padding: 4px 10px; border-radius: 12px; display: inline-block; width: fit-content; margin-right: 8px; font-weight: 800; }
+        
+        /* VJW Data Block */
+        .vjw-data { background: #F5F5F5; padding: 15px; border-radius: 12px; font-family: monospace; font-size: 1rem; color: #333; margin-bottom: 10px; user-select: all; border: 2px dashed #D7CCC8; line-height: 1.8; }
+        .vjw-label { font-size: 0.8rem; color: #A1887F; display: block; margin-bottom: 2px; letter-spacing: 0.5px; font-weight: bold; }
 
         /* Modal */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 2000; }
-        .modal { background: white; padding: 25px; border-radius: 15px; width: 80%; max-width: 320px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-        .modal h3 { color: var(--primary); margin-top: 0;}
-        .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
-        .btn { padding: 10px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; flex: 1; }
-        .btn-confirm { background: var(--primary); color: white; }
-        .btn-cancel { background: #eee; color: #666; }
-
-        .reset-btn { color: #999; background: none; border: 1px solid #ddd; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; cursor: pointer; margin-top: 30px; display: block; margin-left: auto; margin-right: auto;}
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.7); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 2000; }
+        .modal { background: white; padding: 35px; border-radius: 35px; width: 85%; max-width: 320px; text-align: center; box-shadow: 0 20px 60px rgba(141, 110, 99, 0.15); border: 2px solid #EFEBE9; }
+        .btn-confirm { background: var(--primary-dark); color: white; width: 100%; padding: 14px; margin-top: 15px; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; font-size: 1.1rem; box-shadow: 0 5px 15px rgba(141, 110, 99, 0.3); }
+        .reset-btn { width: 100%; padding: 15px; margin-top: 30px; background: #FAFAFA; border: none; color: #BBB; border-radius: 15px; cursor: pointer; font-size: 0.9rem; font-weight: bold; }
         
-        #loadingOverlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: white; z-index: 3000;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            color: var(--primary);
-        }
+        #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text); font-weight: bold; letter-spacing: 1px;}
 
     </style>
 </head>
 <body>
 
 <div id="loadingOverlay">
-    <h2>☁️ 雲端同步中...</h2>
+    <h2>☕️ 沖泡連線中...</h2>
 </div>
 
-<!-- Trip Code Modal (First Load) -->
+<!-- Trip Code Modal -->
 <div id="tripCodeModal" class="modal-overlay" style="display:flex;">
     <div class="modal">
-        <h3>🔗 建立旅伴連線</h3>
-        <p style="font-size:0.9rem; color:#666; margin-bottom:15px;">這是妳跟妹妹的專屬房間，不用記密碼，把網址傳給她就好！</p>
-        <input type="text" id="tripCodeInput" value="1025" style="width:100%; margin-bottom:15px; text-align:center; font-weight:bold; color: #4A4A4A; font-size: 1.2rem;">
-        <button class="btn btn-confirm" onclick="setTripCode()">🚀 開始規劃</button>
+        <h3 style="margin-top:0; color:var(--text);">🔗 姊妹連線</h3>
+        <p style="margin-bottom:20px; color:#999; font-size:0.9rem;">輸入房間號碼 1025</p>
+        <input type="text" id="tripCodeInput" value="1025" style="width:100%; text-align:center; border:2px solid #EFEBE9; padding:15px; border-radius:20px; outline:none; font-size:1.3rem; color:var(--text); font-weight:800; background: #FAFAFA;">
+        <button class="btn-confirm" onclick="setTripCode()">開始旅程</button>
     </div>
 </div>
 
 <div class="container">
     <header>
-        <h1>✈️ 北海道 (姊妹旅行)</h1>
-        <div class="subtitle">1/20 (一) ~ 1/25 (六) | 6天5夜</div>
-        <button class="share-btn" onclick="shareLink()">
-            🔗 傳給妹妹
-        </button>
+        <div class="header-left">
+            <h1>HOKKAIDO</h1>
+            <div class="subtitle">1/20 (一) ~ 1/25 (六) | 6天5夜</div>
+        </div>
+        <button class="share-btn" onclick="shareLink()">❤️ 傳給妹妹</button>
     </header>
 
-    <!-- View 1: Checklist -->
+    <!-- TAB 1: Checklist -->
     <div id="view-checklist" class="view active">
-        <div class="progress-container">
-            <div class="progress-bar" id="progressBar"></div>
+        <div class="progress-header">
+            <span class="progress-title">待辦清單</span>
+            <span class="progress-text" id="progressText">0%</span>
         </div>
-        <div class="progress-text" id="progressText">準備進度：0%</div>
-
-        <div class="input-group">
-            <input type="text" id="itemInput" placeholder="新增待辦事項...">
-            <button class="add-btn" id="addBtn">+</button>
+        <div class="progress-bar-bg"><div class="progress-bar" id="progressBar"></div></div>
+        
+        <div class="input-group" style="margin-top:25px;">
+            <input type="text" id="itemInput" placeholder="✨ 還有什麼要帶？">
+            <button class="add-btn" id="addBtn">＋</button>
         </div>
-
         <ul id="itemList"></ul>
-        <button class="reset-btn" onclick="showResetModal()">⚠️ 重置清單</button>
+        <button class="reset-btn" onclick="showResetModal()">⚠️ 重置所有資料</button>
     </div>
 
-    <!-- View 2: Itinerary -->
+    <!-- TAB 2: Itinerary -->
     <div id="view-itinerary" class="view">
+        <div class="tip-card info">
+            <span class="tip-title">💖 行程重點：</span>
+            <span class="tip-content">
+                Day 1：買禮物 (Yodobashi) + 壽司<br>
+                Day 2：送禮物 + 精靈露台<br>
+                Day 6：完美行取貨 + 機場伴手禮
+            </span>
+        </div>
+
         <!-- Day 1 -->
         <details open>
-            <summary>1/20 (一) 出發 & 壽司 & 買禮物</summary>
-            <div class="step-content">
+            <summary>📅 1/20 (一) 出發 & 買禮物</summary>
+            <div class="details-content">
                 <div class="timeline">
-                    <!-- ... timeline content ... -->
-                    <div class="timeline-item">
-                        <span class="time-label">07:00</span>
-                        <div class="event-card">
-                            <div class="event-title">桃園機場報到</div>
-                            <div class="event-desc">長榮航空櫃台，掛行李、拿登機證。</div>
-                            <span class="price-tag">💰 機場捷運：約 $160/人</span>
-                        </div>
-                    </div>
-                    <div class="timeline-item">
-                        <span class="time-label">09:30</span>
-                        <div class="event-card">
-                            <div class="event-title">✈️ 起飛</div>
-                            <div class="event-desc">睡覺補眠，準備迎接雪國！</div>
-                        </div>
-                    </div>
-                    <div class="timeline-item">
-                        <span class="time-label">14:05</span>
-                        <div class="event-card">
-                            <div class="event-title">抵達新千歲機場</div>
-                            <div class="event-desc">過VJW海關、拿行李、上廁所。</div>
-                        </div>
-                    </div>
-                    <div class="timeline-item">
-                        <span class="time-label">15:00</span>
-                        <div class="event-card">
-                            <div class="event-title">搭 JR 去札幌</div>
-                            <div class="event-desc">搭乘「快速 Airport」號 (約40分)。</div>
-                            <div class="tip-box">
-                                💡 <strong>移動技巧：</strong><br>
-                                車站人多，如果自由席沒位子，可以去「U-Seat (指定席)」車廂，加幾百日幣就有位子坐。
-                            </div>
-                            <span class="price-tag">💰 車資：1,150円 (約 $253 台幣)</span>
-                        </div>
-                    </div>
-                    <div class="timeline-item">
-                        <span class="time-label">16:00</span>
-                        <div class="event-card" style="background:#FEF3C7; border-color:#FCD34D;">
-                            <div class="event-title">🍣 根室花丸 (必吃!)</div>
-                            <div class="event-desc">一到札幌車站先去 Stellar Place 6F 抽號碼牌！等待時間逛 5F 迪士尼商店。</div>
-                            <span class="price-tag">💰 壽司預算：約 3,000円 (約 $660 台幣)</span>
-                        </div>
-                    </div>
-                    
-                    <div class="timeline-item">
-                        <span class="time-label">18:00</span>
-                        <div class="event-card" style="background:#FAE8FF; border-color:#F0ABFC;">
-                            <div class="event-title">🎁 友都八喜 (Yodobashi Camera)</div>
-                            <div class="event-desc">
-                                就在車站北口對面！<br>
-                                <strong>任務：</strong>買 Brita 濾水壺給蜂蜜。<br>
-                            </div>
-                            <span class="price-tag">💰 禮物預算：約 3,000~5,000円</span>
-                        </div>
-                    </div>
-
-                    <div class="timeline-item">
-                        <span class="time-label">19:30</span>
-                        <div class="event-card">
-                            <div class="event-title">Check-in Livemax</div>
-                            <div class="event-desc">走路去飯店放行李跟戰利品，休息。</div>
-                        </div>
-                    </div>
+                    <div class="timeline-item"><div class="time">07:00 機場報到</div><div class="event-box">桃機二航廈，長榮櫃台。<span class="price-tag">💰 機捷 $160</span></div></div>
+                    <div class="timeline-item"><div class="time">14:05 抵達北海道</div><div class="event-box">過VJW海關，搭JR去札幌。</div></div>
+                    <div class="timeline-item"><div class="time">16:00 根室花丸</div><div class="event-box" style="background:#FFF8E1;">先去車站 Stellar Place 6F 抽號碼牌！<div class="price-tag">💰 約 3,000円</div></div></div>
+                    <div class="timeline-item"><div class="time">18:00 🎁 買禮物</div><div class="event-box" style="background:#F3E5F5;"><strong>Yodobashi Camera (北口)</strong><br>買 Brita 濾水壺！<div class="price-tag">💰 約 4,000円</div></div></div>
+                    <div class="timeline-item"><div class="time">19:30 飯店</div><div class="event-box">Check-in Livemax，休息。</div></div>
                 </div>
             </div>
         </details>
-        <!-- Day 2 (1/21) - Add Check Out & Luggage Locker -->
+        
+        <!-- Day 2 -->
         <details>
-            <summary>1/21 (二) 前往 Tomamu</summary>
-            <div class="step-content">
+            <summary>📅 1/21 (二) 前往 Tomamu</summary>
+            <div class="details-content">
                 <div class="timeline">
-                    <div class="timeline-item">
-                         <span class="time-label">08:00</span>
-                         <div class="event-card">
-                            <div class="event-title">大丸百貨買早餐</div>
-                            <div class="event-desc">推薦「Donguri 麵包」或「Arinko 熱飯糰」！</div>
-                            <span class="price-tag">💰 預算：約 800円 (約 $175 台幣)</span>
-                         </div>
-                    </div>
-                    <div class="timeline-item">
-                         <span class="time-label">09:30</span>
-                         <div class="event-card" style="background:#FFF7ED; border-color:#FED7AA;">
-                            <div class="event-title">退房 & 移動</div>
-                            <div class="event-desc">拖行李去札幌車站。</div>
-                         </div>
-                    </div>
-                    <div class="timeline-item">
-                         <span class="time-label">10:00</span>
-                         <div class="event-card" style="background:#E0F2FE; border-color:#7DD3FC;">
-                            <div class="event-title">寄放行李 (Coin Locker)</div>
-                            <div class="event-desc">
-                                <strong>💡 聰明移動術：</strong><br>
-                                把大行李鎖在車站置物櫃 (約700円)，輕裝去吃午餐，不用拖著行李跑！
-                            </div>
-                            <span class="price-tag">💰 置物櫃：約 700円 (約 $155 台幣)</span>
-                         </div>
-                    </div>
-                    <div class="timeline-item">
-                        <span class="time-label">11:00</span>
-                        <div class="event-card">
-                            <div class="event-title">搭 JR 特急 (出發)</div>
-                            <div class="event-desc">拿回行李，往「帶廣/釧路」方向 (十勝號/大空號)。</div>
-                             <span class="price-tag">💰 車資：約 5,500円 (約 $1,210 台幣)</span>
-                        </div>
-                    </div>
-                    <div class="timeline-item"><span class="time-label">12:40</span><div class="event-card"><div class="event-title">抵達 Tomamu</div><div class="event-desc">搭飯店接駁車去 Resonare。</div></div></div>
-                     <div class="timeline-item"><span class="time-label">13:30</span><div class="event-card"><div class="event-title">💖 找蜂蜜！</div></div></div>
-                      <div class="timeline-item"><span class="time-label">晚上</span><div class="event-card" style="background:#FCE7F3; border-color:#FBCFE8;"><div class="event-title">🌲 精靈露台</div><div class="event-desc">浪漫約會！</div><span class="price-tag">💰 門票：免費</span></div></div>
+                    <div class="timeline-item"><div class="time">09:30 退房 & 寄行李</div><div class="event-box">行李鎖在札幌車站置物櫃。<span class="price-tag">💰 700円</span></div></div>
+                    <div class="timeline-item"><div class="time">11:00 搭 JR 特急</div><div class="event-box">往 Tomamu 找蜂蜜！<span class="price-tag">💰 5,500円</span></div></div>
+                    <div class="timeline-item"><div class="time">13:30 💖 送禮物</div><div class="event-box">給他驚喜！🎁</div></div>
+                    <div class="timeline-item"><div class="time">晚上</div><div class="event-box" style="background:#E3F2FD;"><strong>🌲 精靈露台</strong><br>富良野浪漫點燈 (免門票)。</div></div>
                 </div>
             </div>
-         </details>
-          <details>
-            <summary>1/22 (三) 滑雪 & 帝王蟹</summary>
-            <div class="step-content">
-                 <div class="timeline">
-                    <div class="timeline-item"><span class="time-label">白天</span><div class="event-card"><div class="event-title">⛷️ 滑雪體驗</div><div class="event-desc">看蜂蜜教學！</div></div></div>
-                    <div class="timeline-item"><span class="time-label">17:00</span><div class="event-card" style="background:#FEF3C7; border-color:#FCD34D;"><div class="event-title">🦀 Buffet Dining hal</div><div class="event-desc">帝王蟹吃到飽！</div><span class="price-tag">💰 晚餐：約 5,500円 (約 $1,210 台幣)</span></div></div>
-                 </div>
-            </div>
-         </details>
-         <details>
-            <summary>1/23 (四) 回札幌 & 逛街</summary>
-            <div class="step-content">
+        </details>
+
+        <details><summary>📅 1/22 (三) 滑雪 & 帝王蟹</summary>
+            <div class="details-content">
                 <div class="timeline">
-                     <div class="timeline-item"><span class="time-label">11:00</span><div class="event-card"><div class="event-title">退房 & 搭 JR 回札幌</div><span class="price-tag">💰 車資：約 5,500円 (約 $1,210 台幣)</span></div></div>
-                     <div class="timeline-item"><span class="time-label">14:00</span><div class="event-card"><div class="event-title">Check-in Stripe Hotel</div><span class="price-tag">💰 計程車：約 600円/人 (約 $130 台幣)</span></div></div>
-                     <div class="timeline-item"><span class="time-label">15:00</span><div class="event-card"><div class="event-title">🚕 搭計程車去狸小路</div><span class="price-tag">💰 計程車：約 600円/人 (約 $130 台幣)</span></div></div>
-                     <div class="timeline-item"><span class="time-label">19:00</span><div class="event-card"><div class="event-title">晚餐：湯咖哩</div><span class="price-tag">💰 餐費：約 1,800円 (約 $400 台幣)</span></div></div>
+                    <div class="timeline-item"><div class="time">白天</div><div class="event-box"><strong>⛷️ 滑雪體驗</strong><br>看蜂蜜帥氣教學！</div></div>
+                    <div class="timeline-item"><div class="time">17:00</div><div class="event-box" style="background:#FFF8E1;"><strong>🦀 Buffet Dining hal</strong><br>帝王蟹吃到飽 (已訂位)。<div class="price-tag">💰 5,500円</div></div></div>
+                    <div class="timeline-item"><div class="time">20:00</div><div class="event-box">愛絲冰城看冰屋。</div></div>
                 </div>
             </div>
-         </details>
-         <details>
-            <summary>1/24 (五) 企鵝散步 🐧</summary>
-            <div class="step-content">
+        </details>
+
+        <details><summary>📅 1/23 (四) 回札幌 & 逛街</summary>
+            <div class="details-content">
                 <div class="timeline">
-                     <div class="timeline-item"><span class="time-label">08:00</span><div class="event-card"><div class="event-title">一日遊巴士集合</div><span class="price-tag">💰 團費：約 $1,800 台幣 (已預訂)</span></div></div>
-                     <div class="timeline-item"><span class="time-label">11:00</span><div class="event-card" style="background:#E0E7FF; border-color:#A5B4FC;"><div class="event-title">🐧 旭山動物園</div><div class="event-desc">看企鵝！</div></div></div>
-                     <div class="timeline-item"><span class="time-label">18:00</span><div class="event-card"><div class="event-title">回到札幌</div><div class="event-desc">去唐吉訶德做最後補貨。</div></div></div>
+                    <div class="timeline-item"><div class="time">11:00</div><div class="event-box">退房，搭 JR 回札幌。<span class="price-tag">💰 5,500円</span></div></div>
+                    <div class="timeline-item"><div class="time">14:00</div><div class="event-box">Check-in Stripe Hotel (放行李)。<span class="price-tag">💰 計程車 600円/人</span></div></div>
+                    <div class="timeline-item"><div class="time">15:00</div><div class="event-box">搭計程車去狸小路採購。</div></div>
+                    <div class="timeline-item"><div class="time">19:00</div><div class="event-box">晚餐湯咖哩。<span class="price-tag">💰 1,800円</span></div></div>
                 </div>
             </div>
-         </details>
-         <details>
-            <summary>1/25 (六) 回家囉</summary>
-            <div class="step-content">
+        </details>
+
+        <details><summary>📅 1/24 (五) 企鵝散步</summary>
+            <div class="details-content">
                 <div class="timeline">
-                     <div class="timeline-item"><span class="time-label">10:00</span><div class="event-card"><div class="event-title">退房</div></div></div>
-                     <div class="timeline-item"><span class="time-label">10:30</span><div class="event-card"><div class="event-title">搭車去機場</div><div class="event-desc">計程車 -> 札幌車站 -> JR 機場線。</div><span class="price-tag">💰 交通：約 1,800円 (約 $400 台幣)</span></div></div>
-                     <div class="timeline-item"><span class="time-label">11:30</span><div class="event-card" style="background:#FCE7F3; border-color:#FBCFE8;"><div class="event-title">🛍️ 機場國內線大採購</div><div class="event-desc">買伴手禮！</div></div></div>
-                     <div class="timeline-item"><span class="time-label">14:00</span><div class="event-card"><div class="event-title">酷航櫃台報到</div></div></div>
+                    <div class="timeline-item"><div class="time">08:00</div><div class="event-box">巴士一日遊集合。<span class="price-tag">💰 團費 $1,800</span></div></div>
+                    <div class="timeline-item"><div class="time">11:00</div><div class="event-box" style="background:#E3F2FD;"><strong>🐧 旭山動物園</strong><br>必看企鵝散步！</div></div>
+                    <div class="timeline-item"><div class="time">18:00</div><div class="event-box">回札幌，唐吉訶德補貨。</div></div>
                 </div>
             </div>
-         </details>
+        </details>
+
+        <details><summary>📅 1/25 (六) 回家 & 機場</summary>
+            <div class="details-content">
+                <div class="timeline">
+                    <div class="timeline-item"><div class="time">10:30</div><div class="event-box">搭計程車去車站轉 JR。<span class="price-tag">💰 約 1,800円</span></div></div>
+                    <div class="timeline-item"><div class="time">11:30</div><div class="event-box" style="background:#FFEBEE;"><strong>🎁 完美行取貨</strong><br>⚠️ 領完把液體塞進大行李箱！</div></div>
+                    <div class="timeline-item"><div class="time">12:00</div><div class="event-box">機場 2F 買甜點伴手禮。</div></div>
+                    <div class="timeline-item"><div class="time">13:00</div><div class="event-box">✈️ 酷航櫃台報到。</div></div>
+                </div>
+            </div>
+        </details>
+
+        <!-- Wishlist -->
+        <div class="wishlist-title">🌟 願望清單 (必吃必去)</div>
+        <ul id="wishlist-container" style="padding:0; list-style:none;"></ul>
     </div>
 
-    <!-- View 3: Gear Guide (NEW) -->
-    <div id="view-gear" class="view">
-         <p style="text-align: center; color: #666; font-size: 0.9rem; margin-bottom: 20px;">👇 新手雪衣決策：買 vs 租 👇</p>
-         
-         <div class="expense-card" style="background: linear-gradient(135deg, #3B82F6, #2563EB); text-align: left;">
-            <strong style="font-size:1.1rem;">💡 結論：去迪卡儂或大有買！</strong>
-            <p style="font-size:0.9rem; margin-top:8px; opacity:0.9;">
-                <strong>1. 價格戰：</strong><br>
-                • 星野租借：2天約 $2,400 (租空氣)<br>
-                • 買平價款：整套約 $3,000~$4,000 (衣服是妳的)<br>
-                <strong>2. 未來性：</strong><br>
-                • 沒愛上滑雪 ➔ 當寒流騎車外套 (回本)<br>
-                • 愛上滑雪 ➔ 當耐操練習衣 (不浪費)
-            </p>
-         </div>
-         
-         <div class="gear-card" style="background:#FFF7ED; border-color:#FED7AA;">
-            <span class="gear-name">🛒 現場挑選檢查表 (Checklist)</span>
-            <p style="font-size:0.9rem; margin-top:10px;">請在店裡對照這張表：</p>
-            <table class="check-table">
-                <tr><td><span class="fail-icon">❌</span> 別買棉質內衣 (吸汗會冷死)</td></tr>
-                <tr><td><span class="check-icon">✅</span> 買聚酯纖維/羊毛發熱衣</td></tr>
-                <tr><td><span class="fail-icon">❌</span> 別買短襪/穿兩雙襪</td></tr>
-                <tr><td><span class="check-icon">✅</span> 買一雙「長筒滑雪襪」</td></tr>
-                <tr><td><span class="check-icon">✅</span> 外套要有「雪裙」(防雪灌入)</td></tr>
-                <tr><td><span class="check-icon">✅</span> 外套要有「袖口票卡袋」</td></tr>
-                <tr><td><span class="check-icon">✅</span> 手套要是「防水」的 (非毛線)</td></tr>
-                <tr><td><span class="check-icon">✅</span> 買一副「觸控內手套」(滑手機用)</td></tr>
-            </table>
-         </div>
-
-         <!-- Detailed Budget Table (Restored & Enhanced) -->
-         <div class="gear-card" style="background:white; border: 2px solid #3B82F6;">
-            <span class="gear-name" style="color:#2563EB; border-bottom:1px solid #eee; padding-bottom:8px; display:block; margin-bottom:8px;">
-                💰 預算試算表 (高 CP 值版)
-            </span>
-            <table class="budget-table" style="color:#333; font-size:0.9rem; margin-bottom:0;">
-                <tr style="background:#f9fafb;"><th style="padding:8px;">項目</th><th style="padding:8px; text-align:right;">預估(台幣)</th></tr>
-                <tr><td style="padding:8px;">1. 雪衣 (要有雪裙)</td><td style="padding:8px; text-align:right;">$2,500</td></tr>
-                <tr><td style="padding:8px;">2. 雪褲 (黑色百搭)</td><td style="padding:8px; text-align:right;">$1,500</td></tr>
-                <tr><td style="padding:8px;">3. 手套 (外層防水)</td><td style="padding:8px; text-align:right;">$600</td></tr>
-                <tr><td style="padding:8px;">4. 內手套 (觸控用)</td><td style="padding:8px; text-align:right;">$200</td></tr>
-                <tr><td style="padding:8px;">5. 雪襪 (厚長筒)</td><td style="padding:8px; text-align:right;">$300</td></tr>
-                <tr><td style="padding:8px;">6. 脖圍 (不要圍巾)</td><td style="padding:8px; text-align:right;">$150</td></tr>
-                <tr><td style="padding:8px; color:#666;">7. 發熱衣褲 (Uniqlo)</td><td style="padding:8px; text-align:right; color:#666;">$2,000</td></tr>
-                <tr style="border-top:2px solid #eee; font-weight:bold;">
-                    <td style="padding:8px;">總計 (整套帶回家)</td>
-                    <td style="padding:8px; text-align:right; color:#2563EB;">約 $7,250</td>
-                </tr>
-            </table>
-         </div>
-         
-         <div class="gear-card" style="background:#FFF7ED; border-color:#FED7AA;">
-            <span class="gear-name">🏢 迪卡儂 (Decathlon) 必買清單</span>
-            <p style="font-size:0.85rem; margin-top:10px; color:#C2410C;">
-                <strong>⚠️ 檢查這 2 點：</strong><br>
-                1. <strong>要有「雪裙」：</strong> 外套內側腰部有一圈防滑束帶。<br>
-                2. <strong>要有「袖口票卡袋」：</strong> 左手袖口的小拉鍊袋。<br>
-                3. <strong>內手套 (重要!)：</strong> 滑手機不用脫手套，手不會凍僵。
-            </p>
-         </div>
-         
-         <div class="gear-card">
-            <span class="gear-name">🏅 大有運動 (Dayou Sports)</span>
-            <span class="gear-addr">新北市汐止區福德二路219號4樓 (或其他分店)</span>
-            <div class="gear-price">$ (2,000~4,000)</div>
-            <p style="font-size:0.85rem; margin-top:5px; color:#666;">
-                高 CP 值選擇，款式比迪卡儂多一點。
-            </p>
-         </div>
-
-         <div class="gear-card">
-            <span class="gear-name">Montbell (日本國民品牌)</span>
-            <span class="gear-addr">京站/信義A11/南港CityLink皆有櫃</span>
-            <div class="gear-price">$$ (4,000~8,000)</div>
-            <p style="font-size:0.85rem; margin-top:5px; color:#666;">
-                版型適合亞洲人，平日穿也好看。
-            </p>
-         </div>
-
-         <p style="text-align: center; color: #666; font-size: 0.9rem; margin: 20px 0 10px;">👇 進階帥氣店 (預算夠再去) 👇</p>
-
-         <div class="gear-card">
-            <span class="gear-name">ALL RIDE (內湖)</span>
-            <span class="gear-addr">114臺北市內湖區洲子街71號1樓</span>
-            <div class="gear-price">$$$ (9,000~15,000)</div>
-            <p style="font-size:0.85rem; margin-top:5px; color:#666;">風格超帥，滑雪教練都在這買。</p>
-         </div>
-
-         <div class="gear-card">
-            <span class="gear-name">GoFun Sports (中山)</span>
-            <span class="gear-addr">10491台北市中山區民生東路一段51號3樓</span>
-            <div class="gear-price">$$ (6,000~10,000)</div>
-            <p style="font-size:0.85rem; margin-top:5px; color:#666;">專業店員，機能性強。</p>
-         </div>
-
-         <div class="gear-card">
-            <span class="gear-name">王子登山 (中正)</span>
-            <span class="gear-addr">100台北市中正區南昌路二段112號1樓</span>
-            <div class="gear-price">$$-$$$ (範圍廣)</div>
-            <p style="font-size:0.85rem; margin-top:5px; color:#666;">傳統戶外店，可以挖寶。</p>
-         </div>
-
-         <div class="gear-card">
-            <span class="gear-name">滑遍天下 (文山)</span>
-            <span class="gear-addr">116台北市文山區辛亥路四段130巷3號</span>
-            <div class="gear-price">$$ (5,000~8,000)</div>
-            <p style="font-size:0.85rem; margin-top:5px; color:#666;">滑雪專門店。</p>
-         </div>
-    </div>
-    
-    <!-- View 4: Guide -->
+    <!-- TAB 3: 攻略 Guide -->
     <div id="view-guide" class="view">
-        <p style="text-align: center; color: #666; font-size: 0.9rem; margin-bottom: 20px;">👇 點擊標題展開步驟 👇</p>
-         <details>
-            <summary>🎁 給蜂蜜的禮物攻略</summary>
-            <div class="step-content">
-                 <div class="gift-tip">
-                    <strong>送這個就對了！</strong>
-                    <p>蜂蜜已經有神級烘鞋機，這三樣更實用：</p>
+        
+        <details open>
+            <summary>❄️ 雪衣裝備 (含預算)</summary>
+            <div class="details-content">
+                <div class="tip-card info">
+                    <span class="tip-title">💡 結論：去迪卡儂或大有買！</span>
+                    <span class="tip-content">整套約 $6,000~$7,000，比租划算。</span>
                 </div>
-                <div class="guide-step">
-                    <strong>1. Brita 濾水壺 (日本買!)</strong>
-                    <p>👉 <strong>哪裡買：</strong>Yodobashi Camera (札幌車站北口)。</p>
-                    <p>👉 <strong>備案：</strong>沒貨就去 Bic Camera 或 Amazon JP 寄飯店。</p>
-                </div>
-                <div class="guide-step">
-                    <strong>2. 台灣味零食組</strong>
-                    <p>👉 <strong>推薦：</strong>義美小泡芙、黑糖薑茶磚、一條根貼布。</p>
-                </div>
-                 <div class="guide-step">
-                    <strong>3. 日本腳臭救星 (藥妝店買)</strong>
-                    <p>👉 <strong>推薦：</strong>Deonatulle 足指 Sara Sara Cream (除臭軟膏)。</p>
-                    <p style="font-size:0.85rem; color:#666;">(不要從台灣帶明礬粉，過海關會被查！)</p>
-                </div>
+                <table class="budget-table">
+                    <tr><td>雪衣 (有雪裙)</td><td style="text-align:right;">$2,500</td></tr>
+                    <tr><td>雪褲 (黑色)</td><td style="text-align:right;">$1,500</td></tr>
+                    <tr><td>手套 (防水)</td><td style="text-align:right;">$600</td></tr>
+                    <tr><td>內手套 (觸控)</td><td style="text-align:right;">$200</td></tr>
+                    <tr><td>雪襪 (長筒)</td><td style="text-align:right;">$300</td></tr>
+                    <tr><td>脖圍</td><td style="text-align:right;">$150</td></tr>
+                    <tr><td>發熱衣褲x2</td><td style="text-align:right;">$2,000</td></tr>
+                    <tr><td><strong>總計</strong></td><td style="text-align:right; color:var(--primary-dark);"><strong>約 $7,250</strong></td></tr>
+                </table>
+                <p style="font-size:0.85rem; color:#999; margin-top:15px;">
+                    推薦：迪卡儂 (WEDZE系列)、大有運動 (汐止)、Montbell (京站)。
+                </p>
             </div>
-         </details>
-         <!-- (Other guide sections omitted for brevity but would be present) -->
-         <details>
-            <summary>📋 必填：Visit Japan Web (VJW)</summary>
-            <div class="step-content">
-                <div class="guide-step">
-                     <strong>重要：外國人入境紀錄</strong>
-                     <div class="vjw-guide">
-                        <div style="background:#fff; border-bottom:2px dashed #ddd; padding-bottom:10px; margin-bottom:10px;">
-                            <strong>🏠 1. 住宿資訊 (給妹妹填寫用)</strong><br>
-                            <span class="vjw-label">郵遞區號 (Post Code)</span>
-                            <div class="vjw-data">060-0806</div>
-                            <span class="vjw-label">都道府縣</span>
-                            <div class="vjw-data">HOKKAIDO</div>
-                            <span class="vjw-label">市區町村</span>
-                            <div class="vjw-data">SAPPORO SHI KITA KU</div>
-                            <span class="vjw-label">町名番地</span>
-                            <div class="vjw-data">10-7, Kita 6 Jonishi</div>
-                            <span class="vjw-label">飯店名稱</span>
-                            <div class="vjw-data">Hotel Livemax Sapporo Ekimae</div>
-                            <span class="vjw-label">電話號碼</span>
-                            <div class="vjw-data">0117371000</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-         </details>
-         <details>
-            <summary>🌙 深夜流浪指南</summary>
-            <div class="step-content">
-                <div class="night-tip">
-                    <strong>⚠️ 安全第一：</strong><br>
-                    北海道冬天半夜非常冷 (-10度)，且路面結冰超滑。<br>
-                    請穿暖、小心走路，盡量搭計程車。
-                </div>
-                
-                <div class="guide-step" style="margin-top:15px;">
-                    <strong>札幌市區 (Sapporo)</strong>
-                    <p>🏪 <strong>Mega 唐吉訶德 (狸小路)：</strong>24小時營業，半夜掃貨最爽。</p>
-                    <p>🍦 <strong>結尾聖代 (Shime Parfait)：</strong>許多店開到凌晨 2 點 (如 Parfaiteria PaL)。</p>
-                    <p>🎳 <strong>Round 1 (薄野)：</strong>24小時遊樂場，夾娃娃、保齡球。</p>
-                    <p>🍗 <strong>Seicomart：</strong>北海道神級超商，半夜去買 Hot Chef 炸雞當宵夜。</p>
-                </div>
+        </details>
 
-                <div class="guide-step">
-                    <strong>Tomamu 度假村</strong>
-                    <p>❄️ <strong>愛絲冰城：</strong>開到 22:00 (最後入場 21:30)。</p>
-                    <p>🏠 <strong>房間開趴：</strong>度假村半夜沒地方去，建議提早買好酒跟零食，在房間享受。</p>
+        <details>
+            <summary>🎁 禮物攻略</summary>
+            <div class="details-content">
+                <div class="tip-card gift">
+                    <span class="tip-title">送給蜂蜜的：</span>
+                    <span class="tip-content">
+                        1. <strong>Brita 濾水壺</strong> (札幌 Yodobashi 買)<br>
+                        2. <strong>台灣零食</strong> (義美泡芙/黑糖薑茶)<br>
+                        3. <strong>觸控內手套</strong> (迪卡儂買)<br>
+                        4. <strong>足指除臭霜</strong> (日本藥妝店買)
+                    </span>
                 </div>
             </div>
-         </details>
+        </details>
+
+        <details>
+            <summary>📋 VJW 填寫資料 (第一晚)</summary>
+            <div class="details-content">
+                <div class="vjw-data">
+                    <span class="vjw-label">郵遞區號</span> 060-0806<br>
+                    <span class="vjw-label">都道府縣</span> HOKKAIDO<br>
+                    <span class="vjw-label">市區町村</span> SAPPORO SHI KITA KU<br>
+                    <span class="vjw-label">町名番地</span> 10-7, Kita 6 Jonishi<br>
+                    <span class="vjw-label">飯店名稱</span> Hotel Livemax Sapporo Ekimae<br>
+                    <span class="vjw-label">電話</span> 0117371000
+                </div>
+            </div>
+        </details>
+
+        <details>
+            <summary>🌙 深夜 & 購物指南</summary>
+            <div class="details-content">
+                <div class="tip-card shop">
+                    <span class="tip-title">🛍️ 哪裡買？</span>
+                    <span class="tip-content">
+                        <strong>唐吉訶德 (狸小路)：</strong> 24H，買雜貨零食。<br>
+                        <strong>薩摩藥妝 (Satudora)：</strong> 藍色招牌，店大好逛。<br>
+                        <strong>完美行 (WAmazing)：</strong> 重物/液體用 App 買，機場領。<br>
+                        <hr style="border:0; border-top:1px dashed #eee; margin:10px 0;">
+                        <strong>深夜美食：</strong> 結尾聖代 (Parfaiteria PaL)。
+                    </span>
+                </div>
+            </div>
+        </details>
     </div>
 
-    <!-- View 5: Wishlist -->
-    <div id="view-wishlist" class="view">
-        <p style="text-align: center; color: #666; font-size: 0.9rem; margin-bottom: 20px;">👇 必吃必玩 (有空就去) 👇</p>
-        
-        <div class="wishlist-section">
-            <div class="wishlist-title">🍽️ 札幌必吃美食</div>
-            <ul class="wish-list-container" id="wishlist-food"></ul>
-        </div>
-        
-        <div class="wishlist-section">
-            <div class="wishlist-title">🐺 特別體驗 (需預約)</div>
-            <ul class="wish-list-container">
-                 <li class="wish-item">
-                    <div class="wish-content">
-                        <span class="wish-name">哈士奇狗拉雪橇 <span class="tag spot">星野度假村</span></span>
-                        <span class="wish-desc">在 Tomamu 園區內，請蜂蜜幫忙問！</span>
-                    </div>
-                </li>
-            </ul>
-        </div>
-
-        <div class="wishlist-section">
-            <div class="wishlist-title">📸 必去景點</div>
-            <ul class="wish-list-container" id="wishlist-spot"></ul>
-        </div>
-    </div>
-
-    <!-- View 6: Expenses -->
+    <!-- TAB 4: 記帳 Expenses -->
     <div id="view-expenses" class="view">
-        <!-- Expense content same as before -->
         <div class="expense-card">
-            <div>目前的結算</div>
+            <div style="font-size:0.9rem; opacity:0.8;">目前的結算</div>
             <div class="expense-result" id="settlementText">計算中...</div>
-            <div class="expense-detail">
-                <span>我付了: $<span id="totalMe">0</span></span>
-                <span>妹付了: $<span id="totalSis">0</span></span>
+            <div style="font-size:0.9rem; background:rgba(255,255,255,0.2); padding:5px 15px; border-radius:15px; display:inline-block;">
+                我付 $<span id="totalMe">0</span> ｜ 妹付 $<span id="totalSis">0</span>
             </div>
         </div>
 
         <div class="expense-form">
-            <input type="date" id="expDate" style="padding: 12px; border: 2px solid #eee; border-radius: 12px; outline: none; width: 100%;">
-            <input type="text" id="expName" placeholder="項目 (例如: 晚餐)">
-            <input type="number" id="expCost" placeholder="金額">
+            <div class="input-group" style="margin-bottom:15px;">
+                <input type="text" id="expName" placeholder="🍰 項目 (如: 晚餐)" style="flex:2;">
+                <input type="number" id="expCost" placeholder="$ 金額">
+            </div>
             
-            <div class="currency-select">
-                <input type="radio" name="currency" id="currTWD" value="TWD" class="curr-radio" onchange="toggleRateTip()" checked>
-                <label class="curr-label" for="currTWD">🇹🇼 台幣</label>
+            <div class="radio-group">
+                <input type="radio" name="currency" id="currTWD" value="TWD" checked onchange="toggleRateTip()">
+                <label class="radio-label" for="currTWD">🇹🇼 台幣</label>
                 
-                <input type="radio" name="currency" id="currJPY" value="JPY" class="curr-radio" onchange="toggleRateTip()">
-                <label class="curr-label" for="currJPY">🇯🇵 日幣</label>
+                <input type="radio" name="currency" id="currJPY" value="JPY" onchange="toggleRateTip()">
+                <label class="radio-label" for="currJPY">🇯🇵 日幣</label>
             </div>
-            <div id="rateTip" style="font-size:0.8rem; color:#666; margin-bottom:10px; display:none; text-align:center;">
-                * 自動以匯率 0.22 換算為台幣
-            </div>
+            <div id="rateTip" style="font-size:0.75rem; color:#888; margin-bottom:15px; text-align:center; display:none;">* 自動 x 0.22 換算</div>
 
-            <div class="payer-select">
+            <div class="radio-group">
                 <input type="radio" name="payer" id="payMe" value="me" checked>
-                <label class="radio-label" for="payMe">我先付</label>
+                <label class="radio-label" for="payMe">🙋‍♀️ 我付</label>
                 
                 <input type="radio" name="payer" id="paySis" value="sis">
-                <label class="radio-label" for="paySis">妹妹先付</label>
+                <label class="radio-label" for="paySis">🙋‍♀️ 妹付</label>
             </div>
-            <button class="add-btn" onclick="addExpense()" style="width:100%; font-size:1rem; padding:10px;">＋ 新增支出</button>
+            
+            <button class="add-btn" style="width:100%; border-radius:50px; font-size:1.1rem; height:50px;" onclick="addExpense()">新增支出</button>
         </div>
-
-        <ul id="expenseList" class="expense-list"></ul>
+        <ul id="expenseList" style="padding:0;"></ul>
     </div>
 
     <!-- Bottom Nav -->
     <div class="bottom-nav">
         <button class="nav-btn active" onclick="switchTab('checklist')">
-            <span>✅</span> 清單
+            <span>📝</span> 清單
         </button>
         <button class="nav-btn" onclick="switchTab('itinerary')">
             <span>🗓️</span> 行程
-        </button>
-        <button class="nav-btn" onclick="switchTab('gear')">
-            <span>❄️</span> 雪衣
-        </button>
-        <button class="nav-btn" onclick="switchTab('wishlist')">
-            <span>🌟</span> 願望
         </button>
         <button class="nav-btn" onclick="switchTab('guide')">
             <span>📘</span> 攻略
         </button>
         <button class="nav-btn" onclick="switchTab('expenses')">
-            <span>💸</span> 分帳
+            <span>💰</span> 記帳
         </button>
     </div>
 
@@ -1024,10 +577,10 @@
 <div id="confirmModal" class="modal-overlay">
     <div class="modal">
         <h3>⚠️ 確定重置？</h3>
-        <p style="color:#666; font-size: 0.9rem; margin-bottom: 20px;">這會刪除所有紀錄 (包含分帳)！</p>
+        <p style="margin-bottom:20px; color:#999;">資料會全部不見喔！</p>
         <div class="modal-btns">
-            <button class="btn btn-cancel" onclick="closeModal()">取消</button>
-            <button class="btn btn-confirm" onclick="confirmReset()">確定重置</button>
+            <button class="reset-btn" style="margin:0; width:auto; border:none; color:#999;" onclick="closeModal()">取消</button>
+            <button class="btn-confirm" style="width:auto; padding:10px 30px;" onclick="confirmReset()">確定</button>
         </div>
     </div>
 </div>
@@ -1053,84 +606,44 @@
     const db = getFirestore(app);
 
     let tripId = null;
-    let currentUser = null;
 
-    // Check for ID in URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const idFromUrl = urlParams.get('id');
-
-    // DOM Elements
-    const views = {
-        checklist: document.getElementById('view-checklist'),
-        itinerary: document.getElementById('view-itinerary'),
-        gear: document.getElementById('view-gear'),
-        guide: document.getElementById('view-guide'),
-        expenses: document.getElementById('view-expenses'),
-        wishlist: document.getElementById('view-wishlist')
-    };
-    const navBtns = document.querySelectorAll('.nav-btn');
-    const itemList = document.getElementById('itemList');
-    const expenseList = document.getElementById('expenseList');
-    const itemInput = document.getElementById('itemInput');
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    const tripCodeModal = document.getElementById('tripCodeModal');
-    const tripCodeInput = document.getElementById('tripCodeInput');
-
-    // Default Items
+    // Default Data
     const defaultData = [
-        { text: "準備禮物：Brita濾水壺 (去日本Yodobashi買)", done: false, cat: "禮物", class: "gift" },
+        { text: "準備禮物：Brita濾水壺 (去日本買)", done: false, cat: "禮物", class: "gift" },
+        { text: "準備禮物：觸控內手套 (蜂蜜的破了)", done: false, cat: "禮物", class: "gift" },
         { text: "準備禮物：一條根/黑糖薑茶", done: false, cat: "禮物", class: "gift" },
         { text: "準備禮物：日本腳臭藥膏 (日本買!)", done: false, cat: "禮物", class: "gift" },
         { text: "確認 1/22 hal 餐廳訂位", done: false, cat: "必備" },
-        { text: "去吃根室花丸 (記得先抽號碼牌)", done: false, cat: "必吃" },
-        { text: "逛 Disney Store (Stellar Place 5F)", done: false, cat: "必逛" },
-        { text: "截圖存檔：VJW QR Code (最重要!)", done: true, cat: "最優先" },
-        { text: "下載唐吉訶德/藥妝優惠券", done: false, cat: "必備" },
-        { text: "預訂旭川動物園一日遊 (KKday/Klook)", done: false, cat: "必備" },
-        { text: "跟妹妹收錢 (機+酒共 $23,956)", done: false, cat: "記帳", class: "money" },
+        { text: "截圖：VJW QR Code (最重要!)", done: true, cat: "最優先" },
+        { text: "下載唐吉訶德/完美行 App", done: false, cat: "必備" },
+        { text: "預訂旭川動物園一日遊", done: false, cat: "必備" },
+        { text: "跟妹妹收錢 (機+酒 $23,956)", done: false, cat: "記帳", class: "money" },
         { text: "1/20 住宿已訂 (Livemax)", done: true, cat: "最優先" },
-        { text: "1/23~25 住宿已訂 (Stripe)", done: true, cat: "最優先" },
+        { text: "1/23 住宿已訂 (Stripe)", done: true, cat: "最優先" },
         { text: "機票已訂 (1/20出發)", done: true, cat: "最優先" },
-        { text: "修改 VJW 資料 (妹妹也要填)", done: true, cat: "必備" },
-        { text: "檢查護照效期 (2本)", done: false, cat: "必備" },
-        { text: "免洗內褲/一般內褲", done: false, cat: "必備" },
-        { text: "截圖：機票、飯店", done: true, cat: "必備" },
         { text: "買網卡 (2人份)", done: false, cat: "網路" },
-        { text: "發熱褲 (Uniqlo超極暖)", done: false, cat: "衣物", class: "gear" },
-        { text: "發熱衣 (Uniqlo超極暖)", done: false, cat: "衣物", class: "gear" },
-        { text: "加絨棉褲 (穿著去)", done: false, cat: "衣物", class: "gear" },
-        { text: "亮色圍巾", done: false, cat: "衣物", class: "gear" },
-        { text: "羽絨外套", done: false, cat: "衣物", class: "gear" },
-        { text: "防水雪靴", done: false, cat: "衣物", class: "gear" },
-        { text: "毛帽、手套", done: false, cat: "衣物", class: "gear" },
-        { text: "內手套", done: false, cat: "衣物", class: "gear" },
-        { text: "身體乳液、護唇膏", done: false, cat: "保養" },
-        { text: "行動電源", done: false, cat: "隨身" },
-        { text: "感冒藥/止痛藥", done: false, cat: "隨身" },
-        { text: "出發前24小時：手機充飽電", done: false, cat: "最後確認" },
-        { text: "出發前24小時：關窗、倒垃圾", done: false, cat: "最後確認" }
+        { text: "購買雪衣/雪褲/手套", done: false, cat: "裝備", class: "gear" },
+        { text: "出發前24H：手機充飽", done: false, cat: "最後確認" }
     ];
 
     const defaultWishlist = [
-        { name: "成吉思汗烤肉 (達摩/松尾)", desc: "北海道必吃羊肉!", type: "food", location: "薄野" },
-        { name: "海鮮丼 (二條市場)", desc: "滿滿的海膽鮭魚卵", type: "food", location: "二條市場" },
-        { name: "味噌拉麵 (信玄/櫸)", desc: "暖胃首選", type: "food", location: "薄野" },
-        { name: "結尾聖代 (Parfaiteria PaL)", desc: "飯後甜點文化", type: "food", location: "薄野" },
-        { name: "旭川拉麵 (青葉/蜂屋)", desc: "醬油口味", type: "food", location: "旭川" },
-        { name: "北海道神宮", desc: "雪中神社超美", type: "spot", location: "圓山公園" },
-        { name: "藻岩山夜景", desc: "日本新三大夜景", type: "spot", location: "藻岩山" },
-        { name: "白色戀人公園", desc: "歐風城堡超好拍", type: "spot", location: "宮之澤" },
-        { name: "札幌電視塔", desc: "大通公園地標", type: "spot", location: "大通" }
+        { name: "成吉思汗烤肉 (達摩)", desc: "必吃羊肉", type: "food" },
+        { name: "海鮮丼 (二條市場)", desc: "早餐吃海膽", type: "food" },
+        { name: "味噌拉麵 (信玄)", desc: "暖胃首選", type: "food" },
+        { name: "結尾聖代 (PaL)", desc: "飯後甜點", type: "food" },
+        { name: "旭川拉麵 (青葉)", desc: "醬油口味", type: "food" },
+        { name: "哈士奇雪橇 (Tomamu)", desc: "需預約", type: "spot" },
+        { name: "富良野起司工坊", desc: "吃披薩", type: "spot" },
+        { name: "雪地摩托車 (富良野)", desc: "需預約", type: "spot" }
     ];
 
-    // Auth & Init
+    // Auth
+    const urlParams = new URLSearchParams(window.location.search);
+    const idFromUrl = urlParams.get('id');
+
     onAuthStateChanged(auth, async (user) => {
         if (user) {
-            currentUser = user;
-            
-            // Priority: URL > LocalStorage > Modal
             if (idFromUrl) {
-                // If URL has ID, use it and save it
                 localStorage.setItem('hokkaidoTripId', idFromUrl);
                 initTrip(idFromUrl);
             } else {
@@ -1138,108 +651,80 @@
                 if (storedId) {
                     initTrip(storedId);
                 } else {
-                    // No ID found, show modal to create/enter one
-                    loadingOverlay.style.display = 'none';
-                    tripCodeModal.style.display = 'flex';
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                    document.getElementById('tripCodeModal').style.display = 'flex';
                 }
             }
         } else {
-            signInAnonymously(auth).catch(e => alert("連線失敗: " + e.message));
+            signInAnonymously(auth).catch(console.error);
         }
     });
 
     window.setTripCode = function() {
-        const code = tripCodeInput.value.trim();
-        if(!code) return alert("請輸入連線碼");
+        const code = document.getElementById('tripCodeInput').value.trim();
+        if(!code) return;
         localStorage.setItem('hokkaidoTripId', code);
-        
         try {
-            const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?id=' + code;
+            const newUrl = window.location.pathname + '?id=' + code;
             window.history.pushState({path:newUrl},'',newUrl);
-        } catch (e) {
-            console.log("History API not supported in this environment");
-        }
-        
-        tripCodeModal.style.display = 'none';
-        loadingOverlay.style.display = 'flex';
+        } catch(e) {}
+        document.getElementById('tripCodeModal').style.display = 'none';
+        document.getElementById('loadingOverlay').style.display = 'flex';
         initTrip(code);
     }
     
     window.shareLink = function() {
         if(!tripId) return;
-        const url = window.location.href.split('?')[0] + '?id=' + tripId; // Construct URL manually
-        
-        // Try native share
+        const url = window.location.href.split('?')[0] + '?id=' + tripId;
         if (navigator.share) {
-            navigator.share({
-                title: '北海道之旅',
-                text: '這是我整理的清單跟記帳，點開就可以看囉！',
-                url: url
-            }).catch(console.error);
+            navigator.share({ title: '北海道之旅', url: url }).catch(console.error);
         } else {
-            // Fallback to clipboard
-            const tempInput = document.createElement("input");
-            tempInput.value = url;
-            document.body.appendChild(tempInput);
-            tempInput.select();
+            const temp = document.createElement("input");
+            temp.value = url;
+            document.body.appendChild(temp);
+            temp.select();
             document.execCommand("copy");
-            document.body.removeChild(tempInput);
-            alert("網址已複製！貼給妹妹就可以囉 ❤️");
+            document.body.removeChild(temp);
+            alert("網址已複製！");
         }
     }
 
     window.toggleRateTip = function() {
-        const isJPY = document.getElementById('currJPY').checked;
+        const isJPY = document.querySelector('input[name="currency"]:checked').value === 'JPY';
         document.getElementById('rateTip').style.display = isJPY ? 'block' : 'none';
     }
 
     function initTrip(id) {
         tripId = id;
         
-        try {
-            if (!window.location.search.includes(id)) {
-                 const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?id=' + id;
-                 window.history.replaceState({path:newUrl},'',newUrl);
-            }
-        } catch(e) {
-            console.log("History API not supported in this environment");
-        }
-        
-        // Set default date to today
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('expDate').value = today;
-
-        // Checklist Listener
-        const qCheck = query(collection(db, 'trips', id, 'checklist'), orderBy('createdAt', 'desc'));
-        onSnapshot(qCheck, (snapshot) => {
+        // Checklist
+        onSnapshot(query(collection(db, 'trips', id, 'checklist'), orderBy('createdAt', 'desc')), (snap) => {
             const items = [];
-            snapshot.forEach(doc => items.push({id: doc.id, ...doc.data()}));
-            if (items.length === 0 && !snapshot.metadata.hasPendingWrites) {
+            snap.forEach(doc => items.push({id: doc.id, ...doc.data()}));
+            if (items.length === 0 && !snap.metadata.hasPendingWrites) {
                 loadDefaults(id);
             } else {
                 renderList(items);
-                loadingOverlay.style.display = 'none';
-                tripCodeModal.style.display = 'none';
+                document.getElementById('loadingOverlay').style.display = 'none';
+                document.getElementById('tripCodeModal').style.display = 'none';
             }
         });
 
-        // Wishlist Listener
-        const qWish = query(collection(db, 'trips', id, 'wishlist'), orderBy('name'));
-        onSnapshot(qWish, (snapshot) => {
+        // Wishlist
+        onSnapshot(query(collection(db, 'trips', id, 'wishlist'), orderBy('name')), (snap) => {
             const items = [];
-            snapshot.forEach(doc => items.push({id: doc.id, ...doc.data()}));
-            if (items.length === 0 && !snapshot.metadata.hasPendingWrites) {
+            snap.forEach(doc => items.push({id: doc.id, ...doc.data()}));
+            if (items.length === 0 && !snap.metadata.hasPendingWrites) {
                 loadWishlistDefaults(id);
             } else {
                 renderWishlist(items);
             }
         });
 
-        // Expense Listener
-        const qExp = query(collection(db, 'trips', id, 'expenses'), orderBy('createdAt', 'desc'));
-        onSnapshot(qExp, (snapshot) => {
+        // Expenses
+        onSnapshot(query(collection(db, 'trips', id, 'expenses'), orderBy('createdAt', 'desc')), (snap) => {
             const exps = [];
-            snapshot.forEach(doc => exps.push({id: doc.id, ...doc.data()}));
+            snap.forEach(doc => exps.push({id: doc.id, ...doc.data()}));
             renderExpenses(exps);
         });
     }
@@ -1250,36 +735,8 @@
             const docRef = doc(collection(db, 'trips', id, 'checklist'));
             batch.set(docRef, { ...item, createdAt: serverTimestamp() });
         });
-        
-        // Expenses
         const expRef1 = doc(collection(db, 'trips', id, 'expenses'));
-        batch.set(expRef1, {
-            name: "機票 (2人份)",
-            cost: 41042,
-            currency: "TWD",
-            payer: "me",
-            date: "2025-01-20",
-            createdAt: serverTimestamp()
-        });
-        const expRef2 = doc(collection(db, 'trips', id, 'expenses'));
-        batch.set(expRef2, {
-            name: "住宿 (Livemax 1/20)",
-            cost: 1714,
-            currency: "TWD",
-            payer: "me",
-            date: "2025-01-20",
-            createdAt: serverTimestamp()
-        });
-        const expRef3 = doc(collection(db, 'trips', id, 'expenses'));
-        batch.set(expRef3, {
-            name: "住宿 (Stripe 1/23-25)",
-            cost: 5155,
-            currency: "TWD",
-            payer: "me",
-            date: "2025-01-23",
-            createdAt: serverTimestamp()
-        });
-
+        batch.set(expRef1, { name: "機票+住宿代墊", cost: 47911, currency: "TWD", payer: "me", createdAt: serverTimestamp() });
         await batch.commit();
     }
 
@@ -1292,21 +749,21 @@
         await batch.commit();
     }
 
-    // --- Checklist Logic ---
+    // Render Checklist
     function renderList(items) {
-        itemList.innerHTML = '';
+        const list = document.getElementById('itemList');
+        list.innerHTML = '';
         let completed = 0;
+        
         items.forEach(item => {
             if(item.done) completed++;
             const li = document.createElement('li');
-            li.className = item.done ? 'completed' : '';
-            
-            // Check for special class
-            const tagClass = item.class ? item.class : (item.cat === '最優先' ? 'urgent' : '');
+            li.className = `todo-item ${item.done ? 'completed' : ''}`;
+            const tagClass = item.class ? item.class : (item.cat === '最優先' ? 'urgent' : (item.cat === '必備' ? 'vjw' : ''));
             
             li.innerHTML = `
                 <div class="check-area" onclick="toggleItem('${item.id}', ${item.done})">
-                    <div class="custom-checkbox"></div>
+                    <div class="checkbox"></div>
                     <div class="item-text-wrapper">
                         ${item.cat ? `<span class="tag ${tagClass}">${item.cat}</span>` : ''}
                         <span class="text">${item.text}</span>
@@ -1314,176 +771,138 @@
                 </div>
                 <button class="delete-btn" onclick="deleteItem('${item.id}', 'checklist')">×</button>
             `;
-            itemList.appendChild(li);
+            list.appendChild(li);
         });
+        
         const percent = items.length ? Math.round((completed/items.length)*100) : 0;
         document.getElementById('progressBar').style.width = percent + '%';
-        document.getElementById('progressText').innerText = `準備進度：${percent}%`;
+        document.getElementById('progressText').innerText = `完成度：${percent}%`;
     }
 
-    // --- Wishlist Logic ---
+    // Render Wishlist
     function renderWishlist(items) {
-        const foodList = document.getElementById('wishlist-food');
-        const spotList = document.getElementById('wishlist-spot');
-        const listContainer = document.querySelector('#view-wishlist .wishlist-section:nth-child(2) .wish-list-container'); 
-        
-        foodList.innerHTML = '';
-        spotList.innerHTML = '';
-
+        const container = document.getElementById('wishlist-container');
+        if(!container) return;
+        container.innerHTML = '';
         items.forEach(item => {
             const li = document.createElement('li');
             li.className = 'wish-item';
-            
             li.innerHTML = `
-                <div class="wish-check ${item.done ? 'checked' : ''}" onclick="toggleWishItem('${item.id}', ${item.done})">
-                    ${item.done ? '✓' : ''}
-                </div>
                 <div class="wish-content">
                     <span class="wish-name" style="${item.done ? 'text-decoration:line-through; color:#aaa;' : ''}">
-                        ${item.name}
-                        <span class="tag ${item.type === 'food' ? 'food' : 'spot'}">${item.location}</span>
+                        ${item.name} <span class="tag ${item.type === 'food' ? 'food' : 'spot'}">${item.type==='food'?'食':'玩'}</span>
                     </span>
                     <span class="wish-desc">${item.desc}</span>
                 </div>
+                <div class="wish-check ${item.done ? 'checked' : ''}" onclick="toggleWishItem('${item.id}', ${item.done})">
+                    ${item.done ? '✓' : ''}
+                </div>
             `;
-            
-            if(item.type === 'food') foodList.appendChild(li);
-            else spotList.appendChild(li);
+            container.appendChild(li);
         });
     }
 
-    window.toggleWishItem = async (id, status) => {
-        await updateDoc(doc(db, 'trips', tripId, 'wishlist', id), { done: !status });
-    }
-
-    // --- Expense Logic ---
+    // Render Expenses
     function renderExpenses(exps) {
-        expenseList.innerHTML = '';
-        let totalMe = 0;
-        let totalSis = 0;
+        const list = document.getElementById('expenseList');
+        list.innerHTML = '';
+        let totalMe = 0, totalSis = 0;
 
         exps.forEach(exp => {
-            const rawCost = parseFloat(exp.cost);
-            let displayCost = rawCost;
-            let displayCurr = "TWD";
-            let accountingCost = rawCost;
+            const cost = parseFloat(exp.cost);
+            let finalCost = cost;
+            if(exp.currency === 'JPY') finalCost = Math.round(cost * 0.22);
 
-            if(exp.currency === 'JPY') {
-                displayCurr = "JPY";
-                accountingCost = Math.round(rawCost * 0.22);
-            }
+            if(exp.payer === 'me') totalMe += finalCost; else totalSis += finalCost;
 
-            if(exp.payer === 'me') totalMe += accountingCost;
-            else totalSis += accountingCost;
-            
-            // Format Date
-            const dateStr = exp.date ? new Date(exp.date).toLocaleDateString('zh-TW', {month:'numeric', day:'numeric'}) : '';
-
-            const li = document.createElement('li');
-            li.innerHTML = `
-                <div class="expense-info">
-                    ${dateStr ? `<span class="expense-date">${dateStr}</span>` : ''}
-                    <span class="expense-payer ${exp.payer==='me'?'payer-me':'payer-sis'}">${exp.payer==='me'?'我':'妹'}</span>
-                    <span>${exp.name}</span>
+            const div = document.createElement('div');
+            div.className = 'expense-item';
+            div.innerHTML = `
+                <div class="expense-info-left">
+                    <div style="display:flex; align-items:center;">
+                        <span class="expense-who-tag ${exp.payer==='me'?'tag-me':'tag-sis'}">${exp.payer==='me'?'我付':'妹付'}</span>
+                        <span>${exp.name}</span>
+                    </div>
                 </div>
-                <div style="text-align:right;">
-                    <div class="expense-amt">$${accountingCost.toLocaleString()}</div>
-                    ${exp.currency === 'JPY' ? `<span class="original-curr">(${rawCost.toLocaleString()}円)</span>` : ''}
+                <div class="expense-amt-right">
+                    <div class="expense-main-price">$${finalCost.toLocaleString()}</div>
+                    ${exp.currency === 'JPY' ? `<div class="expense-sub-price">${cost.toLocaleString()}円</div>` : ''}
                 </div>
-                <button class="delete-btn" style="color:#ccc; font-size:1.2rem; margin-left:10px;" onclick="deleteItem('${exp.id}', 'expenses')">×</button>
+                <button class="delete-btn" style="margin-left:10px;" onclick="deleteItem('${exp.id}', 'expenses')">×</button>
             `;
-            expenseList.appendChild(li);
+            list.appendChild(div);
         });
 
         document.getElementById('totalMe').innerText = totalMe.toLocaleString();
         document.getElementById('totalSis').innerText = totalSis.toLocaleString();
-
-        const total = totalMe + totalSis;
-        const half = total / 2;
-        const diff = totalMe - half; // If positive, Sister owes Me.
-
-        const resultEl = document.getElementById('settlementText');
-        if (Math.abs(diff) < 1) {
-            resultEl.innerText = "目前平手！";
-        } else if (diff > 0) {
-            resultEl.innerText = `妹 ➔ 給妳 $${Math.floor(diff).toLocaleString()}`;
-        } else {
-            resultEl.innerText = `妳 ➔ 給妹 $${Math.floor(Math.abs(diff)).toLocaleString()}`;
-        }
+        
+        const diff = totalMe - (totalMe + totalSis)/2;
+        const res = document.getElementById('settlementText');
+        if(Math.abs(diff) < 1) res.innerText = "平手！";
+        else if(diff > 0) res.innerText = `妹給妳 $${Math.floor(diff).toLocaleString()}`;
+        else res.innerText = `妳給妹 $${Math.floor(Math.abs(diff)).toLocaleString()}`;
     }
 
+    // Actions
     window.addExpense = async () => {
-        const date = document.getElementById('expDate').value;
         const name = document.getElementById('expName').value.trim();
-        const cost = parseFloat(document.getElementById('expCost').value);
-        const payer = document.querySelector('input[name="payer"]:checked').value;
+        const cost = document.getElementById('expCost').value;
         const currency = document.querySelector('input[name="currency"]:checked').value;
-
+        const payer = document.querySelector('input[name="payer"]:checked').value;
+        
         if(name && cost) {
             await addDoc(collection(db, 'trips', tripId, 'expenses'), {
-                date, name, cost, currency, payer, createdAt: serverTimestamp()
+                name, cost, currency, payer, createdAt: serverTimestamp()
             });
             document.getElementById('expName').value = '';
             document.getElementById('expCost').value = '';
-        } else {
-            alert("請輸入項目和金額");
         }
     }
 
-    // --- Shared Actions ---
-    window.toggleItem = async (id, status) => {
-        await updateDoc(doc(db, 'trips', tripId, 'checklist', id), { done: !status });
-    }
-
-    window.deleteItem = async (id, col) => {
-        if(confirm('確定刪除？')) {
-            await deleteDoc(doc(db, 'trips', tripId, col, id));
-        }
-    }
+    window.toggleItem = (id, status) => updateDoc(doc(db, 'trips', tripId, 'checklist', id), { done: !status });
+    window.toggleWishItem = (id, status) => updateDoc(doc(db, 'trips', tripId, 'wishlist', id), { done: !status });
+    window.deleteItem = (id, col) => { if(confirm('刪除？')) deleteDoc(doc(db, 'trips', tripId, col, id)); }
 
     document.getElementById('addBtn').addEventListener('click', async () => {
-        const text = itemInput.value.trim();
+        const text = document.getElementById('itemInput').value.trim();
         if(text) {
             await addDoc(collection(db, 'trips', tripId, 'checklist'), {
                 text, done: false, cat: '新增', createdAt: serverTimestamp()
             });
-            itemInput.value = '';
+            document.getElementById('itemInput').value = '';
         }
     });
 
-    // --- UI Logic ---
-    window.switchTab = function(tabName) {
-        Object.values(views).forEach(el => {
-            if(el) el.classList.remove('active');
-        });
-        navBtns.forEach(el => el.classList.remove('active'));
+    // Navigation
+    window.switchTab = (tab) => {
+        document.querySelectorAll('.view').forEach(el => { if(el) el.classList.remove('active'); });
+        document.querySelectorAll('.nav-btn').forEach(el => { if(el) el.classList.remove('active'); });
         
-        if (views[tabName]) {
-            views[tabName].classList.add('active');
-        }
-        // Find index
-        const idx = ['checklist', 'itinerary', 'gear', 'wishlist', 'guide', 'expenses'].indexOf(tabName);
-        if(idx !== -1 && navBtns[idx]) navBtns[idx].classList.add('active');
+        const view = document.getElementById(`view-${tab}`);
+        if (view) view.classList.add('active');
+        
+        const tabs = ['checklist', 'itinerary', 'guide', 'expenses'];
+        const idx = tabs.indexOf(tab);
+        if(idx >= 0) document.querySelectorAll('.nav-btn')[idx].classList.add('active');
     }
 
+    // Reset
     window.showResetModal = () => document.getElementById('confirmModal').style.display = 'flex';
     window.closeModal = () => document.getElementById('confirmModal').style.display = 'none';
-    
     window.confirmReset = async () => {
         closeModal();
-        loadingOverlay.style.display = 'flex';
-        // Delete all collections
+        document.getElementById('loadingOverlay').style.display = 'flex';
         const cols = ['checklist', 'expenses', 'wishlist'];
         for(let col of cols) {
             const q = await getDocs(collection(db, 'trips', tripId, col));
             q.forEach(d => deleteDoc(d.ref));
         }
-        
-        // Reload will happen via snapshot listener
     }
 
-    // Enter key for inputs
-    itemInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') document.getElementById('addBtn').click(); });
+    // Enter key
+    document.addEventListener('keypress', (e) => { 
+        if (e.key === 'Enter' && e.target.id === 'itemInput') document.getElementById('addBtn').click(); 
+    });
 
 </script>
 </body>
