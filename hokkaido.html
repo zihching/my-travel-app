@@ -44,25 +44,21 @@
             line-height: 1.6;
             padding-bottom: 100px;
             font-weight: 500;
-            overflow-x: hidden; /* 安全鎖：防止左右滑動 */
-            -webkit-font-smoothing: antialiased;
         }
 
         .container {
-            width: 100%;
             max-width: 600px;
             margin: 0 auto;
             min-height: 100vh;
-            overflow: hidden; /* 確保內容不超出容器 */
         }
 
         /* --- Header --- */
         header {
             background: linear-gradient(135deg, #D7CCC8 0%, #F5F5F5 100%);
-            padding: 25px 20px 35px; /* 稍微縮小 padding */
-            border-bottom-left-radius: 35px;
-            border-bottom-right-radius: 35px;
-            box-shadow: 0 8px 20px rgba(141, 110, 99, 0.08);
+            padding: 30px 25px 40px;
+            border-bottom-left-radius: 40px;
+            border-bottom-right-radius: 40px;
+            box-shadow: 0 10px 20px rgba(141, 110, 99, 0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -71,41 +67,42 @@
         }
 
         .header-left h1 { 
-            margin: 0; font-size: 1.4rem; font-weight: 900; color: var(--text); letter-spacing: 1px;
+            margin: 0; font-size: 1.5rem; font-weight: 900; color: var(--text); letter-spacing: 1px;
             text-shadow: 2px 2px 0px rgba(255,255,255,0.8);
         }
         .header-left .subtitle { 
-            font-size: 0.8rem; color: #8D6E63; margin-top: 4px; font-weight: 700;
-            background: rgba(255,255,255,0.6); padding: 3px 10px; border-radius: 20px; display: inline-block;
+            font-size: 0.85rem; color: #8D6E63; margin-top: 5px; font-weight: 700;
+            background: rgba(255,255,255,0.6); padding: 4px 12px; border-radius: 20px; display: inline-block;
         }
         
         .share-btn {
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             background: var(--white);
             color: var(--primary-dark);
             border: 2px solid rgba(141, 110, 99, 0.1);
-            padding: 6px 14px;
+            padding: 8px 16px;
             border-radius: 50px;
             cursor: pointer;
             font-weight: 800;
+            box-shadow: 0 4px 10px rgba(141, 110, 99, 0.1);
             font-family: inherit;
         }
 
         /* --- Navigation Tabs --- */
         .bottom-nav {
             position: fixed;
-            bottom: 20px;
+            bottom: 25px;
             left: 50%;
             transform: translateX(-50%);
-            width: 92%; /* 改用百分比，適應窄螢幕 */
-            max-width: 450px;
-            background: rgba(255, 255, 255, 0.98);
+            width: 90%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             display: flex;
             justify-content: space-between;
-            padding: 10px 20px;
+            padding: 10px 25px;
             border-radius: 60px;
-            box-shadow: 0 8px 30px rgba(93, 64, 55, 0.15);
+            box-shadow: 0 10px 40px rgba(93, 64, 55, 0.15);
             z-index: 1000;
             border: 1px solid #EFEBE9;
         }
@@ -114,7 +111,7 @@
             background: none;
             border: none;
             color: #D7CCC8;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             font-family: inherit;
             display: flex;
             flex-direction: column;
@@ -123,35 +120,34 @@
             gap: 2px;
             cursor: pointer;
             width: 50px;
-            transition: all 0.2s;
+            transition: all 0.3s;
             font-weight: 700;
         }
 
-        .nav-btn span { font-size: 1.3rem; transition: transform 0.2s; }
+        .nav-btn span { font-size: 1.4rem; transition: transform 0.2s; }
         .nav-btn.active { color: var(--primary-dark); }
-        .nav-btn.active span { transform: translateY(-3px); }
+        .nav-btn.active span { transform: translateY(-4px); }
         .nav-btn.active::after {
-            content: ''; display: block; width: 5px; height: 5px; background: var(--primary-dark); border-radius: 50%; margin-top: 2px;
+            content: ''; display: block; width: 6px; height: 6px; background: var(--primary-dark); border-radius: 50%; margin-top: 2px;
         }
 
         /* --- Views --- */
-        .view { display: none; padding: 15px; animation: fadeIn 0.4s ease; } /* 縮小左右 padding */
+        .view { display: none; padding: 20px; animation: fadeIn 0.5s ease; }
         .view.active { display: block; }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         /* --- Common Components --- */
         .card, details, .expense-card {
             background: var(--white);
-            border-radius: 20px;
-            padding: 18px; /* 稍微縮小內距 */
-            margin-bottom: 15px;
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 20px;
             border: none;
-            box-shadow: 0 4px 15px rgba(141, 110, 99, 0.05);
-            width: 100%; /* 確保不超過容器 */
+            box-shadow: 0 8px 20px rgba(141, 110, 99, 0.06);
         }
 
         .tip-card {
@@ -165,134 +161,137 @@
         .tip-card.gift::before { background: var(--text-gift); }
         .tip-card.money::before { background: var(--text-money); }
         
-        .tip-title { font-weight: 800; font-size: 1rem; margin-bottom: 5px; display: block; color: var(--text); }
-        .tip-content { font-size: 0.9rem; color: #666; line-height: 1.5; }
+        .tip-title { font-weight: 800; font-size: 1rem; margin-bottom: 5px; display: block; }
+        .tip-content { font-size: 0.9rem; color: #666; }
 
         /* --- Tab 1: Checklist --- */
-        .progress-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; padding: 0 2px; }
-        .progress-title { font-size: 1.1rem; font-weight: 800; color: var(--text); }
+        .progress-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; padding: 0 5px; }
+        .progress-title { font-size: 1.2rem; font-weight: 800; color: var(--text); }
         .progress-text { font-size: 0.9rem; color: var(--primary-dark); font-weight: 800; }
-        .progress-bar-bg { background: #EFEBE9; height: 10px; border-radius: 5px; overflow: hidden; margin-bottom: 20px; }
-        .progress-bar { height: 100%; background: var(--primary-dark); width: 0%; transition: width 0.5s ease-out; border-radius: 5px; }
+        .progress-bar-bg { background: #EFEBE9; height: 12px; border-radius: 6px; overflow: hidden; margin-bottom: 25px; }
+        .progress-bar { height: 100%; background: var(--primary-dark); width: 0%; transition: width 0.6s ease-out; border-radius: 6px; }
         
-        .input-group { display: flex; gap: 8px; margin-bottom: 20px; width: 100%; }
+        .input-group { display: flex; gap: 10px; margin-bottom: 25px; }
         input { 
-            flex: 1; padding: 12px 16px; border: 2px solid #EFEBE9; border-radius: 50px; 
-            font-size: 0.95rem; outline: none; background: #FFF; transition: all 0.3s;
+            flex: 1; padding: 14px 20px; border: 2px solid #EFEBE9; border-radius: 50px; 
+            font-size: 1rem; outline: none; background: #FFF; transition: all 0.3s;
             color: var(--text); font-family: inherit; font-weight: 600;
-            min-width: 0; /* 防止輸入框撐爆 */
         }
         input:focus { border-color: var(--primary); background: white; box-shadow: 0 4px 10px rgba(188, 170, 164, 0.15); }
         
         button.add-btn { 
-            background: var(--primary-dark); color: white; border: none; width: 48px; height: 48px; 
-            border-radius: 50%; font-size: 1.5rem; cursor: pointer; flex-shrink: 0;
+            background: var(--primary-dark); color: white; border: none; width: 52px; height: 52px; 
+            border-radius: 50%; font-size: 1.6rem; cursor: pointer; 
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 12px rgba(141, 110, 99, 0.2);
+            box-shadow: 0 6px 15px rgba(141, 110, 99, 0.3);
         }
         
-        ul { list-style: none; padding: 0; margin: 0; }
+        ul { list-style: none; padding: 0; }
         li.todo-item {
-            background: var(--white); border-radius: 16px; padding: 14px; margin-bottom: 10px;
+            background: var(--white); border-radius: 20px; padding: 16px 20px; margin-bottom: 12px;
             display: flex; align-items: center; justify-content: space-between;
-            box-shadow: 0 3px 8px rgba(141, 110, 99, 0.03); transition: all 0.2s;
-            border: 1px solid transparent; width: 100%;
+            box-shadow: 0 4px 10px rgba(141, 110, 99, 0.03); transition: all 0.2s;
+            border: 2px solid transparent;
         }
-        .check-area { display: flex; align-items: center; gap: 12px; flex: 1; cursor: pointer; overflow: hidden; }
+        .check-area { display: flex; align-items: center; gap: 15px; flex: 1; cursor: pointer; }
         .checkbox {
-            width: 22px; height: 22px; border: 2px solid #D7CCC8;
+            width: 24px; height: 24px; border: 2px solid #D7CCC8;
             border-radius: 8px; display: flex; align-items: center; justify-content: center;
             flex-shrink: 0; background: white; transition: all 0.2s;
         }
         li.todo-item.completed .checkbox { background: var(--primary-dark); border-color: var(--primary-dark); }
-        li.todo-item.completed .checkbox::after { content: '✔'; color: white; font-size: 12px; }
+        li.todo-item.completed .checkbox::after { content: '✔'; color: white; font-size: 14px; }
         li.todo-item.completed span { color: #D7CCC8; text-decoration: line-through; }
+        .delete-btn { background: none; border: none; color: #E0E0E0; font-size: 1.4rem; cursor: pointer; }
         
-        /* 避免文字溢出 */
-        .item-text-wrapper { flex: 1; min-width: 0; }
-        .item-text-wrapper .text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
-        
-        .delete-btn { background: none; border: none; color: #E0E0E0; font-size: 1.4rem; cursor: pointer; padding: 0 5px; flex-shrink: 0; }
-        
-        .tag { font-size: 0.7rem; padding: 3px 8px; border-radius: 8px; margin-bottom: 2px; display: inline-block; font-weight: 800; letter-spacing: 0.5px; }
+        .tag { font-size: 0.75rem; padding: 4px 12px; border-radius: 12px; margin-bottom: 4px; display: inline-block; font-weight: 800; letter-spacing: 0.5px; }
         .tag.urgent { background: var(--tag-urgent); color: var(--text-urgent); }
         .tag.money { background: var(--tag-money); color: var(--text-money); }
         .tag.gift { background: var(--tag-gift); color: var(--text-gift); }
         .tag.gear { background: #F5F5F5; color: #616161; }
 
+        /* --- Memo Section --- */
+        .memo-section {
+            background: white; border: 2px dashed #EFEBE9; border-radius: 20px; padding: 20px; margin-top: 20px;
+        }
+        .memo-area {
+            width: 100%; height: 100px; border: none; background: #FAFAFA; border-radius: 15px; padding: 15px;
+            font-size: 0.95rem; line-height: 1.5; color: #666; resize: none; outline: none; font-family: inherit;
+        }
+
         /* --- Accordion (Guide) --- */
         details { 
-            background: white; border: 1.5px solid #F2EBE9; border-radius: 18px;
-            margin-bottom: 12px; overflow: hidden; transition: all 0.3s;
+            background: white; border: 2px solid #FFF0F3; border-radius: 18px;
+            margin-bottom: 15px; overflow: hidden; transition: all 0.3s;
             box-shadow: 0 2px 8px rgba(0,0,0,0.02);
         }
         details[open] { border-color: var(--primary); }
         summary {
-            padding: 16px 18px; font-weight: 700; cursor: pointer; list-style: none;
+            padding: 20px; font-weight: 700; cursor: pointer; list-style: none;
             display: flex; justify-content: space-between; align-items: center;
-            font-size: 1.05rem; color: var(--text);
+            font-size: 1.1rem; color: var(--text);
         }
-        summary::after { content: '🌸'; transition: transform 0.3s; font-size: 1.1rem; opacity: 0.5; }
+        summary::after { content: '🌸'; transition: transform 0.3s; font-size: 1.2rem; opacity: 0.5; }
         details[open] summary::after { transform: rotate(45deg); opacity: 1; }
-        .details-content { padding: 0 18px 20px; color: #6D4C41; font-size: 0.95rem; line-height: 1.7; border-top: 1px dashed #EFEBE9; }
+        .details-content { padding: 0 20px 25px; color: #6D4C41; font-size: 0.95rem; line-height: 1.8; border-top: 2px dashed #EFEBE9; }
 
         /* --- Timeline (Itinerary) --- */
-        .timeline { padding-left: 20px; border-left: 2px solid #EFEBE9; margin-left: 8px; margin-top: 15px; }
-        .timeline-item { margin-bottom: 30px; position: relative; }
+        .timeline { padding-left: 25px; border-left: 3px solid #EFEBE9; margin-left: 10px; margin-top: 20px; }
+        .timeline-item { margin-bottom: 35px; position: relative; }
         .timeline-item::before {
-            content: '❄️'; position: absolute; left: -29px; top: 18px; background: var(--bg);
-            width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--primary-dark);
+            content: '❄️'; position: absolute; left: -34px; top: 6px; background: var(--bg);
+            width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--primary-dark);
             display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent;
             z-index: 2;
         }
-        .time { font-size: 0.85rem; color: #A1887F; margin-bottom: 5px; display: block; font-weight: 800; letter-spacing: 0.5px; }
+        .time { font-size: 0.9rem; color: #A1887F; margin-bottom: 6px; display: block; font-weight: 800; letter-spacing: 1px; }
         .event-card {
-            background: white; border-radius: 16px; padding: 15px; margin-top: 5px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.03); border: 1px solid #f0f0f0;
+            background: white; border-radius: 16px; padding: 18px; margin-top: 5px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid #f0f0f0;
         }
-        .event-title { font-weight: 700; color: var(--text); font-size: 1.05rem; margin-bottom: 4px; }
-        .event-desc { font-size: 0.9rem; color: #795548; line-height: 1.5; }
+        .event-title { font-weight: 700; color: var(--text); font-size: 1.1rem; margin-bottom: 5px; }
+        .event-desc { font-size: 0.95rem; color: #795548; line-height: 1.6; }
         .price-tag {
             display: inline-block; background: var(--tag-money); color: var(--text-money);
-            font-size: 0.8rem; padding: 3px 10px; border-radius: 15px; margin-top: 8px; font-weight: 800;
+            font-size: 0.8rem; padding: 4px 12px; border-radius: 20px; margin-top: 10px; font-weight: 800;
         }
 
         /* --- Budget Table --- */
-        .budget-table { width: 100%; font-size: 0.9rem; border-collapse: separate; border-spacing: 0 6px; margin-top: 5px; }
-        .budget-table td { padding: 10px 8px; background: #FAFAFA; border-bottom: 1px solid #eee; }
-        .budget-table tr:last-child td { font-weight: 800; color: var(--primary-dark); background: #EFEBE9; border-radius: 8px; }
+        .budget-table { width: 100%; font-size: 0.95rem; border-collapse: separate; border-spacing: 0 8px; margin-top: 10px; }
+        .budget-table td { padding: 12px 10px; background: #FAFAFA; border-bottom: 1px solid #eee; }
+        .budget-table tr:last-child td { font-weight: 800; color: var(--primary-dark); background: #EFEBE9; border-radius: 10px; }
 
         /* --- Wishlist --- */
         .wishlist-title { 
-            font-weight: 800; color: var(--text); margin: 30px 0 15px; font-size: 1.2rem; 
+            font-weight: 800; color: var(--text); margin: 40px 0 15px; font-size: 1.3rem; 
             display: flex; align-items: center; gap: 10px; padding-left: 10px;
-            border-left: 5px solid var(--primary);
+            border-left: 6px solid var(--primary);
         }
         .wish-item {
-            background: white; border: 2px solid #F5F5F5; padding: 15px;
-            border-radius: 18px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;
+            background: white; border: 2px solid #F5F5F5; padding: 18px;
+            border-radius: 20px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between;
         }
-        .wish-name { font-weight: 800; color: #5D4037; font-size: 1rem; }
-        .wish-desc { font-size: 0.85rem; color: #A1887F; margin-top: 2px; display: block;}
+        .wish-name { font-weight: 800; color: #5D4037; font-size: 1.05rem; }
+        .wish-desc { font-size: 0.9rem; color: #A1887F; margin-top: 4px; display: block;}
         .wish-check {
-            width: 26px; height: 26px; border: 2px solid #D7CCC8; border-radius: 50%;
-            margin-right: 12px; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; color: white; background: white; transition: all 0.2s; flex-shrink: 0;
+            width: 30px; height: 30px; border: 2px solid #D7CCC8; border-radius: 50%;
+            margin-right: 15px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: white; background: white; transition: all 0.2s;
         }
         .wish-check.checked { background: var(--primary); border-color: var(--primary); }
         .tag.spot { background: var(--tag-spot); color: var(--text-info); font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; }
         .tag.food { background: var(--tag-shop); color: var(--text-shop); font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; }
 
-        /* --- Tab 4: Expense --- */
+        /* --- Tab 4: Expense (FIXED) --- */
         .expense-card {
             background: linear-gradient(135deg, #BCAAA4, #8D6E63);
-            color: white; padding: 25px 20px; border-radius: 25px; text-align: center; margin-bottom: 20px;
-            box-shadow: 0 8px 20px rgba(141, 110, 99, 0.25); border: none;
+            color: white; padding: 30px; border-radius: 30px; text-align: center; margin-bottom: 25px;
+            box-shadow: 0 10px 25px rgba(141, 110, 99, 0.3); border: none;
         }
-        .expense-result { font-size: 2rem; font-weight: 900; margin: 8px 0; letter-spacing: 1px; }
-        .expense-detail { font-size: 0.95rem; opacity: 0.9; margin-top: 8px; font-weight: 600; }
+        .expense-result { font-size: 2.2rem; font-weight: 900; margin: 10px 0; letter-spacing: 1px; }
+        .expense-detail { font-size: 1rem; opacity: 0.9; margin-top: 10px; font-weight: 600; }
         
-        .radio-group { display: flex; gap: 10px; margin-bottom: 15px; width: 100%; }
+        .radio-group { display: flex; gap: 12px; margin-bottom: 20px; width: 100%; }
         
         /* 隱藏原生 radio */
         input[type="radio"] { display: none; }
@@ -300,9 +299,8 @@
         /* 預設樣式 */
         .radio-label {
             flex: 1; text-align: center; padding: 10px 5px; cursor: pointer; font-size: 0.95rem;
-            background: #FAFAFA; color: #999; border-radius: 50px; transition: all 0.2s; font-weight: 700;
-            border: 2px solid transparent; box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-            white-space: nowrap; /* 防止文字換行 */
+            background: #FAFAFA; color: #999; border-radius: 50px; transition: all 0.3s; font-weight: 700;
+            border: 2px solid transparent; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
         
         /* 選中樣式 */
@@ -314,13 +312,13 @@
         }
 
         .expense-form {
-            background: white; border: 2px solid #FFF0F3; padding: 18px; border-radius: 20px; margin-bottom: 20px;
+            background: white; border: 2px solid #FFF0F3; padding: 20px; border-radius: 20px; margin-bottom: 20px;
         }
 
         .expense-item {
-            padding: 15px; margin-bottom: 10px; background: white; border-radius: 16px;
+            padding: 18px; margin-bottom: 12px; background: white; border-radius: 20px;
             display: flex; justify-content: space-between; align-items: center; 
-            box-shadow: 0 3px 8px rgba(0,0,0,0.02); border: 1px solid #f5f5f5;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid #f5f5f5;
         }
         
         /* 金額靠右對齊 CSS */
@@ -332,12 +330,12 @@
         .tag-sis { background: #E3F2FD; color: #1565C0; }
 
         /* VJW Data Block */
-        .vjw-data { background: #F5F5F5; padding: 12px; border-radius: 10px; font-family: monospace; font-size: 0.95rem; color: #333; margin-bottom: 10px; user-select: all; border: 2px dashed #D7CCC8; line-height: 1.8; word-break: break-all; }
+        .vjw-data { background: #F5F5F5; padding: 15px; border-radius: 12px; font-family: monospace; font-size: 1rem; color: #333; margin-bottom: 10px; user-select: all; border: 2px dashed #D7CCC8; line-height: 1.8; word-break: break-all; }
         .vjw-label { font-size: 0.8rem; color: #A1887F; display: block; margin-bottom: 2px; letter-spacing: 0.5px; font-weight: bold; }
 
         /* Modal */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.7); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 2000; }
-        .modal { background: white; padding: 30px; border-radius: 30px; width: 85%; max-width: 320px; text-align: center; box-shadow: 0 20px 60px rgba(141, 110, 99, 0.15); border: 2px solid #EFEBE9; }
+        .modal { background: white; padding: 35px; border-radius: 35px; width: 85%; max-width: 320px; text-align: center; box-shadow: 0 20px 60px rgba(141, 110, 99, 0.15); border: 2px solid #EFEBE9; }
         .btn-confirm { background: var(--primary-dark); color: white; width: 100%; padding: 12px; margin-top: 15px; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; font-size: 1rem; box-shadow: 0 5px 15px rgba(141, 110, 99, 0.3); }
         .reset-btn { width: 100%; padding: 12px; margin-top: 25px; background: #FAFAFA; border: 1px solid #EEE; color: #BBB; border-radius: 15px; cursor: pointer; font-size: 0.85rem; font-weight: bold; }
         
@@ -365,7 +363,7 @@
     <div class="modal">
         <h3 style="margin-top:0; color:var(--text);">🔗 姊妹連線</h3>
         <p style="margin-bottom:20px; color:#999; font-size:0.9rem;">輸入房間號碼 1025</p>
-        <input type="text" id="tripCodeInput" value="1025" style="width:100%; text-align:center; border:2px solid #EFEBE9; padding:12px; border-radius:20px; outline:none; font-size:1.3rem; color:var(--text); font-weight:800; background: #FAFAFA;">
+        <input type="text" id="tripCodeInput" value="1025" style="width:100%; text-align:center; border:2px solid #EFEBE9; padding:15px; border-radius:20px; outline:none; font-size:1.3rem; color:var(--text); font-weight:800; background: #FAFAFA;">
         <button class="btn-confirm" onclick="setTripCode()">開始旅程</button>
     </div>
 </div>
@@ -663,6 +661,15 @@
                     <span class="tip-title">💡 結論：去迪卡儂或大有買！</span>
                     <span class="tip-content">整套約 $6,000~$7,000，比租划算。</span>
                 </div>
+                
+                <div style="margin-bottom:15px;">
+                    <strong style="color:var(--text); display:block; margin-bottom:5px;">🛒 迪卡儂 vs 大有運動：買什麼？</strong>
+                    <ul style="font-size:0.9rem; color:#666; padding-left:20px;">
+                        <li><strong>迪卡儂買：</strong>雪襪、內層衣、雪褲 (便宜好穿)。</li>
+                        <li><strong>大有買：</strong>雪衣外套、手套、護具 (款式多、較帥)。</li>
+                    </ul>
+                </div>
+
                 <table class="budget-table">
                     <tr><td>雪衣 (有雪裙)</td><td style="text-align:right;">$2,500</td></tr>
                     <tr><td>雪褲 (黑色)</td><td style="text-align:right;">$1,500</td></tr>
@@ -835,6 +842,7 @@
     ];
 
     const defaultWishlist = [
+        { name: "3COINS (APIA店)", desc: "300円雜貨", type: "spot", location: "札幌" },
         { name: "成吉思汗烤肉 (達摩)", desc: "必吃羊肉", type: "food", location: "薄野" },
         { name: "海鮮丼 (二條市場)", desc: "早餐吃海膽", type: "food", location: "二條市場" },
         { name: "味噌拉麵 (信玄)", desc: "暖胃首選", type: "food", location: "薄野" },
@@ -842,8 +850,7 @@
         { name: "旭川拉麵 (青葉)", desc: "醬油口味", type: "food", location: "旭川" },
         { name: "哈士奇雪橇 (Tomamu)", desc: "需預約", type: "spot", location: "Tomamu" },
         { name: "富良野起司工坊", desc: "吃披薩", type: "spot", location: "富良野" },
-        { name: "雪地摩托車 (富良野)", desc: "需預約", type: "spot", location: "富良野" },
-        { name: "3COINS (APIA店)", desc: "300円雜貨", type: "spot", location: "札幌" }
+        { name: "雪地摩托車 (富良野)", desc: "需預約", type: "spot", location: "富良野" }
     ];
 
     // Auth
