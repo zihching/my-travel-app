@@ -12,28 +12,28 @@
 
     <style>
         :root {
-            /* ☕️ 暖暖拿鐵配色 */
+            /* ☕️ 淺拿鐵配色盤 */
             --primary: #BCAAA4;       /* 淺拿鐵 */
             --primary-dark: #8D6E63;  /* 摩卡棕 */
+            --accent: #E6D8CC;        /* 燕麥奶 */
             --text: #5D4037;          /* 濃縮咖啡文字 */
             --bg: #FDFBF7;            /* 燕麥奶背景 */
             --white: #ffffff;
             --border: #EFEBE9;
             
-            /* 功能標籤色 (柔和莫蘭迪) */
-            --tag-urgent: #FFEBEE; --text-urgent: #C62828; /* 紅: 重要 */
-            --tag-money: #E8F5E9; --text-money: #2E7D32;  /* 綠: 錢/預算 */
-            --tag-shop: #FFF8E1; --text-shop: #F57F17;    /* 黃: 購物/吃 */
-            --tag-info: #E3F2FD; --text-info: #1565C0;    /* 藍: 資訊/交通 */
-            --tag-gift: #F3E5F5; --text-gift: #7B1FA2;    /* 紫: 禮物 */
+            /* 功能標籤色 */
+            --tag-urgent: #FFEBEE; --text-urgent: #C62828;
+            --tag-money: #E8F5E9; --text-money: #2E7D32;
+            --tag-shop: #FFF8E1; --text-shop: #F57F17;
+            --tag-info: #E3F2FD; --text-info: #1565C0;
+            --tag-gift: #F3E5F5; --text-gift: #7B1FA2;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            font-family: "Zen Maru Gothic", "Microsoft JhengHei", sans-serif;
+            font-family: "文鼎DC香蕉人體", "Zen Maru Gothic", "Microsoft JhengHei", sans-serif;
             background-color: var(--bg);
-            /* 淡淡的方格紙背景 */
             background-image: 
                 linear-gradient(rgba(141, 110, 99, 0.05) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(141, 110, 99, 0.05) 1px, transparent 1px);
@@ -42,7 +42,7 @@
             margin: 0;
             padding: 0;
             line-height: 1.6;
-            padding-bottom: 100px; /* 留給底部選單 */
+            padding-bottom: 100px;
             font-weight: 500;
         }
 
@@ -132,7 +132,7 @@
         }
 
         /* --- Views --- */
-        .view { display: none; padding: 20px; animation: fadeIn 0.4s ease; }
+        .view { display: none; padding: 20px; animation: fadeIn 0.5s ease; }
         .view.active { display: block; }
 
         @keyframes fadeIn {
@@ -141,15 +141,21 @@
         }
 
         /* --- Common Components --- */
-        /* 💡 小提示卡片 */
+        .card, details, .expense-card {
+            background: var(--white);
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: none;
+            box-shadow: 0 8px 20px rgba(141, 110, 99, 0.06);
+        }
+
         .tip-card {
             background: white; border-radius: 16px; padding: 15px; margin-bottom: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid var(--border);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid #EFEBE9;
             position: relative; overflow: hidden;
         }
-        .tip-card::before {
-            content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px;
-        }
+        .tip-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; }
         .tip-card.info::before { background: var(--text-info); }
         .tip-card.shop::before { background: var(--text-shop); }
         .tip-card.gift::before { background: var(--text-gift); }
@@ -235,7 +241,6 @@
         }
         .event-title { font-weight: 700; color: var(--text); font-size: 1.1rem; margin-bottom: 5px; }
         .event-desc { font-size: 0.95rem; color: #795548; line-height: 1.6; }
-        
         .price-tag {
             display: inline-block; background: var(--tag-money); color: var(--text-money);
             font-size: 0.8rem; padding: 4px 12px; border-radius: 20px; margin-top: 10px; font-weight: 800;
@@ -264,6 +269,8 @@
             cursor: pointer; color: white; background: white; transition: all 0.2s;
         }
         .wish-check.checked { background: var(--primary); border-color: var(--primary); }
+        .tag.spot { background: var(--tag-spot); color: var(--text-info); font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; }
+        .tag.food { background: var(--tag-shop); color: var(--text-shop); font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; }
 
         /* --- Tab 4: Expense (FIXED) --- */
         .expense-card {
@@ -276,7 +283,7 @@
         
         .radio-group { display: flex; gap: 12px; margin-bottom: 20px; }
         
-        /* 隱藏原生 radio，改用 label 樣式 */
+        /* 隱藏原生 radio */
         input[type="radio"] { display: none; }
         
         /* 預設樣式 */
@@ -286,7 +293,7 @@
             border: 2px solid transparent; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
         
-        /* 選中樣式 (利用 :checked + label) */
+        /* 選中樣式 */
         input[name="currency"]:checked + .radio-label { 
             background: var(--tag-money); color: var(--text-money); border-color: var(--text-money); transform: translateY(-2px);
         }
@@ -303,8 +310,15 @@
             display: flex; justify-content: space-between; align-items: center; 
             box-shadow: 0 4px 10px rgba(0,0,0,0.03); border: 1px solid #f5f5f5;
         }
-        .expense-who-tag { font-size: 0.8rem; padding: 4px 10px; border-radius: 12px; display: inline-block; width: fit-content; margin-right: 8px; font-weight: 800; }
         
+        /* 金額靠右對齊 CSS */
+        .expense-info-left { flex: 1; display: flex; flex-direction: column; align-items: flex-start; }
+        .expense-amt-right { text-align: right; flex-shrink: 0; }
+        
+        .expense-who-tag { font-size: 0.75rem; padding: 4px 10px; border-radius: 12px; display: inline-block; width: fit-content; margin-bottom: 4px; font-weight: 800; }
+        .tag-me { background: #EFEBE9; color: #5D4037; }
+        .tag-sis { background: #E3F2FD; color: #1565C0; }
+
         /* VJW Data Block */
         .vjw-data { background: #F5F5F5; padding: 15px; border-radius: 12px; font-family: monospace; font-size: 1rem; color: #333; margin-bottom: 10px; user-select: all; border: 2px dashed #D7CCC8; line-height: 1.8; }
         .vjw-label { font-size: 0.8rem; color: #A1887F; display: block; margin-bottom: 2px; letter-spacing: 0.5px; font-weight: bold; }
@@ -362,7 +376,7 @@
 
     <!-- TAB 2: Itinerary -->
     <div id="view-itinerary" class="view">
-        <div class="tip-card info">
+        <div class="tip-card gift">
             <span class="tip-title">💖 行程重點：</span>
             <span class="tip-content">
                 Day 1：買禮物 (Yodobashi) + 壽司<br>
@@ -373,14 +387,47 @@
 
         <!-- Day 1 -->
         <details open>
-            <summary>📅 1/20 (一) 出發 & 買禮物</summary>
+            <summary>📅 1/20 (一) 出發 & 壽司 & 買禮物</summary>
             <div class="details-content">
                 <div class="timeline">
-                    <div class="timeline-item"><div class="time">07:00 機場報到</div><div class="event-box">桃機二航廈，長榮櫃台。<span class="price-tag">💰 機捷 $160</span></div></div>
-                    <div class="timeline-item"><div class="time">14:05 抵達北海道</div><div class="event-box">過VJW海關，搭JR去札幌。</div></div>
-                    <div class="timeline-item"><div class="time">16:00 根室花丸</div><div class="event-box" style="background:#FFF8E1;">先去車站 Stellar Place 6F 抽號碼牌！<div class="price-tag">💰 約 3,000円</div></div></div>
-                    <div class="timeline-item"><div class="time">18:00 🎁 買禮物</div><div class="event-box" style="background:#F3E5F5;"><strong>Yodobashi Camera (北口)</strong><br>買 Brita 濾水壺！<div class="price-tag">💰 約 4,000円</div></div></div>
-                    <div class="timeline-item"><div class="time">19:30 飯店</div><div class="event-box">Check-in Livemax，休息。</div></div>
+                    <div class="timeline-item">
+                        <span class="time-badge">07:00</span>
+                        <div class="event-card move">
+                            <div class="event-title">桃園機場報到</div>
+                            <div class="event-desc">桃機二航廈，長榮櫃台。</div>
+                            <div class="event-sub">💰 機場捷運：約 $160/人</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-badge">14:05</span>
+                        <div class="event-card move">
+                            <div class="event-title">抵達北海道</div>
+                            <div class="event-desc">過VJW海關，搭JR去札幌。</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-badge">16:00</span>
+                        <div class="event-card food">
+                            <div class="event-title">🍣 根室花丸 (必吃!)</div>
+                            <div class="event-desc">先去車站 Stellar Place 6F 抽號碼牌！</div>
+                            <div class="event-sub">💰 壽司預算：約 3,000円</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-badge">18:00</span>
+                        <div class="event-card play">
+                            <div class="event-title">🎁 友都八喜 (Yodobashi Camera)</div>
+                            <div class="event-desc"><strong>任務：</strong>買 Brita 濾水壺給蜂蜜！(北口對面)</div>
+                            <div class="event-sub">💰 禮物預算：約 4,000円</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-badge">19:30</span>
+                        <div class="event-card stay">
+                            <div class="event-title">Check-in Livemax</div>
+                            <div class="event-desc">走路去飯店放行李跟戰利品，休息。</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </details>
@@ -390,10 +437,35 @@
             <summary>📅 1/21 (二) 前往 Tomamu</summary>
             <div class="details-content">
                 <div class="timeline">
-                    <div class="timeline-item"><div class="time">09:30 退房 & 寄行李</div><div class="event-box">行李鎖在札幌車站置物櫃。<span class="price-tag">💰 700円</span></div></div>
-                    <div class="timeline-item"><div class="time">11:00 搭 JR 特急</div><div class="event-box">往 Tomamu 找蜂蜜！<span class="price-tag">💰 5,500円</span></div></div>
-                    <div class="timeline-item"><div class="time">13:30 💖 送禮物</div><div class="event-box">給他驚喜！🎁</div></div>
-                    <div class="timeline-item"><div class="time">晚上</div><div class="event-box" style="background:#E3F2FD;"><strong>🌲 精靈露台</strong><br>富良野浪漫點燈 (免門票)。</div></div>
+                    <div class="timeline-item">
+                        <span class="time-badge">09:30</span>
+                        <div class="event-card move">
+                            <div class="event-title">退房 & 寄行李</div>
+                            <div class="event-desc">行李鎖在札幌車站置物櫃 (700円)。</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-badge">11:00</span>
+                        <div class="event-card move">
+                            <div class="event-title">搭 JR 特急</div>
+                            <div class="event-desc">往 Tomamu 找蜂蜜 (1.5hr)。</div>
+                            <div class="event-sub">💰 車資：5,500円</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-badge">13:30</span>
+                        <div class="event-card play">
+                            <div class="event-title">💖 找蜂蜜！</div>
+                            <div class="event-desc">送禮物時間！🎁</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-badge">晚上</span>
+                        <div class="event-card play">
+                            <div class="event-title">🌲 精靈露台</div>
+                            <div class="event-desc">富良野浪漫點燈 (免門票)。</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </details>
@@ -401,9 +473,30 @@
         <details><summary>📅 1/22 (三) 滑雪 & 帝王蟹</summary>
             <div class="details-content">
                 <div class="timeline">
-                    <div class="timeline-item"><div class="time">白天</div><div class="event-box"><strong>⛷️ 滑雪體驗</strong><br>看蜂蜜帥氣教學！</div></div>
-                    <div class="timeline-item"><div class="time">17:00</div><div class="event-box" style="background:#FFF8E1;"><strong>🦀 Buffet Dining hal</strong><br>帝王蟹吃到飽 (已訂位)。<div class="price-tag">💰 5,500円</div></div></div>
-                    <div class="timeline-item"><div class="time">20:00</div><div class="event-box">愛絲冰城看冰屋。</div></div>
+                    <div class="timeline-item">
+                        <span class="time-badge">白天</span>
+                        <div class="event-card play">
+                            <div class="event-title">⛷️ 滑雪體驗</div>
+                            <div class="event-desc">看蜂蜜帥氣教學！</div>
+                            <div class="event-sub">💡 怕冷：去微笑海灘溫水泳池。</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-badge">17:00</span>
+                        <div class="event-card food">
+                            <div class="event-title">🦀 Buffet Dining hal</div>
+                            <div class="event-desc">帝王蟹吃到飽 (已訂位)。</div>
+                            <div class="event-sub">💰 晚餐：約 5,500円</div>
+                        </div>
+                    </div>
+                     <div class="timeline-item">
+                        <span class="time-badge">20:00</span>
+                        <div class="event-card play">
+                            <div class="event-title">❄️ 愛絲冰城</div>
+                            <div class="event-desc">看冰屋、烤棉花糖。</div>
+                            <div class="event-sub">💰 門票：600円</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </details>
@@ -411,20 +504,66 @@
         <details><summary>📅 1/23 (四) 回札幌 & 逛街</summary>
             <div class="details-content">
                 <div class="timeline">
-                    <div class="timeline-item"><div class="time">11:00</div><div class="event-box">退房，搭 JR 回札幌。<span class="price-tag">💰 5,500円</span></div></div>
-                    <div class="timeline-item"><div class="time">14:00</div><div class="event-box">Check-in Stripe Hotel (放行李)。<span class="price-tag">💰 計程車 600円/人</span></div></div>
-                    <div class="timeline-item"><div class="time">15:00</div><div class="event-box">搭計程車去狸小路採購。</div></div>
-                    <div class="timeline-item"><div class="time">19:00</div><div class="event-box">晚餐湯咖哩。<span class="price-tag">💰 1,800円</span></div></div>
+                    <div class="timeline-item">
+                        <span class="time-badge">11:00</span>
+                        <div class="event-card move">
+                            <div class="event-title">退房 & 搭 JR 回札幌</div>
+                            <div class="event-sub">💰 車資：5,500円</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-badge">14:00</span>
+                        <div class="event-card stay">
+                            <div class="event-title">Check-in Stripe Hotel</div>
+                            <div class="event-desc">先放行李。</div>
+                            <div class="event-sub">💰 計程車去飯店：約 600円/人</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-badge">15:00</span>
+                        <div class="event-card shop">
+                            <div class="event-title">狸小路採購</div>
+                            <div class="event-desc">搭計程車去！逛唐吉訶德、藥妝。</div>
+                            <div class="event-sub">💰 計程車去逛街：約 600円/人</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-badge">19:00</span>
+                        <div class="event-card food">
+                            <div class="event-title">晚餐：湯咖哩</div>
+                            <div class="event-desc">Suage+ 或 GARAKU。</div>
+                            <div class="event-sub">💰 餐費：約 1,800円</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </details>
 
-        <details><summary>📅 1/24 (五) 企鵝散步</summary>
+        <details><summary>📅 1/24 (五) 企鵝散步 🐧</summary>
             <div class="details-content">
                 <div class="timeline">
-                    <div class="timeline-item"><div class="time">08:00</div><div class="event-box">巴士一日遊集合。<span class="price-tag">💰 團費 $1,800</span></div></div>
-                    <div class="timeline-item"><div class="time">11:00</div><div class="event-box" style="background:#E3F2FD;"><strong>🐧 旭山動物園</strong><br>必看企鵝散步！</div></div>
-                    <div class="timeline-item"><div class="time">18:00</div><div class="event-box">回札幌，唐吉訶德補貨。</div></div>
+                    <div class="timeline-item">
+                        <span class="time-badge">08:00</span>
+                        <div class="event-card move">
+                            <div class="event-title">巴士一日遊集合</div>
+                            <div class="event-sub">💰 團費 $1,800 (已預訂)</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-badge">11:00</span>
+                        <div class="event-card play">
+                            <div class="event-title">🐧 旭山動物園</div>
+                            <div class="event-desc">必看企鵝散步！</div>
+                            <div class="event-sub">💡 保暖：山上很冷，貼暖暖包！</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-badge">18:00</span>
+                        <div class="event-card shop">
+                            <div class="event-title">回札幌補貨</div>
+                            <div class="event-desc">唐吉訶德最後衝刺。</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </details>
@@ -432,16 +571,40 @@
         <details><summary>📅 1/25 (六) 回家 & 機場</summary>
             <div class="details-content">
                 <div class="timeline">
-                    <div class="timeline-item"><div class="time">10:30</div><div class="event-box">搭計程車去車站轉 JR。<span class="price-tag">💰 約 1,800円</span></div></div>
-                    <div class="timeline-item"><div class="time">11:30</div><div class="event-box" style="background:#FFEBEE;"><strong>🎁 完美行取貨</strong><br>⚠️ 領完把液體塞進大行李箱！</div></div>
-                    <div class="timeline-item"><div class="time">12:00</div><div class="event-box">機場 2F 買甜點伴手禮。</div></div>
-                    <div class="timeline-item"><div class="time">13:00</div><div class="event-box">✈️ 酷航櫃台報到。</div></div>
+                    <div class="timeline-item">
+                        <span class="time-badge">10:30</span>
+                        <div class="event-card move">
+                            <div class="event-title">前往機場</div>
+                            <div class="event-desc">搭計程車去車站轉 JR。</div>
+                            <div class="event-sub">💰 交通：約 1,800円</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-badge">11:30</span>
+                        <div class="event-card shop">
+                            <div class="event-title">🎁 完美行取貨</div>
+                            <div class="event-desc"><strong>⚠️ 重要：</strong>領完貨把液體塞進大行李箱託運！</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-badge">12:00</span>
+                        <div class="event-card food">
+                            <div class="event-title">機場 2F 伴手禮</div>
+                            <div class="event-desc">買甜點伴手禮 (Kinotoya/北菓樓)。</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="time-badge">13:00</span>
+                        <div class="event-card move">
+                            <div class="event-title">✈️ 酷航櫃台報到</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </details>
 
         <!-- Wishlist -->
-        <div class="wishlist-title">🌟 願望清單 (必吃必去)</div>
+        <div class="wishlist-title">✨ 願望清單 (必吃必去)</div>
         <ul id="wishlist-container" style="padding:0; list-style:none;"></ul>
     </div>
 
@@ -508,6 +671,7 @@
                     <span class="tip-content">
                         <strong>唐吉訶德 (狸小路)：</strong> 24H，買雜貨零食。<br>
                         <strong>薩摩藥妝 (Satudora)：</strong> 藍色招牌，店大好逛。<br>
+                        <strong>3COINS (APIA/Pole Town)：</strong> 300円質感雜貨。<br>
                         <strong>完美行 (WAmazing)：</strong> 重物/液體用 App 買，機場領。<br>
                         <hr style="border:0; border-top:1px dashed #eee; margin:10px 0;">
                         <strong>深夜美食：</strong> 結尾聖代 (Parfaiteria PaL)。
@@ -540,7 +704,7 @@
                 <input type="radio" name="currency" id="currJPY" value="JPY" onchange="toggleRateTip()">
                 <label class="radio-label" for="currJPY">🇯🇵 日幣</label>
             </div>
-            <div id="rateTip" style="font-size:0.75rem; color:#888; margin-bottom:15px; text-align:center; display:none;">* 自動 x 0.22 換算</div>
+            <div id="rateTip" style="font-size:0.75rem; color:#aaa; margin-bottom:15px; text-align:center; display:none;">* 自動 x 0.22 換算</div>
 
             <div class="radio-group">
                 <input type="radio" name="payer" id="payMe" value="me" checked>
@@ -609,13 +773,12 @@
 
     // Default Data
     const defaultData = [
-        { text: "準備禮物：Brita濾水壺 (去日本買)", done: false, cat: "禮物", class: "gift" },
-        { text: "準備禮物：觸控內手套 (蜂蜜的破了)", done: false, cat: "禮物", class: "gift" },
-        { text: "準備禮物：一條根/黑糖薑茶", done: false, cat: "禮物", class: "gift" },
-        { text: "準備禮物：日本腳臭藥膏 (日本買!)", done: false, cat: "禮物", class: "gift" },
+        { text: "準備禮物：Brita濾水壺 (日本買)", done: false, cat: "禮物", class: "gift" },
+        { text: "準備禮物：觸控內手套", done: false, cat: "禮物", class: "gift" },
+        { text: "準備禮物：台灣零食", done: false, cat: "禮物", class: "gift" },
         { text: "確認 1/22 hal 餐廳訂位", done: false, cat: "必備" },
-        { text: "截圖：VJW QR Code (最重要!)", done: true, cat: "最優先" },
-        { text: "下載唐吉訶德/完美行 App", done: false, cat: "必備" },
+        { text: "截圖：VJW QR Code", done: true, cat: "最優先" },
+        { text: "下載完美行購物 App", done: false, cat: "必備" },
         { text: "預訂旭川動物園一日遊", done: false, cat: "必備" },
         { text: "跟妹妹收錢 (機+酒 $23,956)", done: false, cat: "記帳", class: "money" },
         { text: "1/20 住宿已訂 (Livemax)", done: true, cat: "最優先" },
@@ -627,14 +790,15 @@
     ];
 
     const defaultWishlist = [
-        { name: "成吉思汗烤肉 (達摩)", desc: "必吃羊肉", type: "food" },
-        { name: "海鮮丼 (二條市場)", desc: "早餐吃海膽", type: "food" },
-        { name: "味噌拉麵 (信玄)", desc: "暖胃首選", type: "food" },
-        { name: "結尾聖代 (PaL)", desc: "飯後甜點", type: "food" },
-        { name: "旭川拉麵 (青葉)", desc: "醬油口味", type: "food" },
-        { name: "哈士奇雪橇 (Tomamu)", desc: "需預約", type: "spot" },
-        { name: "富良野起司工坊", desc: "吃披薩", type: "spot" },
-        { name: "雪地摩托車 (富良野)", desc: "需預約", type: "spot" }
+        { name: "3COINS (APIA/Pole Town)", desc: "必逛300円雜貨", type: "spot", location: "札幌" },
+        { name: "成吉思汗烤肉 (達摩)", desc: "必吃羊肉", type: "food", location: "薄野" },
+        { name: "海鮮丼 (二條市場)", desc: "早餐吃海膽", type: "food", location: "二條市場" },
+        { name: "味噌拉麵 (信玄)", desc: "暖胃首選", type: "food", location: "薄野" },
+        { name: "結尾聖代 (PaL)", desc: "飯後甜點", type: "food", location: "薄野" },
+        { name: "旭川拉麵 (青葉)", desc: "醬油口味", type: "food", location: "旭川" },
+        { name: "哈士奇雪橇 (Tomamu)", desc: "需預約", type: "spot", location: "Tomamu" },
+        { name: "富良野起司工坊", desc: "吃披薩", type: "spot", location: "富良野" },
+        { name: "雪地摩托車 (富良野)", desc: "需預約", type: "spot", location: "富良野" }
     ];
 
     // Auth
@@ -759,7 +923,7 @@
             if(item.done) completed++;
             const li = document.createElement('li');
             li.className = `todo-item ${item.done ? 'completed' : ''}`;
-            const tagClass = item.class ? item.class : (item.cat === '最優先' ? 'urgent' : (item.cat === '必備' ? 'vjw' : ''));
+            const tagClass = item.class ? item.class : (item.cat === '最優先' ? 'urgent' : (item.cat === '必備' ? 'tag-info' : ''));
             
             li.innerHTML = `
                 <div class="check-area" onclick="toggleItem('${item.id}', ${item.done})">
@@ -785,12 +949,12 @@
         if(!container) return;
         container.innerHTML = '';
         items.forEach(item => {
-            const li = document.createElement('li');
+            const li = document.createElement('div');
             li.className = 'wish-item';
             li.innerHTML = `
                 <div class="wish-content">
                     <span class="wish-name" style="${item.done ? 'text-decoration:line-through; color:#aaa;' : ''}">
-                        ${item.name} <span class="tag ${item.type === 'food' ? 'food' : 'spot'}">${item.type==='food'?'食':'玩'}</span>
+                        ${item.name} <span class="tag ${item.type === 'food' ? 'tag-food' : 'tag-spot'}">${item.type==='food'?'食':'玩'}</span>
                     </span>
                     <span class="wish-desc">${item.desc}</span>
                 </div>
@@ -819,10 +983,8 @@
             div.className = 'expense-item';
             div.innerHTML = `
                 <div class="expense-info-left">
-                    <div style="display:flex; align-items:center;">
-                        <span class="expense-who-tag ${exp.payer==='me'?'tag-me':'tag-sis'}">${exp.payer==='me'?'我付':'妹付'}</span>
-                        <span>${exp.name}</span>
-                    </div>
+                    <span class="expense-who-tag ${exp.payer==='me'?'tag-me':'tag-sis'}">${exp.payer==='me'?'我付':'妹付'}</span>
+                    <span>${exp.name}</span>
                 </div>
                 <div class="expense-amt-right">
                     <div class="expense-main-price">$${finalCost.toLocaleString()}</div>
@@ -838,7 +1000,7 @@
         
         const diff = totalMe - (totalMe + totalSis)/2;
         const res = document.getElementById('settlementText');
-        if(Math.abs(diff) < 1) res.innerText = "平手！";
+        if(Math.abs(diff) < 1) res.innerText = "目前平手！💖";
         else if(diff > 0) res.innerText = `妹給妳 $${Math.floor(diff).toLocaleString()}`;
         else res.innerText = `妳給妹 $${Math.floor(Math.abs(diff)).toLocaleString()}`;
     }
