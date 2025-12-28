@@ -1,15 +1,3 @@
-/* 設定背景色與點擊高亮 */
-body {
-    background-color: #F0F9FF;
-    -webkit-tap-highlight-color: transparent;
-}
-
-/* 隱藏滾動條但保留滾動功能 (讓畫面更像 App) */
-.no-scrollbar::-webkit-scrollbar {
-    display: none;
-}
-
-.no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
+body { background-color: #F0F9FF; -webkit-tap-highlight-color: transparent; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
