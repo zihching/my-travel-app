@@ -23,6 +23,17 @@
             }
         }
     </script>
+
+    <style>
+        /* 手機版優化設定 */
+        body { 
+            padding-top: 80px; /* 解決標題擋住內容 */
+            background-color: #F0F9FF; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
 </head>
 <body class="bg-hokkaido-bg text-slate-700 font-sans h-screen flex flex-col overflow-hidden">
 
@@ -33,7 +44,7 @@
                 <h2 class="text-xl font-bold mt-3">Hokkaido 2026</h2>
                 <p class="text-xs opacity-80">請輸入通關密碼 (2026)</p>
             </div>
-            <input type="password" id="password-input" placeholder="Password" class="w-full px-4 py-3 rounded-xl bg-white/90 text-center text-gray-700 tracking-widest font-bold mb-4 focus:outline-none">
+            <input type="password" id="password-input" placeholder="Password" value="2026" class="w-full px-4 py-3 rounded-xl bg-white/90 text-center text-gray-700 tracking-widest font-bold mb-4 focus:outline-none">
             <button onclick="checkPassword()" class="w-full bg-hokkaido-dark text-white font-bold py-3 rounded-xl shadow-lg active:scale-95 transition-transform">進入旅程</button>
             <p id="error-msg" class="text-red-200 text-xs mt-3 hidden font-bold">密碼錯誤</p>
         </div>
@@ -42,8 +53,7 @@
     <header class="bg-white/80 backdrop-blur-md shadow-sm pt-12 pb-4 px-6 fixed top-0 w-full z-20">
         <h1 class="text-xl font-bold text-hokkaido-dark tracking-wide"><i class="fa-solid fa-snowflake text-hokkaido-accent mr-2"></i>Hokkaido 2026</h1>
     </header>
-
-    <main class="flex-1 overflow-y-auto mt-24 pb-28 px-5 no-scrollbar relative">
+    <main class="flex-1 overflow-y-auto mt-4 pb-28 px-5 no-scrollbar relative">
         <div id="view-home" class="view-section space-y-6">
             <div class="bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl p-6 text-white shadow-lg shadow-blue-200">
                 <div class="text-sm opacity-90 mb-1">距離出發還有</div>
