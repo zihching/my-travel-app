@@ -25,9 +25,8 @@
     </script>
 
     <style>
-        /* 手機版優化設定 */
         body { 
-            padding-top: 80px; /* 解決標題擋住內容 */
+            padding-top: 80px; 
             background-color: #F0F9FF; 
             -webkit-tap-highlight-color: transparent; 
         }
@@ -71,7 +70,9 @@
         <div id="view-checklist" class="view-section hidden">
             <h2 class="text-lg font-bold text-hokkaido-dark mb-4">行前準備清單 (雲端同步)</h2>
             <div class="flex mb-4">
-                <input type="text" id="new-todo-input" placeholder="新增待辦..." class="flex-1 p-3 rounded-l-xl border border-gray-200 focus:outline-none">
+                <input type="text" id="new-todo-input" placeholder="新增待辦..." 
+                       class="flex-1 p-3 rounded-l-xl border border-gray-200 focus:outline-none"
+                       onkeydown="if(event.key === 'Enter') addTodo()">
                 <button onclick="addTodo()" class="bg-hokkaido-primary text-white px-5 rounded-r-xl"><i class="fa-solid fa-plus"></i></button>
             </div>
             <ul id="checklist-container" class="space-y-3"></ul>
