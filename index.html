@@ -52,7 +52,9 @@
     <header class="bg-white/80 backdrop-blur-md shadow-sm pt-12 pb-4 px-6 fixed top-0 w-full z-20">
         <h1 class="text-xl font-bold text-hokkaido-dark tracking-wide"><i class="fa-solid fa-snowflake text-hokkaido-accent mr-2"></i>Hokkaido 2026</h1>
     </header>
+
     <main class="flex-1 overflow-y-auto mt-4 pb-28 px-5 no-scrollbar relative">
+        
         <div id="view-home" class="view-section space-y-6">
             <div class="bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl p-6 text-white shadow-lg shadow-blue-200">
                 <div class="text-sm opacity-90 mb-1">距離出發還有</div>
@@ -68,7 +70,7 @@
         </div>
 
         <div id="view-checklist" class="view-section hidden">
-            <h2 class="text-lg font-bold text-hokkaido-dark mb-4">行前準備清單 (雲端同步)</h2>
+            <h2 class="text-lg font-bold text-hokkaido-dark mb-4">行前準備清單</h2>
             <div class="flex mb-4">
                 <input type="text" id="new-todo-input" placeholder="新增待辦..." 
                        class="flex-1 p-3 rounded-l-xl border border-gray-200 focus:outline-none"
@@ -92,14 +94,83 @@
             </div>
             <div id="budget-list" class="space-y-2 pb-10"></div>
         </div>
-    </main>
 
-    <nav class="fixed bottom-0 w-full bg-white border-t border-gray-100 pb-safe pt-2 px-6 pb-4 shadow-[0_-5px_15px_rgba(0,0,0,0.03)] z-30">
-        <div class="flex justify-between items-center">
-            <button onclick="switchTab('home')" class="nav-btn active flex flex-col items-center space-y-1 text-hokkaido-primary w-16" data-target="home"><i class="fa-solid fa-house text-xl"></i><span class="text-[10px]">首頁</span></button>
-            <button onclick="switchTab('itinerary')" class="nav-btn flex flex-col items-center space-y-1 text-gray-400 w-16" data-target="itinerary"><i class="fa-solid fa-calendar-days text-xl"></i><span class="text-[10px]">行程</span></button>
-            <button onclick="switchTab('checklist')" class="nav-btn flex flex-col items-center space-y-1 text-gray-400 w-16" data-target="checklist"><i class="fa-solid fa-list-check text-xl"></i><span class="text-[10px]">清單</span></button>
-            <button onclick="switchTab('budget')" class="nav-btn flex flex-col items-center space-y-1 text-gray-400 w-16" data-target="budget"><i class="fa-solid fa-yen-sign text-xl"></i><span class="text-[10px]">記帳</span></button>
+        <div id="view-apps" class="view-section hidden">
+            <h2 class="text-lg font-bold text-hokkaido-dark mb-4">日本旅遊必備 App</h2>
+            
+            <div class="mb-6">
+                <h3 class="text-sm font-bold text-gray-400 mb-2 pl-1">交通 & 地圖</h3>
+                <div class="grid grid-cols-4 gap-3 text-center">
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 bg-green-500 rounded-2xl flex items-center justify-center text-white text-2xl shadow-md mb-1"><i class="fa-solid fa-train"></i></div>
+                        <span class="text-[10px] font-medium">乘換案內</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 bg-white border border-gray-200 rounded-2xl flex items-center justify-center text-blue-600 text-2xl shadow-md mb-1"><i class="fa-brands fa-google"></i></div>
+                        <span class="text-[10px] font-medium">Google Map</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 bg-black rounded-2xl flex items-center justify-center text-white text-2xl shadow-md mb-1"><i class="fa-brands fa-uber"></i></div>
+                        <span class="text-[10px] font-medium">Uber</span>
+                    </div>
+                     <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 bg-green-600 rounded-2xl flex items-center justify-center text-white text-2xl shadow-md mb-1"><i class="fa-solid fa-credit-card"></i></div>
+                        <span class="text-[10px] font-medium">Suica</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <h3 class="text-sm font-bold text-gray-400 mb-2 pl-1">購物 & 實用工具</h3>
+                <div class="grid grid-cols-4 gap-3 text-center">
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 bg-pink-500 rounded-2xl flex items-center justify-center text-white text-2xl shadow-md mb-1"><i class="fa-solid fa-barcode"></i></div>
+                        <span class="text-[10px] font-medium">Payke</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 bg-blue-500 rounded-2xl flex items-center justify-center text-white text-2xl shadow-md mb-1"><i class="fa-solid fa-language"></i></div>
+                        <span class="text-[10px] font-medium">翻譯</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 bg-yellow-400 rounded-2xl flex items-center justify-center text-white text-2xl shadow-md mb-1"><i class="fa-solid fa-calculator"></i></div>
+                        <span class="text-[10px] font-medium">匯率</span>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-2xl shadow-md mb-1"><i class="fa-solid fa-passport"></i></div>
+                        <span class="text-[10px] font-medium">VJW Web</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <nav class="fixed bottom-0 w-full bg-white border-t border-gray-100 pb-safe pt-2 px-4 pb-4 shadow-[0_-5px_15px_rgba(0,0,0,0.03)] z-30">
+        <div class="grid grid-cols-5 gap-1 items-center">
+            
+            <button onclick="switchTab('home')" class="nav-btn active flex flex-col items-center space-y-1 text-hokkaido-primary w-full" data-target="home">
+                <i class="fa-solid fa-house text-xl"></i>
+                <span class="text-[10px]">首頁</span>
+            </button>
+            
+            <button onclick="switchTab('itinerary')" class="nav-btn flex flex-col items-center space-y-1 text-gray-400 w-full" data-target="itinerary">
+                <i class="fa-solid fa-calendar-days text-xl"></i>
+                <span class="text-[10px]">行程</span>
+            </button>
+            
+            <button onclick="switchTab('checklist')" class="nav-btn flex flex-col items-center space-y-1 text-gray-400 w-full" data-target="checklist">
+                <i class="fa-solid fa-list-check text-xl"></i>
+                <span class="text-[10px]">清單</span>
+            </button>
+            
+            <button onclick="switchTab('budget')" class="nav-btn flex flex-col items-center space-y-1 text-gray-400 w-full" data-target="budget">
+                <i class="fa-solid fa-yen-sign text-xl"></i>
+                <span class="text-[10px]">記帳</span>
+            </button>
+
+            <button onclick="switchTab('apps')" class="nav-btn flex flex-col items-center space-y-1 text-gray-400 w-full" data-target="apps">
+                <i class="fa-solid fa-mobile-screen text-xl"></i>
+                <span class="text-[10px]">工具</span>
+            </button>
+
         </div>
     </nav>
 
