@@ -4,17 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>2026 北海道冬之旅</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: {
-                        hokkaido: { bg: '#F0F9FF', primary: '#3B82F6', accent: '#60A5FA', dark: '#1E3A8A' }
-                    },
+                    colors: { hokkaido: { bg: '#F0F9FF', primary: '#3B82F6', accent: '#60A5FA', dark: '#1E3A8A' } },
                     fontFamily: { sans: ['"Poppins"', '"Noto Sans TC"', 'sans-serif'] }
                 }
             }
@@ -31,15 +34,13 @@
                 <p class="text-xs opacity-80">請輸入通關密碼 (2026)</p>
             </div>
             <input type="password" id="password-input" placeholder="Password" class="w-full px-4 py-3 rounded-xl bg-white/90 text-center text-gray-700 tracking-widest font-bold mb-4 focus:outline-none">
-            <button onclick="window.checkPassword()" class="w-full bg-hokkaido-dark text-white font-bold py-3 rounded-xl shadow-lg active:scale-95 transition-transform">進入旅程</button>
+            <button onclick="checkPassword()" class="w-full bg-hokkaido-dark text-white font-bold py-3 rounded-xl shadow-lg active:scale-95 transition-transform">進入旅程</button>
             <p id="error-msg" class="text-red-200 text-xs mt-3 hidden font-bold">密碼錯誤</p>
         </div>
     </div>
 
     <header class="bg-white/80 backdrop-blur-md shadow-sm pt-12 pb-4 px-6 fixed top-0 w-full z-20">
-        <h1 class="text-xl font-bold text-hokkaido-dark tracking-wide">
-            <i class="fa-solid fa-snowflake text-hokkaido-accent mr-2"></i>Hokkaido 2026
-        </h1>
+        <h1 class="text-xl font-bold text-hokkaido-dark tracking-wide"><i class="fa-solid fa-snowflake text-hokkaido-accent mr-2"></i>Hokkaido 2026</h1>
     </header>
 
     <main class="flex-1 overflow-y-auto mt-24 pb-28 px-5 no-scrollbar relative">
@@ -49,10 +50,7 @@
                 <div class="flex items-baseline space-x-2"><span id="countdown-days" class="text-5xl font-bold">--</span><span class="text-lg">天</span></div>
                 <div class="mt-4 text-sm bg-white/20 inline-block px-3 py-1 rounded-full backdrop-blur-sm">2026/01/20 出發</div>
             </div>
-            <div>
-                <h2 class="text-lg font-bold text-hokkaido-dark mb-3">當前重點</h2>
-                <div id="dynamic-info-card" class="bg-white rounded-xl p-5 shadow-sm border border-blue-50"></div>
-            </div>
+            <div><h2 class="text-lg font-bold text-hokkaido-dark mb-3">當前重點</h2><div id="dynamic-info-card" class="bg-white rounded-xl p-5 shadow-sm border border-blue-50"></div></div>
         </div>
 
         <div id="view-itinerary" class="view-section hidden">
@@ -64,7 +62,7 @@
             <h2 class="text-lg font-bold text-hokkaido-dark mb-4">行前準備清單 (雲端同步)</h2>
             <div class="flex mb-4">
                 <input type="text" id="new-todo-input" placeholder="新增待辦..." class="flex-1 p-3 rounded-l-xl border border-gray-200 focus:outline-none">
-                <button onclick="window.addTodo()" class="bg-hokkaido-primary text-white px-5 rounded-r-xl"><i class="fa-solid fa-plus"></i></button>
+                <button onclick="addTodo()" class="bg-hokkaido-primary text-white px-5 rounded-r-xl"><i class="fa-solid fa-plus"></i></button>
             </div>
             <ul id="checklist-container" class="space-y-3"></ul>
         </div>
@@ -79,7 +77,7 @@
                     <input type="text" id="budget-item" placeholder="品項" class="col-span-2 p-2 bg-gray-50 rounded border border-gray-100">
                     <input type="number" id="budget-amount" placeholder="金額" class="col-span-1 p-2 bg-gray-50 rounded border border-gray-100">
                 </div>
-                <button onclick="window.addBudget()" class="w-full bg-hokkaido-accent text-white py-2 rounded font-semibold shadow-sm active:scale-95">新增紀錄</button>
+                <button onclick="addBudget()" class="w-full bg-hokkaido-accent text-white py-2 rounded font-semibold shadow-sm active:scale-95">新增紀錄</button>
             </div>
             <div id="budget-list" class="space-y-2 pb-10"></div>
         </div>
@@ -87,13 +85,13 @@
 
     <nav class="fixed bottom-0 w-full bg-white border-t border-gray-100 pb-safe pt-2 px-6 pb-4 shadow-[0_-5px_15px_rgba(0,0,0,0.03)] z-30">
         <div class="flex justify-between items-center">
-            <button onclick="window.switchTab('home')" class="nav-btn active flex flex-col items-center space-y-1 text-hokkaido-primary w-16" data-target="home"><i class="fa-solid fa-house text-xl"></i><span class="text-[10px]">首頁</span></button>
-            <button onclick="window.switchTab('itinerary')" class="nav-btn flex flex-col items-center space-y-1 text-gray-400 w-16" data-target="itinerary"><i class="fa-solid fa-calendar-days text-xl"></i><span class="text-[10px]">行程</span></button>
-            <button onclick="window.switchTab('checklist')" class="nav-btn flex flex-col items-center space-y-1 text-gray-400 w-16" data-target="checklist"><i class="fa-solid fa-list-check text-xl"></i><span class="text-[10px]">清單</span></button>
-            <button onclick="window.switchTab('budget')" class="nav-btn flex flex-col items-center space-y-1 text-gray-400 w-16" data-target="budget"><i class="fa-solid fa-yen-sign text-xl"></i><span class="text-[10px]">記帳</span></button>
+            <button onclick="switchTab('home')" class="nav-btn active flex flex-col items-center space-y-1 text-hokkaido-primary w-16" data-target="home"><i class="fa-solid fa-house text-xl"></i><span class="text-[10px]">首頁</span></button>
+            <button onclick="switchTab('itinerary')" class="nav-btn flex flex-col items-center space-y-1 text-gray-400 w-16" data-target="itinerary"><i class="fa-solid fa-calendar-days text-xl"></i><span class="text-[10px]">行程</span></button>
+            <button onclick="switchTab('checklist')" class="nav-btn flex flex-col items-center space-y-1 text-gray-400 w-16" data-target="checklist"><i class="fa-solid fa-list-check text-xl"></i><span class="text-[10px]">清單</span></button>
+            <button onclick="switchTab('budget')" class="nav-btn flex flex-col items-center space-y-1 text-gray-400 w-16" data-target="budget"><i class="fa-solid fa-yen-sign text-xl"></i><span class="text-[10px]">記帳</span></button>
         </div>
     </nav>
 
-    <script type="module" src="app.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
