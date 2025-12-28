@@ -32,6 +32,10 @@
         }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* 刪除按鈕的小動畫 */
+        .delete-btn { transition: all 0.2s; }
+        .delete-btn:active { transform: scale(0.9); }
     </style>
 </head>
 <body class="bg-hokkaido-bg text-slate-700 font-sans h-screen flex flex-col overflow-hidden">
@@ -54,7 +58,6 @@
     </header>
 
     <main class="flex-1 overflow-y-auto mt-4 pb-28 px-5 no-scrollbar relative">
-        
         <div id="view-home" class="view-section space-y-6">
             <div class="bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl p-6 text-white shadow-lg shadow-blue-200">
                 <div class="text-sm opacity-90 mb-1">距離出發還有</div>
@@ -72,9 +75,7 @@
         <div id="view-checklist" class="view-section hidden">
             <h2 class="text-lg font-bold text-hokkaido-dark mb-4">行前準備清單</h2>
             <div class="flex mb-4">
-                <input type="text" id="new-todo-input" placeholder="新增待辦..." 
-                       class="flex-1 p-3 rounded-l-xl border border-gray-200 focus:outline-none"
-                       onkeydown="if(event.key === 'Enter') addTodo()">
+                <input type="text" id="new-todo-input" placeholder="新增待辦..." class="flex-1 p-3 rounded-l-xl border border-gray-200 focus:outline-none" onkeydown="if(event.key === 'Enter') addTodo()">
                 <button onclick="addTodo()" class="bg-hokkaido-primary text-white px-5 rounded-r-xl"><i class="fa-solid fa-plus"></i></button>
             </div>
             <ul id="checklist-container" class="space-y-3"></ul>
@@ -96,84 +97,119 @@
         </div>
 
         <div id="view-apps" class="view-section hidden">
-            <h2 class="text-lg font-bold text-hokkaido-dark mb-4">日本旅遊必備 App</h2>
+            <h2 class="text-lg font-bold text-hokkaido-dark mb-4">日本旅遊 App 管理</h2>
             
-            <div class="mb-6">
-                <h3 class="text-sm font-bold text-gray-400 mb-2 pl-1">交通 & 地圖</h3>
-                <div class="grid grid-cols-4 gap-3 text-center">
-                    <div class="flex flex-col items-center">
-                        <div class="w-14 h-14 bg-green-500 rounded-2xl flex items-center justify-center text-white text-2xl shadow-md mb-1"><i class="fa-solid fa-train"></i></div>
-                        <span class="text-[10px] font-medium">乘換案內</span>
-                    </div>
-                    <div class="flex flex-col items-center">
-                        <div class="w-14 h-14 bg-white border border-gray-200 rounded-2xl flex items-center justify-center text-blue-600 text-2xl shadow-md mb-1"><i class="fa-brands fa-google"></i></div>
-                        <span class="text-[10px] font-medium">Google Map</span>
-                    </div>
-                    <div class="flex flex-col items-center">
-                        <div class="w-14 h-14 bg-black rounded-2xl flex items-center justify-center text-white text-2xl shadow-md mb-1"><i class="fa-brands fa-uber"></i></div>
-                        <span class="text-[10px] font-medium">Uber</span>
-                    </div>
-                     <div class="flex flex-col items-center">
-                        <div class="w-14 h-14 bg-green-600 rounded-2xl flex items-center justify-center text-white text-2xl shadow-md mb-1"><i class="fa-solid fa-credit-card"></i></div>
-                        <span class="text-[10px] font-medium">Suica</span>
-                    </div>
+            <div class="bg-white p-4 rounded-xl shadow-sm mb-6 border border-gray-100">
+                <div class="grid grid-cols-1 gap-3 mb-3">
+                    <input type="text" id="app-name-input" placeholder="App 名稱 (如: Uber)" class="w-full p-2 bg-gray-50 rounded border border-gray-200 focus:outline-blue-400 text-sm">
+                    <input type="text" id="app-desc-input" placeholder="功能說明 (如: 叫車用)" class="w-full p-2 bg-gray-50 rounded border border-gray-200 focus:outline-blue-400 text-sm">
                 </div>
+                <button onclick="addNewApp()" class="w-full bg-hokkaido-primary text-white py-2 rounded-lg font-bold text-sm shadow-sm active:scale-95 transition-transform"><i class="fa-solid fa-plus mr-1"></i> 新增 App</button>
             </div>
 
-            <div class="mb-6">
-                <h3 class="text-sm font-bold text-gray-400 mb-2 pl-1">購物 & 實用工具</h3>
-                <div class="grid grid-cols-4 gap-3 text-center">
-                    <div class="flex flex-col items-center">
-                        <div class="w-14 h-14 bg-pink-500 rounded-2xl flex items-center justify-center text-white text-2xl shadow-md mb-1"><i class="fa-solid fa-barcode"></i></div>
-                        <span class="text-[10px] font-medium">Payke</span>
-                    </div>
-                    <div class="flex flex-col items-center">
-                        <div class="w-14 h-14 bg-blue-500 rounded-2xl flex items-center justify-center text-white text-2xl shadow-md mb-1"><i class="fa-solid fa-language"></i></div>
-                        <span class="text-[10px] font-medium">翻譯</span>
-                    </div>
-                    <div class="flex flex-col items-center">
-                        <div class="w-14 h-14 bg-yellow-400 rounded-2xl flex items-center justify-center text-white text-2xl shadow-md mb-1"><i class="fa-solid fa-calculator"></i></div>
-                        <span class="text-[10px] font-medium">匯率</span>
-                    </div>
-                    <div class="flex flex-col items-center">
-                        <div class="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-2xl shadow-md mb-1"><i class="fa-solid fa-passport"></i></div>
-                        <span class="text-[10px] font-medium">VJW Web</span>
-                    </div>
+            <div id="apps-container" class="grid grid-cols-2 gap-4 pb-10">
                 </div>
-            </div>
         </div>
     </main>
     <nav class="fixed bottom-0 w-full bg-white border-t border-gray-100 pb-safe pt-2 px-4 pb-4 shadow-[0_-5px_15px_rgba(0,0,0,0.03)] z-30">
         <div class="grid grid-cols-5 gap-1 items-center">
-            
-            <button onclick="switchTab('home')" class="nav-btn active flex flex-col items-center space-y-1 text-hokkaido-primary w-full" data-target="home">
-                <i class="fa-solid fa-house text-xl"></i>
-                <span class="text-[10px]">首頁</span>
-            </button>
-            
-            <button onclick="switchTab('itinerary')" class="nav-btn flex flex-col items-center space-y-1 text-gray-400 w-full" data-target="itinerary">
-                <i class="fa-solid fa-calendar-days text-xl"></i>
-                <span class="text-[10px]">行程</span>
-            </button>
-            
-            <button onclick="switchTab('checklist')" class="nav-btn flex flex-col items-center space-y-1 text-gray-400 w-full" data-target="checklist">
-                <i class="fa-solid fa-list-check text-xl"></i>
-                <span class="text-[10px]">清單</span>
-            </button>
-            
-            <button onclick="switchTab('budget')" class="nav-btn flex flex-col items-center space-y-1 text-gray-400 w-full" data-target="budget">
-                <i class="fa-solid fa-yen-sign text-xl"></i>
-                <span class="text-[10px]">記帳</span>
-            </button>
-
-            <button onclick="switchTab('apps')" class="nav-btn flex flex-col items-center space-y-1 text-gray-400 w-full" data-target="apps">
-                <i class="fa-solid fa-mobile-screen text-xl"></i>
-                <span class="text-[10px]">工具</span>
-            </button>
-
+            <button onclick="switchTab('home')" class="nav-btn active flex flex-col items-center space-y-1 text-hokkaido-primary w-full" data-target="home"><i class="fa-solid fa-house text-xl"></i><span class="text-[10px]">首頁</span></button>
+            <button onclick="switchTab('itinerary')" class="nav-btn flex flex-col items-center space-y-1 text-gray-400 w-full" data-target="itinerary"><i class="fa-solid fa-calendar-days text-xl"></i><span class="text-[10px]">行程</span></button>
+            <button onclick="switchTab('checklist')" class="nav-btn flex flex-col items-center space-y-1 text-gray-400 w-full" data-target="checklist"><i class="fa-solid fa-list-check text-xl"></i><span class="text-[10px]">清單</span></button>
+            <button onclick="switchTab('budget')" class="nav-btn flex flex-col items-center space-y-1 text-gray-400 w-full" data-target="budget"><i class="fa-solid fa-yen-sign text-xl"></i><span class="text-[10px]">記帳</span></button>
+            <button onclick="switchTab('apps')" class="nav-btn flex flex-col items-center space-y-1 text-gray-400 w-full" data-target="apps"><i class="fa-solid fa-mobile-screen text-xl"></i><span class="text-[10px]">工具</span></button>
         </div>
     </nav>
 
     <script src="app.js"></script>
+
+    <script>
+        // 1. 初始化 App 資料 (如果沒資料，就載入預設值)
+        let myApps = JSON.parse(localStorage.getItem('hokkaido_apps')) || [
+            { name: "乘換案內", desc: "查電車時刻", icon: "fa-train", color: "bg-green-500" },
+            { name: "Google Map", desc: "找路/評價", icon: "fa-map-location-dot", color: "bg-blue-600" },
+            { name: "Payke", desc: "掃藥妝成分", icon: "fa-barcode", color: "bg-pink-500" },
+            { name: "VoiceTra", desc: "語音翻譯", icon: "fa-language", color: "bg-indigo-500" },
+            { name: "Suica App", desc: "西瓜卡儲值", icon: "fa-credit-card", color: "bg-green-700" },
+            { name: "Uber", desc: "太累叫車用", icon: "fa-car", color: "bg-black" }
+        ];
+
+        // 2. 顯示 App 列表
+        function renderApps() {
+            const container = document.getElementById('apps-container');
+            if(!container) return; // 避免錯誤
+            
+            container.innerHTML = ''; // 清空
+            
+            myApps.forEach((app, index) => {
+                // 產生卡片 HTML
+                const card = `
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 relative group flex flex-col items-center text-center">
+                        <button onclick="deleteApp(${index})" class="delete-btn absolute top-2 right-2 text-gray-300 hover:text-red-500 p-1">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                        <div class="w-12 h-12 ${app.color || 'bg-blue-400'} rounded-2xl flex items-center justify-center text-white text-xl shadow-md mb-2">
+                            <i class="fa-solid ${app.icon || 'fa-mobile-screen'}"></i>
+                        </div>
+                        <h3 class="font-bold text-gray-800 text-sm mb-1">${app.name}</h3>
+                        <p class="text-[10px] text-gray-500 leading-tight">${app.desc}</p>
+                    </div>
+                `;
+                container.innerHTML += card;
+            });
+            
+            // 存檔
+            localStorage.setItem('hokkaido_apps', JSON.stringify(myApps));
+        }
+
+        // 3. 新增 App 功能
+        function addNewApp() {
+            const nameInput = document.getElementById('app-name-input');
+            const descInput = document.getElementById('app-desc-input');
+            
+            const name = nameInput.value.trim();
+            const desc = descInput.value.trim();
+            
+            if (!name) {
+                alert("請至少輸入 App 名稱喔！");
+                return;
+            }
+
+            // 加到陣列
+            myApps.unshift({ // unshift 加在最前面
+                name: name,
+                desc: desc || "自訂 App",
+                icon: "fa-star", // 新增的預設給星星圖示
+                color: "bg-hokkaido-accent"
+            });
+
+            // 清空輸入框
+            nameInput.value = '';
+            descInput.value = '';
+
+            // 重新顯示
+            renderApps();
+        }
+
+        // 4. 刪除 App 功能
+        function deleteApp(index) {
+            if(confirm('確定要刪除 ' + myApps[index].name + ' 嗎？')) {
+                myApps.splice(index, 1);
+                renderApps();
+            }
+        }
+
+        // 頁面載入時執行一次
+        document.addEventListener('DOMContentLoaded', () => {
+            renderApps();
+            
+            // 如果切換 tab 的函式有被呼叫，確保 Apps 也會重新渲染 (簡單綁定)
+            const oldSwitch = window.switchTab;
+            window.switchTab = function(tabName) {
+                if(typeof oldSwitch === 'function') oldSwitch(tabName);
+                if(tabName === 'apps') renderApps();
+            };
+        });
+    </script>
 </body>
 </html>
