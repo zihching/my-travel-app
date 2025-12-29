@@ -71,13 +71,8 @@
 
         <div id="view-itinerary" class="view-section hidden">
             <div class="flex space-x-2 overflow-x-auto no-scrollbar mb-4 py-1" id="date-tabs-container"></div>
-            
-            <button onclick="openEditModal()" class="w-full bg-white border-2 border-dashed border-blue-200 text-blue-400 font-bold py-3 rounded-xl mb-6 hover:bg-blue-50 transition-colors btn-active">
-                <i class="fa-solid fa-plus mr-2"></i>新增此日行程
-            </button>
-
-            <div class="relative border-l-2 border-blue-200 ml-3 pl-6 space-y-6 pb-10" id="timeline-container">
-                </div>
+            <button onclick="openEditModal()" class="w-full bg-white border-2 border-dashed border-blue-200 text-blue-400 font-bold py-3 rounded-xl mb-6 hover:bg-blue-50 transition-colors btn-active"><i class="fa-solid fa-plus mr-2"></i>新增此日行程</button>
+            <div class="relative border-l-2 border-blue-200 ml-3 pl-6 space-y-6 pb-10" id="timeline-container"></div>
         </div>
 
         <div id="view-checklist" class="view-section hidden">
@@ -126,56 +121,18 @@
 
     <div id="itinerary-modal" class="fixed inset-0 z-50 bg-black/50 hidden flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeModal('itinerary-modal')">
         <div class="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl transform transition-all scale-95" onclick="event.stopPropagation()">
-            <div id="modal-header-img" class="h-40 bg-gray-200 bg-cover bg-center hidden relative">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-            </div>
+            <div id="modal-header-img" class="h-40 bg-gray-200 bg-cover bg-center hidden relative"><div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div></div>
             <div class="p-6">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <span id="modal-time" class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-bold mb-2">10:00</span>
-                        <h3 id="modal-title" class="text-xl font-bold text-gray-800"></h3>
-                    </div>
-                    <button onclick="closeModal('itinerary-modal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
-                </div>
-                
-                <div class="space-y-4">
-                    <div class="flex items-start text-sm text-gray-600">
-                        <i class="fa-solid fa-location-dot mt-1 mr-3 text-red-400 w-4 text-center"></i>
-                        <span id="modal-address" class="flex-1"></span>
-                    </div>
-                    <div class="flex items-start text-sm text-gray-600">
-                        <i class="fa-solid fa-note-sticky mt-1 mr-3 text-yellow-500 w-4 text-center"></i>
-                        <p id="modal-note" class="flex-1 whitespace-pre-wrap leading-relaxed"></p>
-                    </div>
-                </div>
-
-                <div class="mt-6 flex gap-3">
-                    <a id="modal-link-btn" href="#" target="_blank" class="flex-1 bg-hokkaido-primary text-white text-center py-2.5 rounded-xl font-bold shadow-md hover:bg-blue-600 transition-colors hidden">
-                        <i class="fa-solid fa-arrow-up-right-from-square mr-2"></i>開啟連結
-                    </a>
-                    <button id="modal-delete-btn" class="bg-red-50 text-red-500 px-4 py-2.5 rounded-xl font-bold hover:bg-red-100 transition-colors">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
-                </div>
+                <div class="flex justify-between items-start mb-4"><div><span id="modal-time" class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-bold mb-2">10:00</span><h3 id="modal-title" class="text-xl font-bold text-gray-800"></h3></div><button onclick="closeModal('itinerary-modal')" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button></div>
+                <div class="space-y-4"><div class="flex items-start text-sm text-gray-600"><i class="fa-solid fa-location-dot mt-1 mr-3 text-red-400 w-4 text-center"></i><span id="modal-address" class="flex-1"></span></div><div class="flex items-start text-sm text-gray-600"><i class="fa-solid fa-note-sticky mt-1 mr-3 text-yellow-500 w-4 text-center"></i><p id="modal-note" class="flex-1 whitespace-pre-wrap leading-relaxed"></p></div></div>
+                <div class="mt-6 flex gap-3"><a id="modal-link-btn" href="#" target="_blank" class="flex-1 bg-hokkaido-primary text-white text-center py-2.5 rounded-xl font-bold shadow-md hover:bg-blue-600 transition-colors hidden"><i class="fa-solid fa-arrow-up-right-from-square mr-2"></i>開啟連結</a><button id="modal-delete-btn" class="bg-red-50 text-red-500 px-4 py-2.5 rounded-xl font-bold hover:bg-red-100 transition-colors"><i class="fa-solid fa-trash-can"></i></button></div>
             </div>
         </div>
     </div>
-
     <div id="edit-modal" class="fixed inset-0 z-50 bg-black/50 hidden flex items-center justify-center p-4 backdrop-blur-sm" onclick="closeModal('edit-modal')">
         <div class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl" onclick="event.stopPropagation()">
             <h3 class="text-lg font-bold mb-4 text-hokkaido-dark">新增/編輯行程</h3>
-            <div class="space-y-3">
-                <div class="grid grid-cols-2 gap-3">
-                    <input type="date" id="edit-date" class="p-2 border rounded-lg bg-gray-50 text-sm w-full">
-                    <input type="time" id="edit-time" class="p-2 border rounded-lg bg-gray-50 text-sm w-full">
-                </div>
-                <input type="text" id="edit-title" placeholder="地點名稱 (如: 札幌電視塔)" class="w-full p-2 border rounded-lg bg-gray-50 text-sm">
-                <input type="text" id="edit-address" placeholder="地址 / 位置說明" class="w-full p-2 border rounded-lg bg-gray-50 text-sm">
-                <input type="text" id="edit-link" placeholder="圖片連結 或 攻略網址 (選填)" class="w-full p-2 border rounded-lg bg-gray-50 text-sm">
-                <textarea id="edit-note" placeholder="備註 / 攻略 / 必吃美食..." rows="3" class="w-full p-2 border rounded-lg bg-gray-50 text-sm"></textarea>
-                
-                <button onclick="saveItinerary()" class="w-full bg-hokkaido-primary text-white py-3 rounded-xl font-bold shadow-md mt-2 btn-active">儲存行程</button>
-            </div>
+            <div class="space-y-3"><div class="grid grid-cols-2 gap-3"><input type="date" id="edit-date" class="p-2 border rounded-lg bg-gray-50 text-sm w-full"><input type="time" id="edit-time" class="p-2 border rounded-lg bg-gray-50 text-sm w-full"></div><input type="text" id="edit-title" placeholder="地點名稱" class="w-full p-2 border rounded-lg bg-gray-50 text-sm"><input type="text" id="edit-address" placeholder="地址" class="w-full p-2 border rounded-lg bg-gray-50 text-sm"><input type="text" id="edit-link" placeholder="連結 (選填)" class="w-full p-2 border rounded-lg bg-gray-50 text-sm"><textarea id="edit-note" placeholder="備註..." rows="3" class="w-full p-2 border rounded-lg bg-gray-50 text-sm"></textarea><button onclick="saveItinerary()" class="w-full bg-hokkaido-primary text-white py-3 rounded-xl font-bold shadow-md mt-2 btn-active">儲存行程</button></div>
         </div>
     </div>
     <nav class="fixed bottom-0 w-full bg-white border-t border-gray-100 pb-safe pt-2 px-4 pb-4 shadow-[0_-5px_15px_rgba(0,0,0,0.03)] z-30">
@@ -191,7 +148,6 @@
     <script src="app.js"></script>
 
     <script>
-        /* === 通用功能 === */
         const TABS = ['home', 'itinerary', 'checklist', 'budget', 'apps'];
         const oldSwitch = window.switchTab;
         window.switchTab = function(tabName) {
@@ -202,27 +158,39 @@
             if(tabName === 'itinerary') renderItinerary();
         };
 
-        /* === 1. 行程管理 (Phase 3 - 最終版) === */
+        /* === 1. 行程管理 (完整輸入版) === */
         let itinerary = JSON.parse(localStorage.getItem('hokkaido_itinerary')) || [
-            // 預設一個範例
-            { id: Date.now(), date: '2026-01-20', time: '10:00', title: '抵達新千歲機場', address: '新千歲空港', link: 'https://www.new-chitose-airport.jp/tw/', note: '記得先去拿 JR Pass，要在 B1 外國人服務中心。' }
+            // Day 1: 1/20
+            { id: 101, date: '2026-01-20', time: '09:30', title: '✈️ 長榮 BR116 起飛', address: '桃園國際機場 T2', note: '09:30 起飛 - 14:05 抵達。飛行 3hr 35m。' },
+            { id: 102, date: '2026-01-20', time: '14:05', title: '🛬 抵達新千歲', address: '新千歲機場', link: 'https://www.new-chitose-airport.jp/tw/', note: '入境後前往札幌。' },
+            { id: 103, date: '2026-01-20', time: '16:30', title: '🏨 Check-in: 利夫馬克斯', address: '利夫馬克斯經濟型飯店-札幌站前店', note: '單張床房 (禁菸)。住 1 晚。' },
+            // Day 2: 1/21
+            { id: 201, date: '2026-01-21', time: '10:00', title: '🏨 退房 & 移動', address: '前往星野渡假村', note: '退房，前往 Resonare Tomamu。' },
+            { id: 202, date: '2026-01-21', time: '15:00', title: '🏨 Check-in: Resonare', address: '星野 RISONARE Tomamu', link: 'https://www.snowtomamu.jp/', note: '入住 Resonare，住 2 晚。' },
+            // Day 3: 1/22
+            { id: 301, date: '2026-01-22', time: '09:00', title: '❄️ 星野全日自由活動', address: 'RISONARE Tomamu', note: '滑雪 / 霧冰平台 / 微笑海灘。' },
+            // Day 4: 1/23
+            { id: 401, date: '2026-01-23', time: '11:00', title: '🏨 退房 & 返回札幌', address: '前往札幌市區', note: '離開星野，返回札幌。' },
+            { id: 402, date: '2026-01-23', time: '16:00', title: '🏨 Check-in: 條紋住宅飯店', address: '札幌條紋住宅飯店 (Stripe Hotel)', note: '標準房，住 2 晚。' },
+            // Day 5: 1/24
+            { id: 501, date: '2026-01-24', time: '10:00', title: '🛍️ 札幌市區一日遊', address: '札幌', note: '全日自由行。' },
+            // Day 6: 1/25
+            { id: 601, date: '2026-01-25', time: '10:00', title: '🏨 退房: 條紋住宅飯店', address: '札幌', note: '最後採買，準備前往機場。' },
+            { id: 602, date: '2026-01-25', time: '16:30', title: '🚅 抵達新千歲機場', address: '新千歲機場', note: '酷航 TR893 (18:40 起飛)。記得逛國內線買伴手禮。' },
+            { id: 603, date: '2026-01-25', time: '18:40', title: '✈️ 酷航 TR893 起飛', address: '新千歲機場 I', note: '18:40 起飛 - 22:30 抵達桃園 T1。' }
         ];
-        let currentItineraryDate = '2026-01-20'; // 預設第一天
 
-        // 產生日期分頁
+        let currentItineraryDate = '2026-01-20';
         function generateDateTabs() {
             const container = document.getElementById('date-tabs-container');
             if(!container) return;
             container.innerHTML = '';
-            
-            // 產生 1/20 ~ 1/26 (預設7天，您可以自己新增更多)
             const startDate = new Date('2026-01-20');
             for(let i=0; i<7; i++) {
                 const d = new Date(startDate);
                 d.setDate(startDate.getDate() + i);
                 const dateStr = d.toISOString().split('T')[0];
                 const dayStr = (d.getMonth()+1) + '/' + d.getDate();
-                
                 const btn = document.createElement('button');
                 btn.className = `px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors ${currentItineraryDate === dateStr ? 'bg-hokkaido-primary text-white shadow-md' : 'bg-white text-gray-500 border border-gray-100'}`;
                 btn.innerText = `Day ${i+1} (${dayStr})`;
@@ -230,144 +198,51 @@
                 container.appendChild(btn);
             }
         }
-
         function renderItinerary() {
             generateDateTabs();
             const container = document.getElementById('timeline-container');
             if(!container) return;
             container.innerHTML = '';
-
-            // 篩選當日行程並排序
             const daysItems = itinerary.filter(i => i.date === currentItineraryDate).sort((a,b) => a.time.localeCompare(b.time));
-
-            if(daysItems.length === 0) {
-                container.innerHTML = '<div class="text-gray-400 text-sm italic py-4">這天還沒有行程，按上面的按鈕新增吧！</div>';
-                return;
-            }
-
+            if(daysItems.length === 0) { container.innerHTML = '<div class="text-gray-400 text-sm italic py-4">這天還沒有行程，按上面的按鈕新增吧！</div>'; return; }
             daysItems.forEach(item => {
-                // 判斷是否有連結
-                const hasLink = item.link && item.link.trim() !== '';
-                
-                container.innerHTML += `
-                    <div class="relative group cursor-pointer hover:bg-blue-50/50 p-2 -ml-2 rounded-lg transition-colors" onclick="openItineraryDetail(${item.id})">
-                        <div class="absolute -left-[31px] top-3 w-4 h-4 bg-hokkaido-accent rounded-full border-4 border-white shadow-sm z-10"></div>
-                        <div class="flex items-start">
-                            <span class="font-mono text-blue-500 font-bold mr-4 text-sm mt-0.5">${item.time}</span>
-                            <div class="flex-1">
-                                <h3 class="font-bold text-gray-800 text-sm">${item.title}</h3>
-                                <p class="text-xs text-gray-500 mt-1 line-clamp-1">${item.address || '無地址資訊'}</p>
-                                ${item.note ? `<div class="mt-1 text-[10px] text-gray-400 bg-gray-50 inline-block px-1.5 py-0.5 rounded border border-gray-100 max-w-full truncate"><i class="fa-solid fa-note-sticky mr-1"></i>${item.note}</div>` : ''}
-                            </div>
-                            <i class="fa-solid fa-chevron-right text-gray-300 text-xs mt-2"></i>
-                        </div>
-                    </div>
-                `;
+                container.innerHTML += `<div class="relative group cursor-pointer hover:bg-blue-50/50 p-2 -ml-2 rounded-lg transition-colors" onclick="openItineraryDetail(${item.id})"><div class="absolute -left-[31px] top-3 w-4 h-4 bg-hokkaido-accent rounded-full border-4 border-white shadow-sm z-10"></div><div class="flex items-start"><span class="font-mono text-blue-500 font-bold mr-4 text-sm mt-0.5">${item.time}</span><div class="flex-1"><h3 class="font-bold text-gray-800 text-sm">${item.title}</h3><p class="text-xs text-gray-500 mt-1 line-clamp-1">${item.address || '無地址資訊'}</p>${item.note ? `<div class="mt-1 text-[10px] text-gray-400 bg-gray-50 inline-block px-1.5 py-0.5 rounded border border-gray-100 max-w-full truncate"><i class="fa-solid fa-note-sticky mr-1"></i>${item.note}</div>` : ''}</div><i class="fa-solid fa-chevron-right text-gray-300 text-xs mt-2"></i></div></div>`;
             });
         }
-
-        // 開啟詳細資訊 (View Modal)
         function openItineraryDetail(id) {
             const item = itinerary.find(i => i.id === id);
             if(!item) return;
-
             document.getElementById('modal-title').innerText = item.title;
             document.getElementById('modal-time').innerText = item.time;
             document.getElementById('modal-address').innerText = item.address || '無地址';
             document.getElementById('modal-note').innerText = item.note || '無備註';
-            
-            // 處理連結與圖片
-            const linkBtn = document.getElementById('modal-link-btn');
-            const imgHeader = document.getElementById('modal-header-img');
-            const isImage = item.link && (item.link.match(/\.(jpeg|jpg|gif|png)$/) != null || item.link.includes('imgur'));
-
-            if(item.link) {
-                if(isImage) {
-                    // 如果是圖片連結，顯示在標題上方
-                    imgHeader.style.backgroundImage = `url('${item.link}')`;
-                    imgHeader.classList.remove('hidden');
-                    linkBtn.classList.add('hidden');
-                } else {
-                    // 如果是普通網址，顯示按鈕
-                    imgHeader.classList.add('hidden');
-                    linkBtn.href = item.link;
-                    linkBtn.classList.remove('hidden');
-                }
-            } else {
-                imgHeader.classList.add('hidden');
-                linkBtn.classList.add('hidden');
-            }
-
-            // 綁定刪除按鈕
+            const linkBtn = document.getElementById('modal-link-btn'), imgHeader = document.getElementById('modal-header-img'), isImg = item.link && (item.link.match(/\.(jpeg|jpg|gif|png)$/)!=null || item.link.includes('imgur'));
+            if(item.link) { if(isImg){ imgHeader.style.backgroundImage = `url('${item.link}')`; imgHeader.classList.remove('hidden'); linkBtn.classList.add('hidden'); } else { imgHeader.classList.add('hidden'); linkBtn.href = item.link; linkBtn.classList.remove('hidden'); } } else { imgHeader.classList.add('hidden'); linkBtn.classList.add('hidden'); }
             document.getElementById('modal-delete-btn').onclick = () => deleteItinerary(id);
-
-            // 顯示視窗
             document.getElementById('itinerary-modal').classList.remove('hidden');
         }
-
-        // 開啟編輯視窗 (Edit Modal)
-        function openEditModal() {
-            document.getElementById('edit-date').value = currentItineraryDate;
-            document.getElementById('edit-time').value = '10:00';
-            document.getElementById('edit-title').value = '';
-            document.getElementById('edit-address').value = '';
-            document.getElementById('edit-link').value = '';
-            document.getElementById('edit-note').value = '';
-            document.getElementById('edit-modal').classList.remove('hidden');
-        }
-
+        function openEditModal() { document.getElementById('edit-date').value = currentItineraryDate; document.getElementById('edit-time').value = '10:00'; document.getElementById('edit-title').value = ''; document.getElementById('edit-address').value = ''; document.getElementById('edit-link').value = ''; document.getElementById('edit-note').value = ''; document.getElementById('edit-modal').classList.remove('hidden'); }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+        function saveItinerary() { const d=document.getElementById('edit-date').value, t=document.getElementById('edit-title').value; if(!d||!t){alert('日期和標題必填');return;} itinerary.push({id:Date.now(),date:d,time:document.getElementById('edit-time').value,title:t,address:document.getElementById('edit-address').value,link:document.getElementById('edit-link').value,note:document.getElementById('edit-note').value}); itinerary.sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)); localStorage.setItem('hokkaido_itinerary',JSON.stringify(itinerary)); closeModal('edit-modal'); currentItineraryDate=d; renderItinerary(); }
+        function deleteItinerary(id) { if(confirm('刪除?')){ itinerary=itinerary.filter(i=>i.id!==id); localStorage.setItem('hokkaido_itinerary',JSON.stringify(itinerary)); closeModal('itinerary-modal'); renderItinerary(); } }
 
-        function saveItinerary() {
-            const date = document.getElementById('edit-date').value;
-            const time = document.getElementById('edit-time').value;
-            const title = document.getElementById('edit-title').value;
-            
-            if(!date || !title) { alert('日期和標題一定要填喔！'); return; }
+        /* === Apps & Checklist & Budget === */
+        let myApps=JSON.parse(localStorage.getItem('hokkaido_apps'))||[{name:"乘換案內",desc:"查電車時刻",icon:"fa-train",color:"bg-green-500"},{name:"Google Map",desc:"找路/評價",icon:"fa-map-location-dot",color:"bg-blue-600"},{name:"Payke",desc:"掃藥妝成分",icon:"fa-barcode",color:"bg-pink-500"},{name:"VoiceTra",desc:"語音翻譯",icon:"fa-language",color:"bg-indigo-500"},{name:"Suica App",desc:"西瓜卡儲值",icon:"fa-credit-card",color:"bg-green-700"},{name:"Uber",desc:"太累叫車用",icon:"fa-car",color:"bg-black"}];
+        function renderApps(){const c=document.getElementById('apps-container');if(!c)return;c.innerHTML='';myApps.forEach((a,i)=>{c.innerHTML+=`<div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 relative group flex flex-col items-center text-center"><button onclick="deleteApp(${i})" class="absolute top-2 right-2 text-gray-300 hover:text-red-500 p-1"><i class="fa-solid fa-trash-can"></i></button><button onclick="copyAppText('${a.name}')" class="absolute top-2 left-2 text-gray-300 hover:text-blue-500 p-1 active:text-blue-700"><i class="fa-regular fa-copy"></i></button><div class="w-12 h-12 ${a.color||'bg-blue-400'} rounded-2xl flex items-center justify-center text-white text-xl shadow-md mb-2"><i class="fa-solid ${a.icon||'fa-mobile-screen'}"></i></div><h3 class="font-bold text-gray-800 text-sm mb-1">${a.name}</h3><p class="text-[10px] text-gray-500 leading-tight">${a.desc}</p></div>`;});localStorage.setItem('hokkaido_apps',JSON.stringify(myApps));}
+        function addNewApp(){const n=document.getElementById('app-name-input').value.trim();if(!n)return;myApps.unshift({name:n,desc:document.getElementById('app-desc-input').value.trim()||"自訂",icon:"fa-star",color:"bg-hokkaido-accent"});document.getElementById('app-name-input').value='';renderApps();}
+        function deleteApp(i){if(confirm('刪除?')){myApps.splice(i,1);renderApps();}}
+        function copyAppText(t){navigator.clipboard.writeText(t).then(()=>alert(`已複製: ${t}`)).catch(()=>prompt("請手動複製",t));}
 
-            itinerary.push({
-                id: Date.now(),
-                date: date, time: time, title: title,
-                address: document.getElementById('edit-address').value,
-                link: document.getElementById('edit-link').value,
-                note: document.getElementById('edit-note').value
-            });
-            
-            // 排序並存檔
-            itinerary.sort((a,b) => (a.date + a.time).localeCompare(b.date + b.time));
-            localStorage.setItem('hokkaido_itinerary', JSON.stringify(itinerary));
-            
-            closeModal('edit-modal');
-            currentItineraryDate = date; // 切換到新增的那一天
-            renderItinerary();
-        }
+        let todos=[];try{const s=localStorage.getItem('hokkaido_todos');todos=s?JSON.parse(s):[];if(todos.length&&typeof todos[0]==='string')todos=todos.map(t=>({text:t,done:false,type:'check'}));}catch(e){todos=[];}
+        function renderTodos(){const c1=document.getElementById('checklist-carry'),c2=document.getElementById('checklist-check');if(!c1||!c2)return;c1.innerHTML='';c2.innerHTML='';todos.forEach((t,i)=>{const h=`<li class="flex items-center bg-white p-3 rounded-xl shadow-sm border ${t.done?'border-green-200 bg-green-50':'border-gray-100'}"><button onclick="toggleTodo(${i})" class="w-6 h-6 rounded-full border-2 mr-3 flex items-center justify-center ${t.done?'bg-green-500 border-green-500':'border-gray-300'}">${t.done?'<i class="fa-solid fa-check text-white text-xs"></i>':''}</button><span class="flex-1 ${t.done?'line-through text-gray-400':'text-gray-700'}">${t.text}</span><button onclick="removeTodo(${i})" class="text-gray-300 hover:text-red-400 px-2"><i class="fa-solid fa-xmark"></i></button></li>`;if(t.type==='carry')c1.innerHTML+=h;else c2.innerHTML+=h;});localStorage.setItem('hokkaido_todos',JSON.stringify(todos));}
+        function addTodo(){const t=document.getElementById('new-todo-input').value.trim();if(t){todos.push({text:t,done:false,type:document.getElementById('todo-type').value});document.getElementById('new-todo-input').value='';renderTodos();}}
+        function toggleTodo(i){todos[i].done=!todos[i].done;renderTodos();}
+        function removeTodo(i){if(confirm('刪除?')){todos.splice(i,1);renderTodos();}}
 
-        function deleteItinerary(id) {
-            if(confirm('確定要刪除這個行程嗎？')) {
-                itinerary = itinerary.filter(i => i.id !== id);
-                localStorage.setItem('hokkaido_itinerary', JSON.stringify(itinerary));
-                closeModal('itinerary-modal');
-                renderItinerary();
-            }
-        }
-
-        /* === 2. & 3. App 和 記帳 (維持之前功能) === */
-        let myApps = JSON.parse(localStorage.getItem('hokkaido_apps')) || [{ name: "乘換案內", desc: "查電車時刻", icon: "fa-train", color: "bg-green-500" }, { name: "Google Map", desc: "找路/評價", icon: "fa-map-location-dot", color: "bg-blue-600" }, { name: "Payke", desc: "掃藥妝成分", icon: "fa-barcode", color: "bg-pink-500" }, { name: "VoiceTra", desc: "語音翻譯", icon: "fa-language", color: "bg-indigo-500" }, { name: "Suica App", desc: "西瓜卡儲值", icon: "fa-credit-card", color: "bg-green-700" }, { name: "Uber", desc: "太累叫車用", icon: "fa-car", color: "bg-black" }];
-        function renderApps(){ const c=document.getElementById('apps-container'); if(!c)return; c.innerHTML=''; myApps.forEach((a,i)=>{ c.innerHTML+=`<div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 relative group flex flex-col items-center text-center"><button onclick="deleteApp(${i})" class="absolute top-2 right-2 text-gray-300 hover:text-red-500 p-1"><i class="fa-solid fa-trash-can"></i></button><button onclick="copyAppText('${a.name}')" class="absolute top-2 left-2 text-gray-300 hover:text-blue-500 p-1 active:text-blue-700"><i class="fa-regular fa-copy"></i></button><div class="w-12 h-12 ${a.color||'bg-blue-400'} rounded-2xl flex items-center justify-center text-white text-xl shadow-md mb-2"><i class="fa-solid ${a.icon||'fa-mobile-screen'}"></i></div><h3 class="font-bold text-gray-800 text-sm mb-1">${a.name}</h3><p class="text-[10px] text-gray-500 leading-tight">${a.desc}</p></div>`; }); localStorage.setItem('hokkaido_apps',JSON.stringify(myApps)); }
-        function addNewApp(){ const n=document.getElementById('app-name-input').value.trim(), d=document.getElementById('app-desc-input').value.trim(); if(!n)return alert("請輸入名稱"); myApps.unshift({name:n,desc:d||"自訂",icon:"fa-star",color:"bg-hokkaido-accent"}); document.getElementById('app-name-input').value=''; renderApps(); }
-        function deleteApp(i){ if(confirm('刪除?')) { myApps.splice(i,1); renderApps(); } }
-        function copyAppText(t){ navigator.clipboard.writeText(t).then(()=>alert(`已複製: ${t}`)).catch(()=>prompt("請手動複製",t)); }
-
-        let todos = []; try{ const s=localStorage.getItem('hokkaido_todos'); todos=s?JSON.parse(s):[]; if(todos.length&&typeof todos[0]==='string')todos=todos.map(t=>({text:t,done:false,type:'check'})); }catch(e){todos=[];}
-        function renderTodos(){ const c1=document.getElementById('checklist-carry'), c2=document.getElementById('checklist-check'); if(!c1||!c2)return; c1.innerHTML=''; c2.innerHTML=''; todos.forEach((t,i)=>{ const h=`<li class="flex items-center bg-white p-3 rounded-xl shadow-sm border ${t.done?'border-green-200 bg-green-50':'border-gray-100'}"><button onclick="toggleTodo(${i})" class="w-6 h-6 rounded-full border-2 mr-3 flex items-center justify-center ${t.done?'bg-green-500 border-green-500':'border-gray-300'}">${t.done?'<i class="fa-solid fa-check text-white text-xs"></i>':''}</button><span class="flex-1 ${t.done?'line-through text-gray-400':'text-gray-700'}">${t.text}</span><button onclick="removeTodo(${i})" class="text-gray-300 hover:text-red-400 px-2"><i class="fa-solid fa-xmark"></i></button></li>`; if(t.type==='carry')c1.innerHTML+=h; else c2.innerHTML+=h; }); localStorage.setItem('hokkaido_todos',JSON.stringify(todos)); }
-        function addTodo(){ const t=document.getElementById('new-todo-input').value.trim(); if(t){ todos.push({text:t,done:false,type:document.getElementById('todo-type').value}); document.getElementById('new-todo-input').value=''; renderTodos(); } }
-        function toggleTodo(i){ todos[i].done=!todos[i].done; renderTodos(); }
-        function removeTodo(i){ if(confirm('刪除?')){ todos.splice(i,1); renderTodos(); } }
-
-        let budgetList = JSON.parse(localStorage.getItem('hokkaido_budget')) || [];
-        function renderBudget(){ const l=document.getElementById('budget-list'), tj=document.getElementById('budget-total-jpy'), tt=document.getElementById('budget-total-twd'); if(!l)return; l.innerHTML=''; let j=0,t=0; budgetList.forEach((b,i)=>{ const c=b.currency||'JPY', a=Number(b.amount), s=c==='JPY'?'¥':'NT$'; if(c==='JPY')j+=a; else t+=a; l.innerHTML+=`<div class="flex justify-between items-center bg-white p-3 rounded-lg shadow-sm border border-gray-100 relative group"><div class="flex-1"><div class="font-bold text-gray-700">${b.item}</div><div class="text-xs text-gray-400"><span class="${c==='JPY'?'text-blue-500':'text-green-600'} font-bold bg-gray-100 px-1 rounded mr-1">${c}</span>${new Date(b.date).toLocaleDateString()}</div></div><div class="font-bold text-lg text-hokkaido-dark mr-8">${s} ${a.toLocaleString()}</div><button onclick="deleteBudget(${i})" class="absolute right-2 text-gray-300 hover:text-red-400 p-1"><i class="fa-solid fa-trash-can"></i></button></div>`; }); if(tj)tj.innerText=j.toLocaleString(); if(tt)tt.innerText=t.toLocaleString(); localStorage.setItem('hokkaido_budget',JSON.stringify(budgetList)); }
-        function addBudget(){ const i=document.getElementById('budget-item').value.trim(), a=document.getElementById('budget-amount').value, c=document.getElementById('budget-currency').value; if(i&&a){ budgetList.unshift({item:i,amount:a,currency:c,date:new Date().toISOString()}); document.getElementById('budget-item').value=''; document.getElementById('budget-amount').value=''; renderBudget(); }else alert("輸入不完整"); }
-        function deleteBudget(i){ if(confirm('刪除?')){ budgetList.splice(i,1); renderBudget(); } }
+        let budgetList=JSON.parse(localStorage.getItem('hokkaido_budget'))||[];
+        function renderBudget(){const l=document.getElementById('budget-list'),tj=document.getElementById('budget-total-jpy'),tt=document.getElementById('budget-total-twd');if(!l)return;l.innerHTML='';let j=0,t=0;budgetList.forEach((b,i)=>{const c=b.currency||'JPY',a=Number(b.amount),s=c==='JPY'?'¥':'NT$';if(c==='JPY')j+=a;else t+=a;l.innerHTML+=`<div class="flex justify-between items-center bg-white p-3 rounded-lg shadow-sm border border-gray-100 relative group"><div class="flex-1"><div class="font-bold text-gray-700">${b.item}</div><div class="text-xs text-gray-400"><span class="${c==='JPY'?'text-blue-500':'text-green-600'} font-bold bg-gray-100 px-1 rounded mr-1">${c}</span>${new Date(b.date).toLocaleDateString()}</div></div><div class="font-bold text-lg text-hokkaido-dark mr-8">${s} ${a.toLocaleString()}</div><button onclick="deleteBudget(${i})" class="absolute right-2 text-gray-300 hover:text-red-400 p-1"><i class="fa-solid fa-trash-can"></i></button></div>`;});if(tj)tj.innerText=j.toLocaleString();if(tt)tt.innerText=t.toLocaleString();localStorage.setItem('hokkaido_budget',JSON.stringify(budgetList));}
+        function addBudget(){const i=document.getElementById('budget-item').value.trim(),a=document.getElementById('budget-amount').value,c=document.getElementById('budget-currency').value;if(i&&a){budgetList.unshift({item:i,amount:a,currency:c,date:new Date().toISOString()});document.getElementById('budget-item').value='';document.getElementById('budget-amount').value='';renderBudget();}else alert("輸入不完整");}
+        function deleteBudget(i){if(confirm('刪除?')){budgetList.splice(i,1);renderBudget();}}
 
         document.addEventListener('DOMContentLoaded', () => { renderApps(); renderTodos(); renderBudget(); renderItinerary(); });
     </script>
