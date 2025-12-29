@@ -32,8 +32,6 @@
         }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        /* 按鈕動畫 */
         .btn-active:active { transform: scale(0.95); }
     </style>
 </head>
@@ -73,59 +71,60 @@
 
         <div id="view-checklist" class="view-section hidden">
             <h2 class="text-lg font-bold text-hokkaido-dark mb-4">行前準備清單</h2>
-            
             <div class="flex flex-col gap-2 mb-6">
                 <div class="flex gap-2">
                     <select id="todo-type" class="bg-white border border-gray-200 rounded-lg px-2 py-3 text-sm focus:outline-blue-500">
                         <option value="check">🧳 托運</option>
                         <option value="carry">🎒 隨身</option>
                     </select>
-                    <input type="text" id="new-todo-input" placeholder="新增物品..." 
-                           class="flex-1 p-3 rounded-lg border border-gray-200 focus:outline-none focus:border-blue-500"
-                           onkeydown="if(event.key === 'Enter') addTodo()">
+                    <input type="text" id="new-todo-input" placeholder="新增物品..." class="flex-1 p-3 rounded-lg border border-gray-200 focus:outline-none focus:border-blue-500" onkeydown="if(event.key === 'Enter') addTodo()">
                 </div>
                 <button onclick="addTodo()" class="w-full bg-hokkaido-primary text-white py-2 rounded-lg font-bold shadow-sm btn-active"><i class="fa-solid fa-plus mr-2"></i>加入清單</button>
             </div>
-
             <div class="space-y-6">
-                <div>
-                    <h3 class="text-sm font-bold text-gray-500 mb-2 pl-1">🎒 隨身 / 手提</h3>
-                    <ul id="checklist-carry" class="space-y-2 min-h-[50px]"></ul>
-                </div>
-                
-                <div>
-                    <h3 class="text-sm font-bold text-gray-500 mb-2 pl-1">🧳 托運 / 大行李</h3>
-                    <ul id="checklist-check" class="space-y-2 min-h-[50px]"></ul>
-                </div>
+                <div><h3 class="text-sm font-bold text-gray-500 mb-2 pl-1">🎒 隨身 / 手提</h3><ul id="checklist-carry" class="space-y-2 min-h-[50px]"></ul></div>
+                <div><h3 class="text-sm font-bold text-gray-500 mb-2 pl-1">🧳 托運 / 大行李</h3><ul id="checklist-check" class="space-y-2 min-h-[50px]"></ul></div>
             </div>
         </div>
 
         <div id="view-budget" class="view-section hidden">
-            <div class="bg-white rounded-xl p-5 shadow-sm mb-6 border border-blue-50 text-center">
-                <div class="text-sm text-gray-500 mb-1">目前總消費 (日幣)</div>
-                <div class="text-3xl font-bold text-hokkaido-dark">¥ <span id="budget-total">0</span></div>
-            </div>
-            <div class="bg-white rounded-xl p-4 shadow-sm mb-6">
-                <div class="grid grid-cols-3 gap-2 mb-2">
-                    <input type="text" id="budget-item" placeholder="品項" class="col-span-2 p-2 bg-gray-50 rounded border border-gray-100">
-                    <input type="number" id="budget-amount" placeholder="金額" class="col-span-1 p-2 bg-gray-50 rounded border border-gray-100">
+            <div class="bg-white rounded-xl p-4 shadow-sm mb-6 border border-blue-50 flex divide-x divide-gray-100">
+                <div class="flex-1 text-center pr-2">
+                    <div class="text-xs text-gray-400 mb-1">日幣總花費</div>
+                    <div class="text-xl font-bold text-hokkaido-dark">¥ <span id="budget-total-jpy">0</span></div>
                 </div>
-                <button onclick="addBudget()" class="w-full bg-hokkaido-accent text-white py-2 rounded font-semibold shadow-sm btn-active">新增紀錄</button>
+                <div class="flex-1 text-center pl-2">
+                    <div class="text-xs text-gray-400 mb-1">台幣總花費</div>
+                    <div class="text-xl font-bold text-hokkaido-dark">NT$ <span id="budget-total-twd">0</span></div>
+                </div>
             </div>
+
+            <div class="bg-white rounded-xl p-4 shadow-sm mb-6">
+                <div class="flex gap-2 mb-2">
+                    <input type="text" id="budget-item" placeholder="品項 (如: 機票)" class="flex-[2] p-2 bg-gray-50 rounded border border-gray-100 text-sm">
+                    <select id="budget-currency" class="flex-1 p-2 bg-gray-50 rounded border border-gray-100 text-sm font-bold text-gray-600">
+                        <option value="JPY">¥ 日幣</option>
+                        <option value="TWD">NT$ 台幣</option>
+                    </select>
+                </div>
+                <div class="mb-2">
+                    <input type="number" id="budget-amount" placeholder="金額" class="w-full p-2 bg-gray-50 rounded border border-gray-100 text-sm">
+                </div>
+                <button onclick="addBudget()" class="w-full bg-hokkaido-accent text-white py-2 rounded-lg font-semibold shadow-sm btn-active">新增紀錄</button>
+            </div>
+            
             <div id="budget-list" class="space-y-2 pb-10"></div>
         </div>
 
         <div id="view-apps" class="view-section hidden">
             <h2 class="text-lg font-bold text-hokkaido-dark mb-4">日本旅遊 App 管理</h2>
-            
             <div class="bg-white p-4 rounded-xl shadow-sm mb-6 border border-gray-100">
                 <div class="grid grid-cols-1 gap-3 mb-3">
-                    <input type="text" id="app-name-input" placeholder="App 名稱 (如: Uber)" class="w-full p-2 bg-gray-50 rounded border border-gray-200 focus:outline-blue-400 text-sm">
-                    <input type="text" id="app-desc-input" placeholder="功能說明 (如: 叫車用)" class="w-full p-2 bg-gray-50 rounded border border-gray-200 focus:outline-blue-400 text-sm">
+                    <input type="text" id="app-name-input" placeholder="App 名稱" class="w-full p-2 bg-gray-50 rounded border border-gray-200 focus:outline-blue-400 text-sm">
+                    <input type="text" id="app-desc-input" placeholder="功能說明" class="w-full p-2 bg-gray-50 rounded border border-gray-200 focus:outline-blue-400 text-sm">
                 </div>
-                <button onclick="addNewApp()" class="w-full bg-hokkaido-primary text-white py-2 rounded-lg font-bold text-sm shadow-sm btn-active transition-transform"><i class="fa-solid fa-plus mr-1"></i> 新增 App</button>
+                <button onclick="addNewApp()" class="w-full bg-hokkaido-primary text-white py-2 rounded-lg font-bold text-sm shadow-sm btn-active"><i class="fa-solid fa-plus mr-1"></i> 新增 App</button>
             </div>
-
             <div id="apps-container" class="grid grid-cols-2 gap-4 pb-10"></div>
         </div>
     </main>
@@ -142,7 +141,7 @@
     <script src="app.js"></script>
 
     <script>
-        /* === 1. App 管理功能 (含複製) === */
+        /* === 1. App 管理功能 (Phase 1) === */
         let myApps = JSON.parse(localStorage.getItem('hokkaido_apps')) || [
             { name: "乘換案內", desc: "查電車時刻", icon: "fa-train", color: "bg-green-500" },
             { name: "Google Map", desc: "找路/評價", icon: "fa-map-location-dot", color: "bg-blue-600" },
@@ -156,24 +155,15 @@
             const container = document.getElementById('apps-container');
             if(!container) return;
             container.innerHTML = '';
-            
             myApps.forEach((app, index) => {
-                const card = `
+                container.innerHTML += `
                     <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 relative group flex flex-col items-center text-center">
-                        <button onclick="deleteApp(${index})" class="absolute top-2 right-2 text-gray-300 hover:text-red-500 p-1 transition-colors"><i class="fa-solid fa-trash-can"></i></button>
-                        
-                        <button onclick="copyAppText('${app.name}')" class="absolute top-2 left-2 text-gray-300 hover:text-blue-500 p-1 transition-colors active:text-blue-700">
-                            <i class="fa-regular fa-copy"></i>
-                        </button>
-
-                        <div class="w-12 h-12 ${app.color || 'bg-blue-400'} rounded-2xl flex items-center justify-center text-white text-xl shadow-md mb-2">
-                            <i class="fa-solid ${app.icon || 'fa-mobile-screen'}"></i>
-                        </div>
-                        <h3 class="font-bold text-gray-800 text-sm mb-1 select-all">${app.name}</h3>
+                        <button onclick="deleteApp(${index})" class="absolute top-2 right-2 text-gray-300 hover:text-red-500 p-1"><i class="fa-solid fa-trash-can"></i></button>
+                        <button onclick="copyAppText('${app.name}')" class="absolute top-2 left-2 text-gray-300 hover:text-blue-500 p-1 active:text-blue-700"><i class="fa-regular fa-copy"></i></button>
+                        <div class="w-12 h-12 ${app.color || 'bg-blue-400'} rounded-2xl flex items-center justify-center text-white text-xl shadow-md mb-2"><i class="fa-solid ${app.icon || 'fa-mobile-screen'}"></i></div>
+                        <h3 class="font-bold text-gray-800 text-sm mb-1">${app.name}</h3>
                         <p class="text-[10px] text-gray-500 leading-tight">${app.desc}</p>
-                    </div>
-                `;
-                container.innerHTML += card;
+                    </div>`;
             });
             localStorage.setItem('hokkaido_apps', JSON.stringify(myApps));
         }
@@ -181,113 +171,129 @@
         function addNewApp() {
             const name = document.getElementById('app-name-input').value.trim();
             const desc = document.getElementById('app-desc-input').value.trim();
-            if (!name) { alert("請至少輸入 App 名稱喔！"); return; }
+            if (!name) { alert("請輸入 App 名稱"); return; }
             myApps.unshift({ name: name, desc: desc || "自訂 App", icon: "fa-star", color: "bg-hokkaido-accent" });
             document.getElementById('app-name-input').value = '';
-            document.getElementById('app-desc-input').value = '';
             renderApps();
         }
+        function deleteApp(idx) { if(confirm('確定刪除?')) { myApps.splice(idx, 1); renderApps(); } }
+        function copyAppText(text) { navigator.clipboard.writeText(text).then(()=>alert(`已複製: ${text}`)).catch(()=>prompt("請手動複製", text)); }
 
-        function deleteApp(index) {
-            if(confirm('確定要刪除 ' + myApps[index].name + ' 嗎？')) {
-                myApps.splice(index, 1);
-                renderApps();
-            }
-        }
-
-        // 複製功能
-        function copyAppText(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                alert(`已複製「${text}」！\n請直接去 App Store 搜尋下載`);
-            }).catch(err => {
-                console.error('複製失敗:', err);
-                prompt("請手動複製:", text);
-            });
-        }
-
-        /* === 2. 清單管理功能 (分類版) === */
-        // 取得舊資料，並確保它是陣列
+        /* === 2. 清單管理 (Phase 1) === */
         let todos = [];
         try {
             const stored = localStorage.getItem('hokkaido_todos');
             todos = stored ? JSON.parse(stored) : [];
-            // 如果舊資料是純字串陣列(舊版)，把它轉成新格式
-            if(todos.length > 0 && typeof todos[0] === 'string') {
-                todos = todos.map(t => ({ text: t, done: false, type: 'check' }));
-            }
-        } catch(e) {
-            todos = [];
-        }
+            if(todos.length > 0 && typeof todos[0] === 'string') todos = todos.map(t => ({ text: t, done: false, type: 'check' }));
+        } catch(e) { todos = []; }
 
         function renderTodos() {
-            const carryList = document.getElementById('checklist-carry');
-            const checkList = document.getElementById('checklist-check');
-            if(!carryList || !checkList) return;
-
-            carryList.innerHTML = '';
-            checkList.innerHTML = '';
-
-            todos.forEach((todo, index) => {
-                const li = document.createElement('li');
-                li.className = `flex items-center bg-white p-3 rounded-xl shadow-sm border ${todo.done ? 'border-green-200 bg-green-50' : 'border-gray-100'}`;
-                li.innerHTML = `
-                    <button onclick="toggleTodo(${index})" class="w-6 h-6 rounded-full border-2 mr-3 flex items-center justify-center transition-colors ${todo.done ? 'bg-green-500 border-green-500' : 'border-gray-300'}">
-                        ${todo.done ? '<i class="fa-solid fa-check text-white text-xs"></i>' : ''}
-                    </button>
-                    <span class="flex-1 ${todo.done ? 'line-through text-gray-400' : 'text-gray-700'}">${todo.text}</span>
-                    <button onclick="removeTodo(${index})" class="text-gray-300 hover:text-red-400 px-2"><i class="fa-solid fa-xmark"></i></button>
-                `;
-
-                // 根據類型放到不同清單，預設放托運
-                if (todo.type === 'carry') {
-                    carryList.appendChild(li);
-                } else {
-                    checkList.appendChild(li);
-                }
+            const c1 = document.getElementById('checklist-carry'), c2 = document.getElementById('checklist-check');
+            if(!c1 || !c2) return;
+            c1.innerHTML = ''; c2.innerHTML = '';
+            todos.forEach((t, i) => {
+                const html = `
+                    <li class="flex items-center bg-white p-3 rounded-xl shadow-sm border ${t.done?'border-green-200 bg-green-50':'border-gray-100'}">
+                        <button onclick="toggleTodo(${i})" class="w-6 h-6 rounded-full border-2 mr-3 flex items-center justify-center ${t.done?'bg-green-500 border-green-500':'border-gray-300'}">${t.done?'<i class="fa-solid fa-check text-white text-xs"></i>':''}</button>
+                        <span class="flex-1 ${t.done?'line-through text-gray-400':'text-gray-700'}">${t.text}</span>
+                        <button onclick="removeTodo(${i})" class="text-gray-300 hover:text-red-400 px-2"><i class="fa-solid fa-xmark"></i></button>
+                    </li>`;
+                if(t.type === 'carry') c1.innerHTML += html; else c2.innerHTML += html;
             });
             localStorage.setItem('hokkaido_todos', JSON.stringify(todos));
         }
-
         function addTodo() {
-            const input = document.getElementById('new-todo-input');
-            const typeSelect = document.getElementById('todo-type');
-            const text = input.value.trim();
+            const t = document.getElementById('new-todo-input').value.trim();
+            if(t) { todos.push({ text: t, done: false, type: document.getElementById('todo-type').value }); document.getElementById('new-todo-input').value=''; renderTodos(); }
+        }
+        function toggleTodo(i) { todos[i].done = !todos[i].done; renderTodos(); }
+        function removeTodo(i) { if(confirm('刪除?')) { todos.splice(i, 1); renderTodos(); } }
+
+        /* === 3. 記帳功能 (Phase 2 - 雙幣版) === */
+        let budgetList = JSON.parse(localStorage.getItem('hokkaido_budget')) || [];
+
+        function renderBudget() {
+            const list = document.getElementById('budget-list');
+            const totalJpyEl = document.getElementById('budget-total-jpy');
+            const totalTwdEl = document.getElementById('budget-total-twd');
             
-            if (text) {
-                // 新增格式：{ text: "內容", done: false, type: "carry/check" }
-                todos.push({ 
-                    text: text, 
-                    done: false, 
-                    type: typeSelect.value 
+            if(!list) return;
+            list.innerHTML = '';
+            
+            let totalJpy = 0;
+            let totalTwd = 0;
+
+            budgetList.forEach((item, index) => {
+                // 相容舊資料：如果沒有 currency 欄位，預設為 JPY
+                const currency = item.currency || 'JPY';
+                const amount = Number(item.amount);
+                const symbol = currency === 'JPY' ? '¥' : 'NT$';
+
+                // 計算總額
+                if(currency === 'JPY') totalJpy += amount;
+                else totalTwd += amount;
+
+                list.innerHTML += `
+                    <div class="flex justify-between items-center bg-white p-3 rounded-lg shadow-sm border border-gray-100 relative group">
+                        <div class="flex-1">
+                            <div class="font-bold text-gray-700">${item.item}</div>
+                            <div class="text-xs text-gray-400">
+                                <span class="${currency === 'JPY' ? 'text-blue-500' : 'text-green-600'} font-bold bg-gray-100 px-1 rounded mr-1">${currency}</span>
+                                ${new Date(item.date).toLocaleDateString()}
+                            </div>
+                        </div>
+                        <div class="font-bold text-lg text-hokkaido-dark mr-8">${symbol} ${amount.toLocaleString()}</div>
+                        <button onclick="deleteBudget(${index})" class="absolute right-2 text-gray-300 hover:text-red-400 p-1"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                `;
+            });
+
+            // 更新上方總金額
+            if(totalJpyEl) totalJpyEl.innerText = totalJpy.toLocaleString();
+            if(totalTwdEl) totalTwdEl.innerText = totalTwd.toLocaleString();
+
+            localStorage.setItem('hokkaido_budget', JSON.stringify(budgetList));
+        }
+
+        function addBudget() {
+            const item = document.getElementById('budget-item').value.trim();
+            const amount = document.getElementById('budget-amount').value;
+            const currency = document.getElementById('budget-currency').value; // 取得幣別
+
+            if (item && amount) {
+                budgetList.unshift({
+                    item: item,
+                    amount: amount,
+                    currency: currency, // 存入幣別
+                    date: new Date().toISOString()
                 });
-                input.value = '';
-                renderTodos();
+                document.getElementById('budget-item').value = '';
+                document.getElementById('budget-amount').value = '';
+                renderBudget();
+            } else {
+                alert("請輸入完整的品項和金額喔！");
             }
         }
 
-        function toggleTodo(index) {
-            todos[index].done = !todos[index].done;
-            renderTodos();
-        }
-
-        function removeTodo(index) {
-            if(confirm('確定刪除嗎？')) {
-                todos.splice(index, 1);
-                renderTodos();
+        function deleteBudget(index) {
+            if(confirm('確定刪除這筆紀錄嗎？')) {
+                budgetList.splice(index, 1);
+                renderBudget();
             }
         }
 
-        // 初始化
+        /* === 初始化 === */
         document.addEventListener('DOMContentLoaded', () => {
             renderApps();
             renderTodos();
-            
-            // 綁定切換分頁時重新渲染
+            renderBudget(); // 記得要呼叫記帳渲染
+
             const oldSwitch = window.switchTab;
             window.switchTab = function(tabName) {
                 if(typeof oldSwitch === 'function') oldSwitch(tabName);
                 if(tabName === 'apps') renderApps();
                 if(tabName === 'checklist') renderTodos();
+                if(tabName === 'budget') renderBudget();
             };
         });
     </script>
